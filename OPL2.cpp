@@ -63,11 +63,13 @@ void OPL2::write(byte reg, byte data) {
 	SPI.transfer(reg);
 	digitalWrite(PIN_LATCH, LOW);
 	digitalWrite(PIN_LATCH, HIGH);
-
+	delayMicroseconds(4);
+	
 	digitalWrite(PIN_A0, HIGH);
 	SPI.transfer(data);
 	digitalWrite(PIN_LATCH, LOW);
 	digitalWrite(PIN_LATCH, HIGH);
+	delayMicroseconds(23);
 }
 
 
