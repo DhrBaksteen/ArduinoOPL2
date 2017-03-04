@@ -64,7 +64,7 @@ void OPL2::write(byte reg, byte data) {
 	digitalWrite(PIN_LATCH, LOW);
 	digitalWrite(PIN_LATCH, HIGH);
 	delayMicroseconds(4);
-	
+
 	digitalWrite(PIN_A0, HIGH);
 	SPI.transfer(data);
 	digitalWrite(PIN_LATCH, LOW);
@@ -78,7 +78,7 @@ void OPL2::write(byte reg, byte data) {
  */
 byte OPL2::getRegisterOffset(byte ch, bool op2) {
 	ch = max(0, min(ch, 8));
-	return (6 * (ch / 3)) + (ch % 3) + (op2 ? 3 : 0);
+	return offset[op2][ch];
 }
 
 
