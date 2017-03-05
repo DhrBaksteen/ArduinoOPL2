@@ -104,6 +104,10 @@ class OPL2 {
 			261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.26,
 			277.18, 311.13, 369.99, 415.30, 466.16
 		};
+		const byte offset[2][9] = {  
+			{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 0 */
+			{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 1 */
+		};
 		byte oplRegisters[256];
 		byte getRegisterOffset(byte, bool);
 };
