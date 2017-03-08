@@ -11,7 +11,7 @@
  *                |  | (  <_> )  | \/ /    |    \  | \/ /_/ |  |  /  |   |  (  <_> )              
  *                |__|  \____/|__|    \____|__  /__|  \____ |____/|__|___|  /\____/               
  *                                            \/           \/             \/                      
- * YM3812 OPL2 Audio Library for Arduino v1.0.0
+ * YM3812 OPL2 Audio Library for Arduino v1.0.1
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example sketches on how to use this library in the examples folder.
@@ -24,6 +24,10 @@
  * Pin 10 - Latch
  * Pin 11 - Data
  * Pin 13 - Shift
+ *
+ * This library is open source and provided as is under the MIT software license, a copy of which is provided as part of
+ * the project's repository.
+ * Last updated 2017-03-08
  */
 
 
