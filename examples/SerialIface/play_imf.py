@@ -1,6 +1,9 @@
 # Stream an IMF file via the serial interface of the Arduino OPL shield.
 
-import struct, sys, time
+import collections
+import struct
+import sys
+
 import serial
 
 class ArduinoOpl:
@@ -11,7 +14,7 @@ class ArduinoOpl:
   ACK_RSP = b'k'
   RESET_CMD = b'\x00' * 4
 
-  def __init__(self, portname, baudrate=115200, max_write_ahead=10, debug=False):
+  def __init__(self, portname, baudrate=115200, max_write_ahead=5, debug=False):
     self.port = serial.Serial(portname, baudrate, timeout=None)
     self.ready = False
     self.max_write_ahead = max_write_ahead
@@ -57,7 +60,8 @@ class ArduinoOpl:
     status = 'Initialized' if self.ready else 'Initializing'
     buf_status = '[ %s ]' % ('#' * self.n_outstanding).ljust(self.max_write_ahead)
     tx_txt = 'Tx: %s' % ['%02x' % b for b in last_tx]
-    print("%-19s %-29s %-29s\r" % (status, buf_status, tx_txt), end='')
+    status_str = "STATUS %-14s BUFFER %-14s %s" % (status, buf_status, tx_txt)
+    print("%s\r" % status_str.ljust(79), end='')
 
   def _debug(self, txt):
     if self.debug:
@@ -69,19 +73,26 @@ class ArduinoOpl:
     self.port.close()
 
 
-DEFAULT_IMF_FREQUENCY_HZ = 560
+IMF_FREQUENCIES = collections.defaultdict(lambda: 560)
+IMF_FREQUENCIES.update({
+    'duke': 280,
+    'wolf': 700
+})
 
-def play_imf(opl, imf_stream, frequency_hz=DEFAULT_IMF_FREQUENCY_HZ):
-  # Type-1 format
-  song_length, = struct.unpack('H', f.read(2))
-  # Type-2 format
+def play_imf(opl, imf_stream, frequency_hz):
+  song_length, = struct.unpack('H', imf_stream.read(2))
+
   if song_length == 0:
-    song_length = 65535
-    f.read(2)
+    imf_type = 0
+    imf_stream.read(2)
+  else:
+    imf_type = 1
 
   i = 0
-  while i < song_length:
-    cmd = f.read(4)
+  while imf_type == 0 or imf_type == 1 and i < song_length:
+    cmd = imf_stream.read(4)
+    if len(cmd) < 4:
+      break
 
     addr, data, delay_cycles = struct.unpack_from('BBH', cmd)
     delay_us = 1000000 * delay_cycles // frequency_hz
@@ -89,21 +100,63 @@ def play_imf(opl, imf_stream, frequency_hz=DEFAULT_IMF_FREQUENCY_HZ):
     i += 4
 
 
-if __name__ == '__main__':
+def usage():
+  print(
+      '''Arduino OPL2 streaming player
+
+Usage:
+   %s <serial_port> [<imf_file> [<imf_frequency>]]
+
+   - serial_port: the name of the Arduino USB serial port
+   - imf_file: the path to an IMF file
+   - imf_frequency:
+     * 'wolf' for Wolfenstein 3d engine music
+     * 'duke' for Duke Nukem music
+     * an integer value to specify frequency in Hertz
+
+Examples:
+
+  %s COM4
+  - Connect to and initialize the Arduino board on COM4
+
+  %s COM4 k5t06.imf
+  - Play k5t06.imf at the default frequency
+
+  %s COM4 dukeiia.imf duke
+  - Play dukeiia.imf at the Duke Nukem frequency
+
+  %s COM4 pow.wlf 700
+  - Play pow.wlf at 700 Hz
+
+''' % ((sys.argv[0],) * 5)
+  )
+  sys.exit()
+
+
+def handle_arguments():
+  portname = sys.argv[1]
   try:
-    portname = sys.argv[1]
-    opl = ArduinoOpl(portname)
     if len(sys.argv) > 2:
       filename = sys.argv[2]
 
-      frequency_hz = DEFAULT_IMF_FREQUENCY_HZ
+      frequency_hz = IMF_FREQUENCIES['default']
       if len(sys.argv) > 3:
-        frequency_hz = int(sys.argv[3])
+        try:
+          frequency_hz = int(sys.argv[3])
+        except ValueError:
+          frequency_hz = IMF_FREQUENCIES[sys.argv[3].lower()]
 
       with open(sys.argv[2], 'rb') as f:
-        print('Playing "%s" on %s @ %d Hz' % (filename, portname, frequency_hz))
+        print('Play "%s" on %s @ %d Hz' % (filename, portname, frequency_hz))
+        print('(Ctrl-C to stop)')
+        opl = ArduinoOpl(portname)
         play_imf(opl, f, frequency_hz)
 
-  except KeyboardInterrupt:
-    print('Shutting down..')
+  except (KeyboardInterrupt, SystemExit):
     opl.close()
+
+
+if __name__ == '__main__':
+  if len(sys.argv) <= 1:
+    usage()
+  handle_arguments()

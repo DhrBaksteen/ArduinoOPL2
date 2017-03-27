@@ -1,17 +1,17 @@
 /**
  * This is an example sketch from the OPL2 library for Arduino.
  * It streams commands to the OPL2 via the serial port.
- * 
- * A very simple serial protocol is used. 
- * 
+ *
+ * A very simple serial protocol is used.
+ *
  * - Initial 3-way handshake to overcome reset delay / serial noise issues.
  * - 4-byte binary commands to write registers.
  *   - (uint8)  OPL2 register address
  *   - (uint8)  OPL2 register data
  *   - (uint16) delay (milliseconds)
- * 
+ *
  * Example session:
- * 
+ *
  * Arduino: HLO!
  * PC:      RDY?
  * Arduino: RDY! (switches to binary mode)
@@ -58,7 +58,7 @@ void processBinaryCmds() {
     if (RESET_CMD != cmd[0]) {
       opl2.write(cmd[0], cmd[1]);
       unsigned short delayMs = (cmd[3] << 8) + cmd[2];
-  
+
       if (delayMs > 0) {
         delay(delayMs);
       }
@@ -66,8 +66,8 @@ void processBinaryCmds() {
       opl2.init();
     }
     Serial.write(ACK_RSP);
-    Serial.flush();    
-  }  
+    Serial.flush();
+  }
 }
 
 String readyCmdStr = String(READY_CMD);
