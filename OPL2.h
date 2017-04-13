@@ -26,17 +26,17 @@
 
 // Note to frequency mapping.
 #define NOTE_C   0
-#define NOTE_CS  8
-#define NOTE_D   1
-#define NOTE_DS  9
-#define NOTE_E   2
-#define NOTE_F   3
-#define NOTE_FS 10
-#define NOTE_G   4
-#define NOTE_GS 11
-#define NOTE_A   5
-#define NOTE_AS 12
-#define NOTE_B   6
+#define NOTE_CS  1
+#define NOTE_D   2
+#define NOTE_DS  3
+#define NOTE_E   4
+#define NOTE_F   5
+#define NOTE_FS  6
+#define NOTE_G   7
+#define NOTE_GS  8
+#define NOTE_A   9
+#define NOTE_AS 10
+#define NOTE_B  11
 
 
 class OPL2 {
@@ -45,7 +45,6 @@ class OPL2 {
 		void init();
 		void reset();
 		void write(byte, byte);
-		void updateRegister(byte);
 
 		short getNoteFrequency(byte, byte, byte);
 		byte getRegister(byte);
@@ -72,6 +71,7 @@ class OPL2 {
 		byte getDrums();
 		byte getWaveForm(byte, bool);
 
+		void setInstrument(byte, const unsigned char*);
 		byte setRegister(byte, byte);
 		byte setWaveFormSelect(bool);
 		byte setTremolo(byte, bool, bool);
@@ -100,13 +100,24 @@ class OPL2 {
 		const float fIntervals[8] = {
 			0.048, 0.095, 0.190, 0.379, 0.759, 1.517, 3.034, 6.069
 		};
-		const float notes[13] = {
-			261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.26,
-			277.18, 311.13, 369.99, 415.30, 466.16
+		const float notes[12] = {
+			261.63, 277.18,		// C, C#
+			293.66, 311.13,		// D, D#
+			329.63,				// E
+			349.23, 369.99,		// F, F#
+			392.00, 415.30,		// G, G#
+			440.00, 466.16,		// A, A#
+			493.88				// B
 		};
 		const byte offset[2][9] = {  
 			{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 0 */
 			{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 1 */
+		};
+		const byte drumOffset[6] = {
+			0x10, 0x13, 0x14, 0x12, 0x15, 0x11
+		};
+		const byte instrumentBaseRegs[11] = {
+			0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0
 		};
 		byte oplRegisters[256];
 		byte getRegisterOffset(byte, bool);

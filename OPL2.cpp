@@ -11,7 +11,7 @@
  *                |  | (  <_> )  | \/ /    |    \  | \/ /_/ |  |  /  |   |  (  <_> )              
  *                |__|  \____/|__|    \____|__  /__|  \____ |____/|__|___|  /\____/               
  *                                            \/           \/             \/                      
- * YM3812 OPL2 Audio Library for Arduino v1.0.1
+ * YM3812 OPL2 Audio Library for Arduino v1.1.0
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example sketches on how to use this library in the examples folder.
@@ -27,7 +27,7 @@
  *
  * This library is open source and provided as is under the MIT software license, a copy of which is provided as part of
  * the project's repository.
- * Last updated 2017-03-08
+ * Last updated 2017-04-13
  */
 
 
@@ -87,14 +87,6 @@ byte OPL2::getRegisterOffset(byte ch, bool op2) {
 
 
 /**
- * Send the data of the given register to the OPL2 chip.
- */
-void OPL2::updateRegister(byte reg) {
-	write(reg, oplRegisters[reg]);
-}
-
-
-/**
  * Hard reset the OPL2 chip. This should be done before sending any register data to the chip.
  */
 void OPL2::reset() {
@@ -113,9 +105,9 @@ void OPL2::reset() {
  * before calling this function in order to get a useful F-number!
  */
 short OPL2::getNoteFrequency(byte channel, byte octave, byte note) {
-	octave = max(0, min(octave, 7));
+	octave = max(0, min(octave + (note / 12), 7));
 	float fInterval = fIntervals[getBlock(channel)];
-	float freq = notes[max(0, min(note, 11))];
+	float freq = notes[note % 12];
 
 	if (octave < 4) {
 		for (int i = 0; i < 4 - octave; i ++) {
@@ -132,6 +124,48 @@ short OPL2::getNoteFrequency(byte channel, byte octave, byte note) {
 
 
 /**
+ * Load an instrument and apply it to the given channel. If the instrument to be loaded is a percussive instrument then
+ * the channel will depend on the type of drum and the channel parameter will be ignored.
+ */
+void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
+	unsigned char percussionChannel = pgm_read_byte_near(instrument);
+	byte reg;
+
+	setWaveFormSelect(true);
+	switch (percussionChannel) {
+		case 6:		// Base drum...
+			for (byte i = 0; i < 5; i ++) {
+				setRegister(
+					instrumentBaseRegs[i] + drumOffset[0],
+					pgm_read_byte_near(instrument + i + 1));
+				setRegister(
+					instrumentBaseRegs[i] + drumOffset[1],
+					pgm_read_byte_near(instrument + i + 1));
+			}
+			break;
+
+		case 7:		// Snare drum...
+		case 8:		// Tom tom...
+		case 9:		// Top cymbal...
+		case 10:	// Hi hat...
+			for (byte i = 0; i < 5; i ++) {
+				setRegister(
+					instrumentBaseRegs[i] + drumOffset[percussionChannel - 5],
+					pgm_read_byte_near(instrument + i + 1));
+			}
+			break;
+
+		default:	// Melodic instruments...
+			for (byte i = 0; i < 11; i ++) {
+				byte reg = instrumentBaseRegs[i % 6] + getRegisterOffset(ch, i > 5);
+				setRegister(reg, pgm_read_byte_near(instrument + i + 1));
+			}
+			break;
+	}
+}
+
+
+/**
  * Get the current value of the given register.
  */
 byte OPL2::getRegister(byte reg) {
@@ -144,6 +178,7 @@ byte OPL2::getRegister(byte reg) {
  */
 byte OPL2::setRegister(byte reg, byte value) {
 	oplRegisters[reg] = value;
+	write(reg, value);
 	return reg;
 }
 
@@ -161,11 +196,10 @@ bool OPL2::getWaveFormSelect() {
  */
 byte OPL2::setWaveFormSelect(bool enable) {
 	if (enable) {
-		oplRegisters[0x01] |= 0x20;
+		return setRegister(0x01, oplRegisters[0x01] | 0x20);
 	} else {
-		oplRegisters[0x01] &= 0xDF;
+		return setRegister(0x01, oplRegisters[0x01] & 0xDF);
 	}
-	return 0x01;
 }
 
 
@@ -184,11 +218,10 @@ bool OPL2::getTremolo(byte ch, bool op) {
 byte OPL2::setTremolo(byte ch, bool op, bool enable) {
 	byte reg = 0x20 + getRegisterOffset(ch, op);
 	if (enable) {
-		oplRegisters[reg] |= 0x80;
+		return setRegister(reg, oplRegisters[reg] | 0x80);
 	} else {
-		oplRegisters[reg] &= 0x7F;
+		return setRegister(reg, oplRegisters[reg] & 0x7F);
 	}
-	return reg;
 }
 
 
@@ -206,11 +239,10 @@ bool OPL2::getVibrato(byte ch, bool op) {
 byte OPL2::setVibrato(byte ch, bool op, bool enable) {
 	byte reg = 0x20 + getRegisterOffset(ch, op);
 	if (enable) {
-		oplRegisters[reg] |= 0x40;
+		return setRegister(reg, oplRegisters[reg] | 0x40);
 	} else {
-		oplRegisters[reg] &= 0xBF;
+		return setRegister(reg, oplRegisters[reg] & 0xBF);
 	}
-	return reg;
 }
 
 
@@ -229,11 +261,10 @@ bool OPL2::getMaintainSustain(byte ch, bool op) {
 byte OPL2::setMaintainSustain(byte ch, bool op, bool enable) {
 	byte reg = 0x20 + getRegisterOffset(ch, op);
 	if (enable) {
-		oplRegisters[reg] |= 0x20;
+		return setRegister(reg, oplRegisters[reg] | 0x20);
 	} else {
-		oplRegisters[reg] &= 0xDF;
+		return setRegister(reg, oplRegisters[reg] & 0xDF);
 	}
-	return reg;
 }
 
 
@@ -251,9 +282,9 @@ bool OPL2::getEnvelopeScaling(byte ch, bool op) {
 byte OPL2::setEnvelopeScaling(byte ch, bool op, bool enable) {
 	byte reg = 0x20 + getRegisterOffset(ch, op);
 	if (enable) {
-		oplRegisters[reg] |= 0x10;
+		return setRegister(reg, oplRegisters[reg] | 0x10);
 	} else {
-		oplRegisters[reg] &= 0xEF;
+		return setRegister(reg, oplRegisters[reg] & 0xEF);
 	}
 	return reg;
 }
@@ -272,9 +303,7 @@ byte OPL2::getMultiplier(byte ch, bool op) {
  */
 byte OPL2::setMultiplier(byte ch, bool op, byte multiplier) {
 	byte reg = 0x20 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0xF0;
-	oplRegisters[reg] |= multiplier & 0x0F;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0xF0) | (multiplier & 0x0F));
 }
 
 
@@ -295,9 +324,7 @@ byte OPL2::getScalingLevel(byte ch, bool op) {
  */
 byte OPL2::setScalingLevel(byte ch, bool op, byte scaling) {
 	byte reg = 0x40 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0x3F;
-	oplRegisters[reg] |= (scaling & 0x03) << 6;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0x3F) | ((scaling & 0x03) << 6));
 }
 
 
@@ -315,9 +342,7 @@ byte OPL2::getVolume(byte ch, bool op) {
  */
 byte OPL2::setVolume(byte ch, bool op, byte volume) {
 	byte reg = 0x40 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0xC0;
-	oplRegisters[reg] |= volume & 0x3F;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0xC0) | (volume & 0x3F));
 }
 
 
@@ -334,9 +359,7 @@ byte OPL2::getAttack(byte ch, bool op) {
  */
 byte OPL2::setAttack(byte ch, bool op, byte attack) {
 	byte reg = 0x60 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0x0F;
-	oplRegisters[reg] |= (attack & 0x0F) << 4;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0x0F) | ((attack & 0x0F) << 4));
 }
 
 
@@ -353,9 +376,7 @@ byte OPL2::getDecay(byte ch, bool op) {
  */
 byte OPL2::setDecay(byte ch, bool op, byte decay) {
 	byte reg = 0x60 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0xF0;
-	oplRegisters[reg] |= decay & 0x0F;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0xF0) | (decay & 0x0F));
 }
 
 
@@ -372,9 +393,7 @@ byte OPL2::getSustain(byte ch, bool op) {
  */
 byte OPL2::setSustain(byte ch, bool op, byte sustain) {
 	byte reg = 0x80 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0x0F;
-	oplRegisters[reg] |= (sustain & 0x0F) << 4;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0x0F) | ((sustain & 0x0F) << 4));
 }
 
 
@@ -391,9 +410,7 @@ byte OPL2::getRelease(byte ch, bool op) {
  */
 byte OPL2::setRelease(byte ch, bool op, byte release) {
 	byte reg = 0x80 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0xF0;
-	oplRegisters[reg] |= release & 0x0F;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0xF0) | (release & 0x0F));
 }
 
 
@@ -404,16 +421,15 @@ short OPL2::getFrequency(byte ch) {
 	byte offset = max(0x00, min(ch, 0x08));
 	return (oplRegisters[0xB0 + offset] & 0x03) << 8 + oplRegisters[0xA0 + offset];
 }
-	
+
 
 /**
  * Set frequency F-number. 
  */
 byte OPL2::setFrequency(byte ch, short frequency) {
 	byte reg = 0xA0 + max(0x00, min(ch, 0x08));
-	oplRegisters[reg] = frequency & 0x00FF;
-	oplRegisters[reg + 0x10] &= 0xFC;
-	oplRegisters[reg + 0x10] |= (frequency & 0x0300) >> 8;
+	setRegister(reg, frequency & 0x00FF);
+	setRegister(reg + 0x10, (oplRegisters[reg + 0x10] & 0xFC) | ((frequency & 0x0300) >> 8));
 	return reg;
 }
 
@@ -440,9 +456,7 @@ byte OPL2::getBlock(byte ch) {
  */
 byte OPL2::setBlock(byte ch, byte octave) {
 	byte reg = 0xB0 + max(0x00, min(ch, 0x08));
-	oplRegisters[reg] &= 0xE3;
-	oplRegisters[reg] |= (octave & 0x07) << 2;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0xE3) | ((octave & 0x07) << 2));
 }
 
 
@@ -461,11 +475,10 @@ bool OPL2::getKeyOn(byte ch) {
 byte OPL2::setKeyOn(byte ch, bool keyOn) {
 	byte reg = 0xB0 + max(0x00, min(ch, 0x08));
 	if (keyOn) {
-		oplRegisters[reg] |= 0x20;
+		return setRegister(reg, oplRegisters[reg] | 0x20);
 	} else {
-		oplRegisters[reg] &= 0xDF;
+		return setRegister(reg, oplRegisters[reg] & 0xDF);
 	}
-	return reg;
 }
 
 
@@ -483,9 +496,7 @@ byte OPL2::getFeedback(byte ch) {
  */
 byte OPL2::setFeedback(byte ch, byte feedback) {
 	byte reg = 0xC0 + max(0x00, min(ch, 0x08));
-	oplRegisters[reg] &= 0x01;
-	oplRegisters[reg] |= (feedback & 0x07) << 1;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0x01) | ((feedback & 0x07) << 1));
 }
 
 
@@ -505,11 +516,10 @@ bool OPL2::getSynthMode(byte ch) {
 byte OPL2::setSynthMode(byte ch, bool isAdditive) {
 	byte reg = 0xC0 + max(0x00, min(ch, 0x08));
 	if (isAdditive) {
-		oplRegisters[reg] |= 0x01;
+		return setRegister(reg, oplRegisters[reg] | 0x01);
 	} else {
-		oplRegisters[reg] &= 0xFE;
+		return setRegister(reg, oplRegisters[reg] & 0xFE);
 	}
-	return reg;
 }
 
 
@@ -526,11 +536,10 @@ bool OPL2::getDeepTremolo() {
  */
 byte OPL2::setDeepTremolo(bool enable) {
 	if (enable) {
-		oplRegisters[0xBD] |= 0x80;
+		return setRegister(0xBD, oplRegisters[0xBD] | 0x80);
 	} else {
-		oplRegisters[0xBD] &= 0x7F;
+		return setRegister(0xBD, oplRegisters[0xBD] & 0x7F);
 	}
-	return 0xBD;
 }
 
 
@@ -547,11 +556,10 @@ bool OPL2::getDeepVibrato() {
  */
 byte OPL2::setDeepVibrato(bool enable) {
 	if (enable) {
-		oplRegisters[0xBD] |= 0x40;
+		return setRegister(0xBD, oplRegisters[0xBD] | 0x40);
 	} else {
-		oplRegisters[0xBD] &= 0xBF;
+		return setRegister(0xBD, oplRegisters[0xBD] & 0xBF);
 	}
-	return 0xBD;
 }
 
 
@@ -569,11 +577,10 @@ bool OPL2::getPercussion() {
  */
 byte OPL2::setPercussion(bool enable) {
 	if (enable) {
-		oplRegisters[0xBD] |= 0x20;
+		return setRegister(0xBD, oplRegisters[0xBD] | 0x20);
 	} else {
-		oplRegisters[0xBD] &= 0xDF;
+		return setRegister(0xBD, oplRegisters[0xBD] & 0xDF);
 	}
-	return 0xBD;
 }
 
 
@@ -596,9 +603,7 @@ byte OPL2::setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat) {
 	drums |= tom    ? DRUM_TOM    : 0x00;
 	drums |= cymbal ? DRUM_CYMBAL : 0x00;
 	drums |= hihat  ? DRUM_HI_HAT : 0x00;
-	oplRegisters[0xBD] &= 0xE0;
-	oplRegisters[0xBD] |= drums;
-	return 0xBD;
+	return setRegister(0xBD, (oplRegisters[0xBD] & 0xE0) | drums);
 }
 
 
@@ -615,7 +620,5 @@ byte OPL2::getWaveForm(byte ch, bool op) {
  */
 byte OPL2::setWaveForm(byte ch, bool op, byte waveForm) {
 	byte reg = 0xE0 + getRegisterOffset(ch, op);
-	oplRegisters[reg] &= 0xFC;
-	oplRegisters[reg] |= waveForm & 0x03;
-	return reg;
+	return setRegister(reg, (oplRegisters[reg] & 0xFC) | (waveForm & 0x03));
 }
