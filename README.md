@@ -1,6 +1,6 @@
 # ArduinoOPL2
 Arduino library for use with the OPL2 Audio Board (YM3812)  
-Current version is 1.0.1
+Current version is 1.1.0
 
 ![](https://raw.githubusercontent.com/DhrBaksteen/ArduinoOPL2/master/OPL2_board.JPG)
 
