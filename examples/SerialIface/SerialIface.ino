@@ -31,8 +31,7 @@
 
 // Text command mode
 #define STARTUP_MSG   "HLO!\n"
-#define READY_CMD     "RDY?\n"
-#define READY_RSP     "RDY!\n"
+#define READY_CMD     "BUF?\n"
 
 // Binary command mode
 #define ACK_RSP       'k'
@@ -55,18 +54,15 @@ void processBinaryCmds() {
     byte cmd[4];
     Serial.readBytes(cmd, 4);
 
-    if (RESET_CMD != cmd[0]) {
-      opl2.write(cmd[0], cmd[1]);
-      unsigned short delayMs = (cmd[3] << 8) + cmd[2];
+    opl2.write(cmd[0], cmd[1]);
+    // TODO: use first bit to indicate millisecond / microsecond delay?
+    // OR: use "fixed point" number of milliseconds?
+    unsigned short delayMs = (cmd[3] << 8) + cmd[2];
 
-      if (delayMs > 0) {
-        delay(delayMs);
-      }
-    } else {
-      opl2.init();
+    if (delayMs > 0) {
+      delay(delayMs);
     }
     Serial.write(ACK_RSP);
-    Serial.flush();
   }
 }
 
@@ -76,7 +72,7 @@ void waitForReadyCmd() {
     String cmd = Serial.readString();
     if (cmd.equals(READY_CMD)) {
       ready = true;
-      Serial.write(READY_RSP);
+      Serial.println(SERIAL_RX_BUFFER_SIZE);
     }
   }
 }

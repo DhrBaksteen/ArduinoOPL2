@@ -5,26 +5,26 @@ import serial
 class ArduinoOpl:
 
   STARTUP_MSG = b'HLO!\n'
-  READY_CMD = b'RDY?\n'
-  READY_RSP = b'RDY!\n'
+  READY_CMD = b'BUF?\n'
   ACK_RSP = b'k'
-  RESET_CMD = b'\x00' * 4
+  BINARY_CMD_SIZE = 4
+  RESET_CMD = b'\x00' * BINARY_CMD_SIZE
 
-  def __init__(self, portname, baudrate=115200, max_write_ahead=5, debug=False):
+
+  def __init__(self, portname, baudrate=115200, debug=False):
     self.port = serial.Serial(portname, baudrate, timeout=None)
     self.ready = False
-    self.max_write_ahead = max_write_ahead
     self.n_outstanding = 0
     self.debug = debug
 
-    self._status(b'')
     # Opening port resets Arduino. Wait for ready message.
     self.wait_for_rsp(self.STARTUP_MSG)
 
     self._debug('Tx: %s' % self.READY_CMD)
-    self._status(self.READY_CMD)
     self.port.write(self.READY_CMD)
-    self.wait_for_rsp(self.READY_RSP)
+    opl_rx_buf_bytes = int(self.port.readline())
+    self.max_write_ahead = opl_rx_buf_bytes // self.BINARY_CMD_SIZE
+    self._status(self.READY_CMD)
 
     self.ready = True
 
