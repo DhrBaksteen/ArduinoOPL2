@@ -38,5 +38,5 @@ def play(opl, imf_stream, **kwargs):
 
     addr, data, delay_cycles = struct.unpack_from('BBH', cmd)
     delay_us = 1000000 * delay_cycles // kwargs['frequency_hz']
-    opl.write_reg(addr, data, delay_us // 1000)
+    opl.write_reg(addr, data, delay_us)
     i += 4

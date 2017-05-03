@@ -7,7 +7,7 @@ class ArduinoOpl:
   STARTUP_MSG = b'HLO!\n'
   READY_CMD = b'BUF?\n'
   ACK_RSP = b'k'
-  BINARY_CMD_SIZE = 4
+  BINARY_CMD_SIZE = 5
   RESET_CMD = b'\x00' * BINARY_CMD_SIZE
 
 
@@ -23,6 +23,7 @@ class ArduinoOpl:
     self._debug('Tx: %s' % self.READY_CMD)
     self.port.write(self.READY_CMD)
     opl_rx_buf_bytes = int(self.port.readline())
+    self._debug('Rx buffer size: %d bytes' % opl_rx_buf_bytes)
     self.max_write_ahead = opl_rx_buf_bytes // self.BINARY_CMD_SIZE
     self._status(self.READY_CMD)
 
@@ -35,28 +36,31 @@ class ArduinoOpl:
     if not rx.endswith(rsp):
       raise RuntimeError('Expected: %s, received: %s' % (rsp, rx))
 
-  def write_reg(self, addr, data, delay_ms=0):
+  def write_reg(self, addr, data, delay_us=0):
     if self.n_outstanding >= self.max_write_ahead:
       rsp = self.port.read()
       if rsp != self.ACK_RSP:
         raise RuntimeError('Expected: %s, received: %s' % (rsp, self.ACK_RSP))
       self.n_outstanding -= 1
-    self.write_reg_unbuffered(addr, data, delay_ms)
+    self.write_reg_unbuffered(addr, data, delay_us)
 
-  def write_reg_unbuffered(self, addr, data, delay_ms):
-    cmd = struct.pack('BBH', addr, data, delay_ms)
+  def write_reg_unbuffered(self, addr, data, delay_us):
+    delay_ms = delay_us // 1000
+    delay_remainder = delay_us % 1000
+
+    cmd = struct.pack('!BBHB', addr, data, delay_ms, delay_remainder // 4)
     self.n_outstanding += 1
     self.port.write(cmd)
     self._debug('Tx: %s' % ['%02x' % b for b in cmd])
-    if delay_ms > 0:
-      self._debug('%8d ms' % delay_ms)
+    if delay_us > 0:
+      self._debug('%8d.%03d milliseconds' % (delay_ms, delay_remainder))
     self._status(cmd)
 
   def _status(self, last_tx):
     status = 'Initialized' if self.ready else 'Initializing'
     buf_status = '[ %s ]' % ('#' * self.n_outstanding).ljust(self.max_write_ahead)
-    tx_txt = 'Tx: %s' % ['%02x' % b for b in last_tx]
-    status_str = "STATUS %-14s BUFFER %-14s %s" % (status, buf_status, tx_txt)
+    tx_txt = 'Tx: %s' % ' '.join('%02x' % b for b in last_tx)
+    status_str = "STATUS %-12s BUFFER %-14s %s" % (status, buf_status, tx_txt)
     print("%s\r" % status_str.ljust(79), end='')
 
   def _debug(self, txt):
