@@ -61,22 +61,21 @@ void processBinaryCmds() {
     byte cmd[BINARY_CMD_SIZE];
     Serial.readBytes(cmd, BINARY_CMD_SIZE);
 
-    opl2.write(cmd[0], cmd[1]);
-
-    unsigned short delayMs = (cmd[2] << 8) | cmd[3];
-    unsigned short delayUs = cmd[4] << 2;
-
     if (RESET_CMD != cmd[0]) {
+      opl2.write(cmd[0], cmd[1]);
+
+      unsigned short delayMs = (cmd[2] << 8) | cmd[3];
+      unsigned short delayUs = cmd[4] << 2;
       if (delayMs > 0) {
         delay(delayMs);
       }
       if (delayUs > 0) {
         delayMicroseconds(delayUs);
       }
-      Serial.write(ACK_RSP);
     } else {
       opl2.init();
     }
+    Serial.write(ACK_RSP);
   }
 }
 
