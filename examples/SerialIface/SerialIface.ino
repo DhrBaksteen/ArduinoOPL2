@@ -2,20 +2,26 @@
  * This is an example sketch from the OPL2 library for Arduino.
  * It streams commands to the OPL2 via the serial port.
  *
+ * For complex music, enlarge the Arduino Rx buffer to 256 bytes or more:
+ *
+ * - Edit hardware/arduino/avr/cores/arduino/HardwareSerial.h
+ * - #define SERIAL_RX_BUFFER_SIZE 256
+ *
  * A very simple serial protocol is used.
  *
  * - Initial 3-way handshake to overcome reset delay / serial noise issues.
- * - 4-byte binary commands to write registers.
+ * - 5-byte binary commands to write registers.
  *   - (uint8)  OPL2 register address
  *   - (uint8)  OPL2 register data
  *   - (uint16) delay (milliseconds)
+ *   - (uint8)  delay (microseconds / 4)
  *
  * Example session:
  *
  * Arduino: HLO!
- * PC:      RDY?
- * Arduino: RDY! (switches to binary mode)
- * PC:      0xb82e4c01 (write OPL register and delay)
+ * PC:      BUF?
+ * Arduino: 256 (switches to binary mode)
+ * PC:      0xb80a014f02 (write OPL register and delay)
  * Arduino: k
  *
  * OPL2 board is connected as follows:
@@ -31,12 +37,12 @@
 
 // Text command mode
 #define STARTUP_MSG   "HLO!\n"
-#define READY_CMD     "RDY?\n"
-#define READY_RSP     "RDY!\n"
+#define BUF_SIZE_CMD  "BUF?\n"
 
 // Binary command mode
-#define ACK_RSP       'k'
-#define RESET_CMD     0x00
+#define ACK_RSP         'k'
+#define RESET_CMD       0
+#define BINARY_CMD_SIZE 5
 
 OPL2 opl2;
 bool ready = false;
@@ -51,32 +57,34 @@ void setup() {
 }
 
 void processBinaryCmds() {
-  while (Serial.available() >= 4) {
-    byte cmd[4];
-    Serial.readBytes(cmd, 4);
+  while (Serial.available() >= BINARY_CMD_SIZE) {
+    byte cmd[BINARY_CMD_SIZE];
+    Serial.readBytes(cmd, BINARY_CMD_SIZE);
 
     if (RESET_CMD != cmd[0]) {
       opl2.write(cmd[0], cmd[1]);
-      unsigned short delayMs = (cmd[3] << 8) + cmd[2];
 
+      unsigned short delayMs = (cmd[2] << 8) | cmd[3];
+      unsigned short delayUs = cmd[4] << 2;
       if (delayMs > 0) {
         delay(delayMs);
+      }
+      if (delayUs > 0) {
+        delayMicroseconds(delayUs);
       }
     } else {
       opl2.init();
     }
     Serial.write(ACK_RSP);
-    Serial.flush();
   }
 }
 
-String readyCmdStr = String(READY_CMD);
-void waitForReadyCmd() {
+void waitForBufSizeCmd() {
   if (Serial.available() >= 5) {
     String cmd = Serial.readString();
-    if (cmd.equals(READY_CMD)) {
+    if (cmd.equals(BUF_SIZE_CMD)) {
       ready = true;
-      Serial.write(READY_RSP);
+      Serial.println(SERIAL_RX_BUFFER_SIZE);
     }
   }
 }
@@ -85,7 +93,7 @@ void loop() {
   if (ready) {
     processBinaryCmds();
   } else {
-    waitForReadyCmd();
+    waitForBufSizeCmd();
   }
 }
 

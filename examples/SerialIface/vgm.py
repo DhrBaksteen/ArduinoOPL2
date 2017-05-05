@@ -10,17 +10,17 @@ DELAY_882 = 0x63
 DELAY_N1 = 0x70
 END_DATA = 0x66
 
-def _samples_to_ms(n):
-  return 1000 * n // SAMPLE_RATE
+def _samples_to_us(n):
+  return 1000000 * n // SAMPLE_RATE
 
 def play(opl, vgm_stream):
   data_offset = parse_header(vgm_stream)
   vgm_stream.seek(data_offset)
 
-  delay_ms = 0
+  delay_us = 0
 
   cmd = None
-  while cmd != END_DATA:
+  while True:
     cmd = vgm_stream.read(1)
     if len(cmd) < 1:
       break
@@ -28,18 +28,20 @@ def play(opl, vgm_stream):
 
     if YM3812 == opcode:
       addr, data = struct.unpack_from('BB', vgm_stream.read(2))
-      opl.write_reg(addr, data, delay_ms)
-      delay_ms = 0
+      opl.write_reg(addr, data, delay_us)
+      delay_us = 0
     elif DELAY_N == opcode:
       delay_samples, = struct.unpack_from('H', vgm_stream.read(2))
-      delay_ms = _samples_to_ms(delay_samples)
+      delay_us = _samples_to_us(delay_samples)
     elif DELAY_735 == opcode:
-      delay_ms = _samples_to_ms(735)
+      delay_us = _samples_to_us(735)
     elif DELAY_882 == opcode:
-      delay_ms = _samples_to_ms(882)
+      delay_us = _samples_to_us(882)
     elif opcode >= DELAY_N1:
       delay_samples = 1 + int(opcode & 0xf)
-      delay_ms = _samples_to_ms(delay_samples)
+      delay_us = _samples_to_us(delay_samples)
+    elif opcode == END_DATA:
+      break
     else:
       raise exc.InvalidFormatError('Unrecognized VGM opcode: 0x%02x' % opcode)
 
