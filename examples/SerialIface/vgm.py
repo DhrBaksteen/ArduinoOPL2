@@ -28,7 +28,7 @@ def play(opl, vgm_stream):
 
     if YM3812 == opcode:
       addr, data = struct.unpack_from('BB', vgm_stream.read(2))
-      opl.write_reg(addr, data, delay_us)
+      opl.write_reg(addr, data, delay_us, True)
       delay_us = 0
     elif DELAY_N == opcode:
       delay_samples, = struct.unpack_from('H', vgm_stream.read(2))

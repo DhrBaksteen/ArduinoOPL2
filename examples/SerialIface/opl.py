@@ -36,19 +36,21 @@ class ArduinoOpl:
     if not rx.endswith(rsp):
       raise RuntimeError('Expected: %s, received: %s' % (rsp, rx))
 
-  def write_reg(self, addr, data, delay_us=0):
+  def write_reg(self, addr, data, delay_us=0, predelay=False):
     if self.n_outstanding >= self.max_write_ahead:
       rsp = self.port.read()
       if rsp != self.ACK_RSP:
         raise RuntimeError('Expected: %s, received: %s' % (rsp, self.ACK_RSP))
       self.n_outstanding -= 1
-    self.write_reg_unbuffered(addr, data, delay_us)
+    self.write_reg_unbuffered(addr, data, delay_us, predelay)
 
-  def write_reg_unbuffered(self, addr, data, delay_us):
+  def write_reg_unbuffered(self, addr, data, delay_us, predelay):
     delay_ms = delay_us // 1000
     delay_remainder = delay_us % 1000
+    if predelay:
+      delay_ms = -delay_ms
 
-    cmd = struct.pack('!BBHB', addr, data, delay_ms, delay_remainder // 4)
+    cmd = struct.pack('!BBhB', addr, data, delay_ms, delay_remainder // 4)
     self.n_outstanding += 1
     self.port.write(cmd)
     self._debug('Tx: %s' % ['%02x' % b for b in cmd])
@@ -58,9 +60,8 @@ class ArduinoOpl:
 
   def _status(self, last_tx):
     status = 'Initialized' if self.ready else 'Initializing'
-    buf_status = '[ %s ]' % ('#' * self.n_outstanding).ljust(self.max_write_ahead)
     tx_txt = 'Tx: %s' % ' '.join('%02x' % b for b in last_tx)
-    status_str = "STATUS %-12s BUFFER %-14s %s" % (status, buf_status, tx_txt)
+    status_str = "STATUS %-12s BUFFERED: %5d   %s" % (status, self.n_outstanding, tx_txt)
     print("%s\r" % status_str.ljust(79), end='')
 
   def _debug(self, txt):
