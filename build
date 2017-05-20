@@ -1,0 +1,38 @@
+#!/bin/sh
+
+echo "*** OPL2 Audio Board build script ***"
+echo ""
+
+if [ "$1" = "-opi" ]
+then
+	sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE ORANGE_PI/' OPL2.h
+	echo "Board type set to Orange Pi."
+else
+	sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE RASPBERRY_PI/' OPL2.h
+	if [ "$1" = "-rpi" ]
+	then
+		echo "Board type set to Raspberry Pi."
+	else
+		echo "Board type not set. Going with Raspberry Pi as default."
+		echo "To set board type use:"
+		echo "  $ ./build -rpi  - Raspberry Pi"
+		echo "  $ ./build -opi  - Orange Pi"
+	fi
+fi
+
+echo ""
+echo "Building the OPL2 library..."
+gcc -std=c++11 -c -fPIC OPL2.cpp -lwiringPi
+gcc -shared -o libOPL2.so OPL2.o
+sudo mv libOPL2.so /usr/lib/
+sudo cp OPL2.h /usr/include/
+rm OPL2.o
+sudo ldconfig
+
+echo "Compiling examples..."
+gcc -std=c++11 -Wall -o examples_pi/demotune/demotune examples_pi/demotune/demotune.cpp -lOPL2 -lwiringPi
+gcc -std=c++11 -Wall -o examples_pi/drums/drums examples_pi/drums/drums.cpp -lOPL2 -lwiringPi
+gcc -std=c++11 -Wall -o examples_pi/opl2play/opl2play examples_pi/opl2play/opl2play.cpp -lOPL2 -lwiringPi
+gcc -std=c++11 -Wall -o examples_pi/simpletone/simpletone examples_pi/simpletone/simpletone.cpp -lOPL2 -lwiringPi
+echo "Done."
+echo ""

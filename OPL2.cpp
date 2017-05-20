@@ -4,36 +4,54 @@
  *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \ 
  * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  (  <_> ) |    |___|  || \_\ \
  * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\____/  |_______ \__||___  /
- *         \/                 \/       \/         \/           \/                     \/       \/ 
- *                 _____                 _____            .___    .__                             
- *               _/ ____\___________    /  _  \_______  __| _/_ __|__| ____   ____                
- *               \   __\/  _ \_  __ \  /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \               
- *                |  | (  <_> )  | \/ /    |    \  | \/ /_/ |  |  /  |   |  (  <_> )              
- *                |__|  \____/|__|    \____|__  /__|  \____ |____/|__|___|  /\____/               
- *                                            \/           \/             \/                      
- * YM3812 OPL2 Audio Library for Arduino v1.1.0
+ *         \/                 \/       \/ _____   \/           \/                     \/       \/              
+ *                                      _/ ____\___________ 
+ *                                      \   __\/  _ \_  __ \
+ *                                       |  | (  <_> )  | \/
+ *                                       |__|  \____/|__|   
+ *               _____            .___    .__                  ____    __________.__ 
+ *              /  _  \_______  __| _/_ __|__| ____   ____    /  _ \   \______   \__|
+ *             /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \   >  _ </\  |     ___/  |
+ *            /    |    \  | \/ /_/ |  |  /  |   |  (  <_> ) /  <_\ \/  |    |   |  |
+ *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
+ *                    \/           \/             \/                \/               
+ *
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.2.1
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
- * Look for example sketches on how to use this library in the examples folder.
+ * Look for example code on how to use this library in the examples folder.
+ *
+ * Connect the OPL2 Audio Board as follows:
+ *               |         | Raspberry Pi 
+ *    OPL2 Board | Arduino |   Orange Pi
+ *   ------------+---------+--------------
+ *      Reset    |    8    |      18
+ *      A0       |    9    |      16
+ *      Latch    |   10    |      12
+ *      Data     |   11    |      19
+ *      Shift    |   13    |      23
+ *
+ * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
+ *
+ *
+ * Last updated 2017-05-20
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
- * OPL2 board is connedted as follows:
- * Pin  8 - Reset
- * Pin  9 - A0
- * Pin 10 - Latch
- * Pin 11 - Data
- * Pin 13 - Shift
- *
  * This library is open source and provided as is under the MIT software license, a copy of which is provided as part of
- * the project's repository.
- * Last updated 2017-04-13
+ * the project's repository. This library makes use of Gordon Henderson's Wiring Pi.
  */
 
 
-#include <SPI.h>
-#include <Arduino.h>
 #include "OPL2.h"
+
+#if BOARD_TYPE == ARDUINO
+	#include <SPI.h>
+	#include <Arduino.h>
+#else
+	#include <wiringPi.h>
+	#include <wiringPiSPI.h>
+#endif
 
 
 OPL2::OPL2() {
@@ -44,8 +62,13 @@ OPL2::OPL2() {
  * Initialize the YM3812.
  */
 void OPL2::init() {
-	pinMode(PIN_DATA,  OUTPUT);
-	pinMode(PIN_CLOCK, OUTPUT);
+	#if BOARD_TYPE == ARDUINO
+		SPI.begin();
+	#else
+		wiringPiSetup();
+		wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
+	#endif
+
 	pinMode(PIN_LATCH, OUTPUT);
 	pinMode(PIN_A0,    OUTPUT);
 	pinMode(PIN_RESET, OUTPUT);
@@ -53,7 +76,6 @@ void OPL2::init() {
 	digitalWrite(PIN_LATCH, HIGH);
 	digitalWrite(PIN_RESET, HIGH);
 	digitalWrite(PIN_A0,    LOW);
-	SPI.begin();
 
 	reset();
 }
@@ -64,14 +86,24 @@ void OPL2::init() {
  */
 void OPL2::write(byte reg, byte data) {
 	digitalWrite(PIN_A0, LOW);
-	SPI.transfer(reg);
+	#if BOARD_TYPE == ARDUINO
+		SPI.transfer(reg);
+	#else
+		wiringPiSPIDataRW(SPI_CHANNEL, &reg, 1);
+	#endif
 	digitalWrite(PIN_LATCH, LOW);
+	delayMicroseconds(1);
 	digitalWrite(PIN_LATCH, HIGH);
 	delayMicroseconds(4);
 
 	digitalWrite(PIN_A0, HIGH);
-	SPI.transfer(data);
+	#if BOARD_TYPE == ARDUINO
+		SPI.transfer(data);
+	#else
+		wiringPiSPIDataRW(SPI_CHANNEL, &data, 1);
+	#endif
 	digitalWrite(PIN_LATCH, LOW);
+	delayMicroseconds(1);
 	digitalWrite(PIN_LATCH, HIGH);
 	delayMicroseconds(23);
 }
@@ -128,8 +160,11 @@ short OPL2::getNoteFrequency(byte channel, byte octave, byte note) {
  * the channel will depend on the type of drum and the channel parameter will be ignored.
  */
 void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
-	unsigned char percussionChannel = pgm_read_byte_near(instrument);
-	byte reg;
+	#if BOARD_TYPE == ARDUINO
+		unsigned char percussionChannel = pgm_read_byte_near(instrument);
+	#else
+		unsigned char percussionChannel = instrument[0];
+	#endif
 
 	setWaveFormSelect(true);
 	switch (percussionChannel) {
@@ -137,10 +172,20 @@ void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
 					instrumentBaseRegs[i] + drumOffset[0],
-					pgm_read_byte_near(instrument + i + 1));
+					#if BOARD_TYPE == ARDUINO
+						pgm_read_byte_near(instrument + i + 1)
+					#else
+						instrument[i + 1]
+					#endif
+				);
 				setRegister(
 					instrumentBaseRegs[i] + drumOffset[1],
-					pgm_read_byte_near(instrument + i + 1));
+					#if BOARD_TYPE == ARDUINO
+						pgm_read_byte_near(instrument + i + 1)
+					#else
+						instrument[i + 1]
+					#endif
+				);
 			}
 			break;
 
@@ -151,14 +196,25 @@ void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
 					instrumentBaseRegs[i] + drumOffset[percussionChannel - 5],
-					pgm_read_byte_near(instrument + i + 1));
+					#if BOARD_TYPE == ARDUINO
+						pgm_read_byte_near(instrument + i + 1)
+					#else
+						instrument[i + 1]
+					#endif
+				);
 			}
 			break;
 
 		default:	// Melodic instruments...
 			for (byte i = 0; i < 11; i ++) {
-				byte reg = instrumentBaseRegs[i % 6] + getRegisterOffset(ch, i > 5);
-				setRegister(reg, pgm_read_byte_near(instrument + i + 1));
+				setRegister(
+					instrumentBaseRegs[i % 6] + getRegisterOffset(ch, i > 5),
+					#if BOARD_TYPE == ARDUINO
+						pgm_read_byte_near(instrument + i + 1)
+					#else
+						instrument[i + 1]
+					#endif
+				);
 			}
 			break;
 	}
@@ -419,7 +475,7 @@ byte OPL2::setRelease(byte ch, bool op, byte release) {
  */
 short OPL2::getFrequency(byte ch) {
 	byte offset = max(0x00, min(ch, 0x08));
-	return (oplRegisters[0xB0 + offset] & 0x03) << 8 + oplRegisters[0xA0 + offset];
+	return ((oplRegisters[0xB0 + offset] & 0x03) << 8) + oplRegisters[0xA0 + offset];
 }
 
 
