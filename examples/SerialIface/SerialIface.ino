@@ -2,10 +2,10 @@
  * This is an example sketch from the OPL2 library for Arduino.
  * It streams commands to the OPL2 via the serial port.
  *
- * For complex music, enlarge the Arduino Rx buffer to 256 bytes or more:
+ * For complex music (eg Doom), enlarge the Arduino Rx buffer to 512 bytes or more:
  *
  * - Edit hardware/arduino/avr/cores/arduino/HardwareSerial.h
- * - #define SERIAL_RX_BUFFER_SIZE 256
+ * - #define SERIAL_RX_BUFFER_SIZE 512
  *
  * A very simple serial protocol is used.
  *
@@ -13,7 +13,7 @@
  * - 5-byte binary commands to write registers.
  *   - (uint8)  OPL2 register address
  *   - (uint8)  OPL2 register data
- *   - (uint16) delay (milliseconds)
+ *   - (int16)  delay (milliseconds); negative -> pre-delay; positive -> post-delay
  *   - (uint8)  delay (microseconds / 4)
  *
  * Example session:
@@ -56,22 +56,28 @@ void setup() {
   Serial.write(STARTUP_MSG);
 }
 
+void delayMsUs(signed short ms, unsigned short us) {
+  if (ms > 0) {
+    delay(ms);
+  }
+  if (us > 0) {
+    delayMicroseconds(us);
+  }
+}
+
 void processBinaryCmds() {
   while (Serial.available() >= BINARY_CMD_SIZE) {
     byte cmd[BINARY_CMD_SIZE];
     Serial.readBytes(cmd, BINARY_CMD_SIZE);
 
     if (RESET_CMD != cmd[0]) {
-      opl2.write(cmd[0], cmd[1]);
-
-      unsigned short delayMs = (cmd[2] << 8) | cmd[3];
+      signed short delayMs = (cmd[2] << 8) | cmd[3];
       unsigned short delayUs = cmd[4] << 2;
-      if (delayMs > 0) {
-        delay(delayMs);
-      }
-      if (delayUs > 0) {
-        delayMicroseconds(delayUs);
-      }
+      bool isPredelay = delayMs < 0;
+
+      if (isPredelay) delayMsUs(-delayMs, delayUs);
+      opl2.write(cmd[0], cmd[1]);
+      if (!isPredelay) delayMsUs(delayMs, delayUs);
     } else {
       opl2.init();
     }
