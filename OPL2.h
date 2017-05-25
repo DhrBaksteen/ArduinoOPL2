@@ -26,11 +26,11 @@
 
 	#if BOARD_TYPE == ARDUINO
 		#define PIN_LATCH 10
-		#define PIN_A0     9
+		#define PIN_ADDR   9
 		#define PIN_RESET  8
 	#elif BOARD_TYPE == RASPBERRY_PI or BOARD_TYPE == ORANGE_PI
 		#define PIN_LATCH 1				// GPIO header pin 12
-		#define PIN_A0    4				// GPIO header pin 16
+		#define PIN_ADDR  4				// GPIO header pin 16
 		#define PIN_RESET 5				// GPIO header pin 18
 	#endif
 

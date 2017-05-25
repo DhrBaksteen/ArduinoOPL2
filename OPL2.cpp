@@ -70,12 +70,12 @@ void OPL2::init() {
 	#endif
 
 	pinMode(PIN_LATCH, OUTPUT);
-	pinMode(PIN_A0,    OUTPUT);
+	pinMode(PIN_ADDR,  OUTPUT);
 	pinMode(PIN_RESET, OUTPUT);
 
 	digitalWrite(PIN_LATCH, HIGH);
 	digitalWrite(PIN_RESET, HIGH);
-	digitalWrite(PIN_A0,    LOW);
+	digitalWrite(PIN_ADDR,  LOW);
 
 	reset();
 }
@@ -85,7 +85,7 @@ void OPL2::init() {
  * Send the given byte of data to the given register of the OPL2 chip.
  */
 void OPL2::write(byte reg, byte data) {
-	digitalWrite(PIN_A0, LOW);
+	digitalWrite(PIN_ADDR, LOW);
 	#if BOARD_TYPE == ARDUINO
 		SPI.transfer(reg);
 	#else
@@ -96,7 +96,7 @@ void OPL2::write(byte reg, byte data) {
 	digitalWrite(PIN_LATCH, HIGH);
 	delayMicroseconds(4);
 
-	digitalWrite(PIN_A0, HIGH);
+	digitalWrite(PIN_ADDR, HIGH);
 	#if BOARD_TYPE == ARDUINO
 		SPI.transfer(data);
 	#else
