@@ -3,7 +3,7 @@ This repository contains the OPL2 Audio Board library for Arduino, Raspberry Pi 
 
 Current library version is 1.2.1
 
-To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.com) (coming soon!)
+To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.com/products/DhrBaksteen/opl2-audio-board/).
 
 For more info visit the [Hackaday project page](https://hackaday.io/project/18995-opl2-audio-board-for-arduino-raspberry-pi).
 
