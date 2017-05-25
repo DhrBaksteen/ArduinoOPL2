@@ -9,6 +9,9 @@ For more info visit the [Hackaday project page](https://hackaday.io/project/1899
 
 ![](https://raw.githubusercontent.com/DhrBaksteen/ArduinoOPL2/master/OPL2_board.JPG)
 
+## Assembling the kit
+For a step by step guide on how to assemble the kit please read the [Assembly guide](https://raw.githubusercontent.com/DhrBaksteen/ArduinoOPL2/master/assembling.md).
+
 ## Installing the library
 ### Arduino
 The easiest way to install the library is to clone this repo in the `libraries` folder of the Arduino IDE. Alternatively you can download the zip file and extract it in the libraries folder.
