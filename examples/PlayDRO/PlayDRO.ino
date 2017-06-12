@@ -22,16 +22,15 @@
 
 
 #include <SPI.h>
-#include <SdFat.h>
+#include <SD.h>
 #include <OPL2.h>
 
 OPL2 opl2;
-SdFat SD;
-SdFile file;
+File droFile;
 
-long offset            = 0;
-long songLength        = 0;
-long songDuration      = 0;
+unsigned long offset       = 0;
+unsigned long songLength   = 0;
+unsigned long songDuration = 0;
 byte codeShortDelay    = 0;
 byte codeLongDelay     = 0;
 byte registerMapLength = 0;
@@ -43,6 +42,7 @@ void setup() {
   SD.begin(7);
 
   loadDroSong("phemopop.dro");
+  // loadDroSong("strikefo.dro");
 }
 
 
@@ -58,33 +58,33 @@ void loop() {
 
 
 void loadDroSong(char* fileName) {
-  file.open(fileName);
-  file.seekSet(12);
+  droFile = SD.open(fileName, FILE_READ);
+  droFile.seek(12);
 
-  songLength  = file.read();
-  songLength += file.read() << 8;
-  songLength += file.read() << 16;
-  songLength += file.read() << 24;
+  songLength  = droFile.read();
+  songLength += droFile.read() << 8;
+  songLength += droFile.read() << 16;
+  songLength += droFile.read() << 24;
 
-  songDuration  = file.read();
-  songDuration += file.read() << 8;
-  songDuration += file.read() << 16;
-  songDuration += file.read() << 24;
+  songDuration  = droFile.read();
+  songDuration += droFile.read() << 8;
+  songDuration += droFile.read() << 16;
+  songDuration += droFile.read() << 24;
 
-  file.seekSet(23);
-  codeShortDelay = file.read();
-  codeLongDelay  = file.read();
-  registerMapLength = file.read();
+  droFile.seek(23);
+  codeShortDelay = droFile.read();
+  codeLongDelay  = droFile.read();
+  registerMapLength = droFile.read();
 
   for (byte i = 0; i < registerMapLength; i ++) {
-    registerMap[i] = file.read();
+    registerMap[i] = droFile.read();
   }
 }
 
 
 int playDroSong() {
-  byte code = file.read();
-  byte data = file.read();
+  byte code = droFile.read();
+  byte data = droFile.read();
 
   if (code == codeShortDelay) {
     return data + 1;
