@@ -30,10 +30,12 @@ You can connect the OPL2 Audio Board directly to a speaker, however for the best
 | OPL2 Board | Arduino Pin |
 |------------|-------------|
 | A0 | 9 |
-| Data | 11 |
+| Data | 11<sup>*</sup> |
 | Latch | 10 |
-| Shift | 13 |
+| Shift | 13<sup>*</sup> |
 | Reset | 8 |
+
+<sup>*</sup>Use pins 51 and 52 respectively on Arduino Mega, or refer to https://www.arduino.cc/en/Reference/SPI for your Arduino board.
 
 ### Raspberry Pi / Orange Pi
 | OPL2 Board | GPIO Pin |
