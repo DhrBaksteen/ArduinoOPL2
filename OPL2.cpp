@@ -4,7 +4,7 @@
  *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \ 
  * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  (  <_> ) |    |___|  || \_\ \
  * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\____/  |_______ \__||___  /
- *         \/                 \/       \/ _____   \/           \/                     \/       \/              
+ *         \/                 \/       \/ _____   \/           \/                     \/       \/ 
  *                                      _/ ____\___________ 
  *                                      \   __\/  _ \_  __ \
  *                                       |  | (  <_> )  | \/
@@ -28,13 +28,16 @@
  *      Reset    |    8    |      18
  *      A0       |    9    |      16
  *      Latch    |   10    |      12
- *      Data     |   11    |      19
- *      Shift    |   13    |      23
+ *      Data     |   11*   |      19
+ *      Shift    |   13*   |      23
+ *
+ * Arduino pins 11 and 13 are based on Arduino Uno. For Arduino Mega use pins 51 and 52 respectively, or refer to
+ * https://www.arduino.cc/en/Reference/SPI for your Arduino board.
  *
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2017-05-20
+ * Last updated 2017-06-17
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *

@@ -6,8 +6,8 @@
  * Pin  8 - Reset
  * Pin  9 - A0
  * Pin 10 - Latch
- * Pin 11 - Data
- * Pin 13 - Shift
+ * Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-04-13
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
@@ -37,8 +37,8 @@ struct Tune {
   int octave;
   float noteDuration;
   float noteLength;
-  int nextNoteTime;
-  int releaseTime;
+  unsigned long nextNoteTime;
+  unsigned long releaseTime;
   int index;
 };
 
