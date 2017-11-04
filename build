@@ -32,7 +32,7 @@ sudo ldconfig
 echo "Compiling examples..."
 gcc -std=c++11 -Wall -o examples_pi/demotune/demotune examples_pi/demotune/demotune.cpp -lOPL2 -lwiringPi
 gcc -std=c++11 -Wall -o examples_pi/drums/drums examples_pi/drums/drums.cpp -lOPL2 -lwiringPi
-gcc -std=c++11 -Wall -o examples_pi/opl2play/opl2play examples_pi/opl2play/opl2play.cpp -lOPL2 -lwiringPi
 gcc -std=c++11 -Wall -o examples_pi/simpletone/simpletone examples_pi/simpletone/simpletone.cpp -lOPL2 -lwiringPi
+gcc -std=c++11 -Wall -o examples_pi/opl2play/opl2play examples_pi/opl2play/opl2play.cpp -lOPL2 -lwiringPi -lz
 echo "Done."
 echo ""
