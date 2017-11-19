@@ -22,7 +22,7 @@
 
 	// !!! IMPORTANT !!!
 	// In order to correctly compile the library for your platform be sure to set the correct BOARD_TYPE below.
-	#define BOARD_TYPE ORANGE_PI
+	#define BOARD_TYPE ARDUINO
 
 	#if BOARD_TYPE == ARDUINO
 		#define PIN_LATCH 10
