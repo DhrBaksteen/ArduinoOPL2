@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 				VGM vgm = loadVgm(oplFile);
 				if (vgm.file == NULL) return fileError();
 				playVgmMusic(vgm);
-			} else if (strcmp(ext, ".vgz") == 0) {
+			} else if ((strcmp(ext, ".vgz") == 0) || (strcmp(ext, ".gz") == 0)) {
 				FILE *tempFile = fopen("./temp.vgm", "w");
 				int result = inflate(oplFile, tempFile);
 				fclose(tempFile);
@@ -116,14 +116,14 @@ void playDroMusic(DRO dro) {
 	unsigned char reg;
 	unsigned char value;
 
-	for (unsigned long i = 0; i < dro.songLength|| offset >= dataSize; i ++) {
+	while(offset < dro.songLength * 2) {
 		registerCode = fileData[offset ++];
 		value        = fileData[offset ++];
 
 		if (registerCode == dro.codeShortDelay) {
-			delay(value + 1);
+			delay(value);
 		} else if (registerCode == dro.codeLongDelay) {
-			delay((value + 1) << 8);
+			delay((value) << 8);
 		} else {
 			reg = dro.registerMap[registerCode];
 			opl2.write(reg, value);
@@ -173,7 +173,7 @@ void playImfMusic(IMF imf) {
 	unsigned char value;
 	unsigned int delayCycles;
 
-	for (unsigned int i = 0; i < imf.songLength || offset >= dataSize; i += 3) {
+	while (offset < imf.songLength) {
 		reg   = fileData[offset ++];
 		value = fileData[offset ++];;
 		delayCycles  = fileData[offset ++];
@@ -278,7 +278,7 @@ void playVgmMusic(VGM vgm) {
 			}
 		}
 		
-		// Do we need dto loop?
+		// Do we need to loop?
 		if (repeat && vgm.loopOffset >= 0 && vgm.loopLength > 0 && offset > vgm.loopLength) {
 			offset = vgm.loopOffset;
 		}
