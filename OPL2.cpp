@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
  *                    \/           \/             \/                \/               
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.2.1
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.2.2
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
@@ -37,7 +37,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2017-06-17
+ * Last updated 2017-11-26
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -57,7 +57,20 @@
 #endif
 
 
+/**
+ * Instantiate the OPL2 library with default pin setup.
+ */
 OPL2::OPL2() {
+}
+
+
+/**
+ * Instantiate the OPL2 library with custom pin setup.
+ */
+OPL2::OPL2(byte reset, byte address, byte latch) {
+	pinReset   = reset;
+	pinAddress = address;
+	pinLatch   = latch;	
 }
 
 
@@ -72,13 +85,13 @@ void OPL2::init() {
 		wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
 	#endif
 
-	pinMode(PIN_LATCH, OUTPUT);
-	pinMode(PIN_ADDR,  OUTPUT);
-	pinMode(PIN_RESET, OUTPUT);
+	pinMode(pinLatch,   OUTPUT);
+	pinMode(pinAddress, OUTPUT);
+	pinMode(pinReset,   OUTPUT);
 
-	digitalWrite(PIN_LATCH, HIGH);
-	digitalWrite(PIN_RESET, HIGH);
-	digitalWrite(PIN_ADDR,  LOW);
+	digitalWrite(pinLatch,   HIGH);
+	digitalWrite(pinReset,   HIGH);
+	digitalWrite(pinAddress, LOW);
 
 	reset();
 }
@@ -88,26 +101,26 @@ void OPL2::init() {
  * Send the given byte of data to the given register of the OPL2 chip.
  */
 void OPL2::write(byte reg, byte data) {
-	digitalWrite(PIN_ADDR, LOW);
+	digitalWrite(pinAddress, LOW);
 	#if BOARD_TYPE == ARDUINO
 		SPI.transfer(reg);
 	#else
 		wiringPiSPIDataRW(SPI_CHANNEL, &reg, 1);
 	#endif
-	digitalWrite(PIN_LATCH, LOW);
+	digitalWrite(pinLatch, LOW);
 	delayMicroseconds(1);
-	digitalWrite(PIN_LATCH, HIGH);
+	digitalWrite(pinLatch, HIGH);
 	delayMicroseconds(4);
 
-	digitalWrite(PIN_ADDR, HIGH);
+	digitalWrite(pinAddress, HIGH);
 	#if BOARD_TYPE == ARDUINO
 		SPI.transfer(data);
 	#else
 		wiringPiSPIDataRW(SPI_CHANNEL, &data, 1);
 	#endif
-	digitalWrite(PIN_LATCH, LOW);
+	digitalWrite(pinLatch, LOW);
 	delayMicroseconds(1);
-	digitalWrite(PIN_LATCH, HIGH);
+	digitalWrite(pinLatch, HIGH);
 	delayMicroseconds(23);
 }
 
@@ -125,9 +138,9 @@ byte OPL2::getRegisterOffset(byte ch, bool op2) {
  * Hard reset the OPL2 chip. This should be done before sending any register data to the chip.
  */
 void OPL2::reset() {
-	digitalWrite(PIN_RESET, LOW);
+	digitalWrite(pinReset, LOW);
 	delay(1);
-	digitalWrite(PIN_RESET, HIGH);
+	digitalWrite(pinReset, HIGH);
 
 	for(int i = 0; i < 256; i ++) {
 		oplRegisters[i] = 0x00;
@@ -161,6 +174,7 @@ short OPL2::getNoteFrequency(byte channel, byte octave, byte note) {
 /**
  * Load an instrument and apply it to the given channel. If the instrument to be loaded is a percussive instrument then
  * the channel will depend on the type of drum and the channel parameter will be ignored.
+ * See instruments.h for instrument definition format.
  */
 void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
 	#if BOARD_TYPE == ARDUINO

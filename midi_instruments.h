@@ -2,6 +2,35 @@
  * This file contains MIDI instrument defenitions for use with the OPL2 Audio Board library.
  *
  * Currently only melodic instruments are included.
+ *
+ * Instrument definition is based on Adlib instrument bank format.
+ *  0 - Drum channel
+ *		Drum channels are predefined by the YM3812 and cannot be redefined. Regular instruments have their channel set
+ *		to 0x00 and can be assigned to a channel by the setInstrument function.
+ *
+ *  1 - Channel c, operator 1, register 0x20
+ *		Tremolo(1) | Vibrato(1) | Sustain(1) | KSR(1) | Frequency multiplier (4)
+ *
+ *  2 - Channel c, operator 1, register 0x40
+ *		Key scale level(2) | Output level(6)
+ *
+ *  3 - Channel c, operator 1, register 0x60
+ *		Attack(4) | Decay(4)
+ *
+ *  4 - Channel c, operator 1, register 0x80
+ *		Sustain(4) | Release(4)
+ *
+ *  5 - Channel c, operator 1, register 0xE0
+ *		Undefined(5) | Waveform(3)
+ *
+ *  6 - Channel c, register 0xC0
+ *		Undefined(4) | Modulation feedback factor(3) | Synth type(1)
+ *
+ *  7 - Channel c, operator 2, register 0x20 
+ *  8 - Channel c, operator 2, register 0x40
+ *  9 - Channel c, operator 2, register 0x60
+ * 10 - Channel c, operator 2, register 0x80
+ * 11 - Channel c, operator 2, register 0xE0
  */
 
 const unsigned char PIANO1[12]   PROGMEM = { 0x00, 0x33, 0x5A, 0xB2, 0x50, 0x01, 0x00, 0x31, 0x00, 0xB1, 0xF5, 0x01 };

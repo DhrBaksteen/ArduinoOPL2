@@ -84,6 +84,7 @@
 	class OPL2 {
 		public:
 			OPL2();
+			OPL2(byte reset, byte address, byte latch);
 			void init();
 			void reset();
 			void write(byte, byte);
@@ -139,6 +140,10 @@
 			byte setWaveForm(byte, bool, byte);
 
 		private:
+			byte pinReset   = PIN_RESET;
+			byte pinAddress = PIN_ADDR;
+			byte pinLatch   = PIN_LATCH;
+		
 			const float fIntervals[8] = {
 				0.048, 0.095, 0.190, 0.379, 0.759, 1.517, 3.034, 6.069
 			};
