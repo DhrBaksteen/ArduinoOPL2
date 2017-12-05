@@ -11,7 +11,7 @@ Before we start let's make sure that you have all the parts needed to assemble t
 | C2         | 0.1μF capacitor              | 1 | 104 |
 | C3 ... C6  | 10μF electrolytic capacitor  | 4 | Mind negative pin marking |
 | C7         | 10pF capacitor               | 1 | 10 |
-| C8         | 10nF capacitor               | 1 | 102 |
+| C8         | 10nF capacitor               | 1 | 103 |
 | C9         | 100μF electrolytic capacitor | 1 | Mind negative pin marking |
 | IC1        | YM3812                       | 1 | Mind position of the notch |
 | IC2        | Y3014B                       | 1 | Mind the dot that marks pin 1 |
