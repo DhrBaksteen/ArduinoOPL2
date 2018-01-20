@@ -68,8 +68,8 @@
 	#define NOTE_A   9
 	#define NOTE_AS 10
 	#define NOTE_B  11
-	
-	
+
+
 	#if BOARD_TYPE == ARDUINO
 		#include <Arduino.h>
 	#else
