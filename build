@@ -3,12 +3,17 @@
 echo "*** OPL2 Audio Board build script ***"
 echo ""
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
 if [ "$1" = "-opi" ]
 then
-	sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE ORANGE_PI/' OPL2.h
+	sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE ORANGE_PI/' src/OPL2.h
 	echo "Board type set to Orange Pi."
 else
-	sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE RASPBERRY_PI/' OPL2.h
+	sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE RASPBERRY_PI/' src/OPL2.h
 	if [ "$1" = "-rpi" ]
 	then
 		echo "Board type set to Raspberry Pi."
@@ -17,17 +22,20 @@ else
 		echo "To set board type use:"
 		echo "  $ ./build -rpi  - Raspberry Pi"
 		echo "  $ ./build -opi  - Orange Pi"
+		echo ""
+		echo "Press ^c now if you want to stop compiling!"
+		sleep 5
 	fi
 fi
 
 echo ""
 echo "Building the OPL2 library..."
-gcc -std=c++11 -c -fPIC OPL2.cpp -lwiringPi
+gcc -std=c++11 -c -fPIC src/OPL2.cpp -lwiringPi
 gcc -shared -o libOPL2.so OPL2.o
-sudo mv libOPL2.so /usr/lib/
-sudo cp OPL2.h /usr/include/
+mv libOPL2.so /usr/lib/
+cp src/OPL2.h /usr/include/
 rm OPL2.o
-sudo ldconfig
+ldconfig
 
 echo "Compiling examples..."
 gcc -std=c++11 -Wall -o examples_pi/demotune/demotune examples_pi/demotune/demotune.cpp -lOPL2 -lwiringPi

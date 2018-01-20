@@ -1,0 +1,97 @@
+#######################################
+# Syntax Coloring Map For ArduinoOPL2
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+OPL2	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+init	KEYWORD2
+reset	KEYWORD2
+write	KEYWORD2
+getNoteFrequency	KEYWORD2
+getRegister	KEYWORD2
+getWaveFormSelect	KEYWORD2
+getTremolo	KEYWORD2
+getVibrato	KEYWORD2
+getMaintainSustain	KEYWORD2
+getEnvelopeScaling	KEYWORD2
+getMultiplier	KEYWORD2
+getScalingLevel	KEYWORD2
+getVolume	KEYWORD2
+getAttack	KEYWORD2
+getDecay	KEYWORD2
+getSustain	KEYWORD2
+getRelease	KEYWORD2
+getFrequency	KEYWORD2
+getBlock	KEYWORD2
+getKeyOn	KEYWORD2
+getFeedback	KEYWORD2
+getSynthMode	KEYWORD2
+getDeepTremolo	KEYWORD2
+getDeepVibrato	KEYWORD2
+getPercussion	KEYWORD2
+getDrums	KEYWORD2
+getWaveForm	KEYWORD2
+setInstrument	KEYWORD2
+setRegister	KEYWORD2
+setWaveFormSelect	KEYWORD2
+setTremolo	KEYWORD2
+setVibrato	KEYWORD2
+setMaintainSustain	KEYWORD2
+setEnvelopeScaling	KEYWORD2
+setMultiplier	KEYWORD2
+setScalingLevel	KEYWORD2
+setVolume	KEYWORD2
+setAttack	KEYWORD2
+setDecay	KEYWORD2
+setSustain	KEYWORD2
+setRelease	KEYWORD2
+setFrequency	KEYWORD2
+setBlock	KEYWORD2
+setKeyOn	KEYWORD2
+setFeedback	KEYWORD2
+setSynthMode	KEYWORD2
+setDeepTremolo	KEYWORD2
+setDeepVibrato	KEYWORD2
+setPercussion	KEYWORD2
+setDrums	KEYWORD2
+setWaveForm	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+OPERATOR1	LITERAL1
+OPERATOR2	LITERAL1
+MODULATOR	LITERAL1
+CARRIER	LITERAL1
+FREQ_MODULATION	LITERAL1
+ADDITIVE_SYNTH	LITERAL1
+DRUM_BASS	LITERAL1
+DRUM_SNARE	LITERAL1
+DRUM_TOM	LITERAL1
+DRUM_CYMBAL	LITERAL1
+DRUM_HI_HAT	LITERAL1
+NOTE_C	LITERAL1
+NOTE_CS	LITERAL1
+NOTE_D	LITERAL1
+NOTE_DS	LITERAL1
+NOTE_E	LITERAL1
+NOTE_F	LITERAL1
+NOTE_FS	LITERAL1
+NOTE_G	LITERAL1
+NOTE_GS	LITERAL1
+NOTE_A	LITERAL1
+NOTE_AS	LITERAL1
+NOTE_B	LITERAL1
