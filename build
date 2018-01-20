@@ -3,7 +3,7 @@
 echo "*** OPL2 Audio Board build script ***"
 echo ""
 
-if [ "$EUID" -ne 0 ]
+if [ "$(id -u)" != "0" ]
   then echo "Please run as root"
   exit
 fi
@@ -18,13 +18,13 @@ else
 	then
 		echo "Board type set to Raspberry Pi."
 	else
-		echo "Board type not set. Going with Raspberry Pi as default."
+		echo "Board type not set! Going with Raspberry Pi as default."
 		echo "To set board type use:"
 		echo "  $ ./build -rpi  - Raspberry Pi"
 		echo "  $ ./build -opi  - Orange Pi"
 		echo ""
 		echo "Press ^c now if you want to stop compiling!"
-		sleep 5
+		sleep 10
 	fi
 fi
 
