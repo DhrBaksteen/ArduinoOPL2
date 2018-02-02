@@ -1,5 +1,5 @@
 # Getting started
-This guide will tell you step by step in detail how to assemble and get started with your OPL2 Audio Board. If you bought a preassembled board you can skip the assembly guide and jump straight to [section 2](.#2.-Connecting-the-OPL2-Audio-Board) to install the software and get going!
+This guide will tell you step by step in detail how to assemble and get started with your OPL2 Audio Board. If you bought a preassembled board you can skip the assembly guide and jump straight to [section 2](#2-connecting-the-opl2-audio-board) to install the software and get going!
 
 ## 1. Assembling the OPL2 Audio Board
 
