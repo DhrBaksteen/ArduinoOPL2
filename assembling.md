@@ -1,63 +1,95 @@
-# Assembling the OPL2 Audio Board
-This guide will tell you step by step how to assemble and get started with your OPL2 Audio Board.
+# Getting started
+This guide will tell you step by step in detail how to assemble and get started with your OPL2 Audio Board. If you bought a preassembled board you can skip the assembly guide and jump straight to [section 2](.#2.-Connecting-the-OPL2-Audio-Board) to install the software and get going!
 
-### Inventory
+## 1. Assembling the OPL2 Audio Board
+
+### 1.1 Inventory
 Before we start let's make sure that you have all the parts needed to assemble the OPL2 Audio Board. When your kit was packaged care was taken to make sure that you receive all the necessary parts. Still mistakes can happen, so if any part is missing please contact me to get you the missing part.
 
 | Part  | Description | Quantity | Markings / Notes |
 | ----- | ----------- | -------- | ----- |
 |            | PCB                          | 1 | |
 | C1         | 4.7nF capacitor              | 1 | 472 |
-| C2         | 0.1μF capacitor              | 1 | 104 |
-| C3 ... C6  | 10μF electrolytic capacitor  | 4 | Mind negative pin marking |
-| C7         | 10pF capacitor               | 1 | 10 |
-| C8         | 10nF capacitor               | 1 | 103 |
-| C9         | 100μF electrolytic capacitor | 1 | Mind negative pin marking |
+| C2, C3     | 0.1μF capacitor              | 2 | 104 |
+| C4 ... C7  | 10μF capacitor               | 4 | 106 |
+| C8         | 10pF capacitor               | 1 | 10 |
+| C9         | 100μF capacitor              | 1 | Mind negative pin marking |
+| C10        | 220μF electrolytic capacitor | 1 | Mind negative pin marking |
 | IC1        | YM3812                       | 1 | Mind position of the notch |
 | IC2        | Y3014B                       | 1 | Mind the dot that marks pin 1 |
 | IC3        | LM358                        | 1 | Mind position of the notch |
 | IC4        | LM386                        | 1 | Mind position of the notch |
-| IC5        | 7404                         | 1 | Mind position of the notch |
+| IC5        | 7414 (board shows 7404!)     | 1 | Mind position of the notch |
 | IC6        | 74595                        | 1 | Mind position of the notch |
 | J1         | 7-pin male header            | 1 ||
-| J2         | 3.5mm jack plug socket       | 1 ||
+| J2         | 3.5mm jack plug socket or 3-pin speaker terminal | 1 | You can use either one |
 | R1, R2     | 470Ω  resistor              | 2 | ![](https://placehold.it/15/F0F000/000000?text=+) Yellow, ![](https://placehold.it/15/A000A0/000000?text=+) Violet, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
-| R3         | 10kΩ trimmer potentiometer  | 1 | 103 |
+| R3         | 15kΩ resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/00A000/000000?text=+) Green, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/FF0000/000000?text=+) Red |
 | R4         | 100Ω resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
-| R5         | 15kΩ resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/00A000/000000?text=+) Green, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/FF0000/000000?text=+) Red |
-| R6         | 220Ω resistor               | 1 | ![](https://placehold.it/15/FF0000/000000?text=+) Red, ![](https://placehold.it/15/FF0000/000000?text=+) Red, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
+| R5         | 10kΩ trimmer potentiometer  | 1 | 103 |
 | XTAL1      | 3.579 MHz crystal            | 1 ||
+|| 24-pin DIP socket | 1 | Optional socket for IC1 |
+|| 8-pin DIP socket  | 3 | Optional socket for IC2 .. IC4 |
+|| 14-pin DIP socket | 1 | Optional socket for IC5 |
+|| 18-pin DIP socket | 1 | Optional socket for IC6 |
  
 Besides these parts you are going to need a soldering iron, some solder, flush cutters, needle-nose pliers and a small screwdriver.
 
-### Before we begin
-One more important note before we begin to assemble the board. You can drive an 8Ω speaker directly from the board, although it will not provide great volume. It is recommended to use the board with active (amplified) speakers, headphones, or use it for line level audio recording. If you do wish to connect a speaker directly you can omit C8 and replace R6 with a jumper wire. These components normally provide noice reduction, but are not needed when directly driving a speaker.  
+### 1.2 Assembly instructions
+##### 1.2.1. Before we begin
+We will assemble the board in the order of component height working from smallest to tallest. Before starting to assemble the board think about how you are going to use it. Are you going to use headphones or are you attaching a loose speaker? Depending on your answer you should either use the socket for a jack plug or the terminal block to simply connect some wires for a speaker.
 
-### Assembling the resistors
-To assemble the resistorsR5 and R6 bend their legs 90 degrees and stick them throught the PCB. Polarity does not matter. Bend the legs backwards a little so the resistors won't fall out when you flip the board over to solder them in. 
+##### 1.2.2. Assembling the resistors (part 1)
+We will start with resistors R3 and R4. Bend their legs 90 degrees and stick them throught the PCB. Polarity does not matter. Bend the legs backwards a little so the resistors won't fall out when you flip the board over to solder them in. Once soldered clip off the excess leads.
 
-Resistor R6 is optional, though recommended. It is used to reduce the noice on the output from your Arduino or Raspberry Pi, but at the same time it also reduced the audio volume. If you want to drive a small non-amplified speaker directly from the board you may consider leaving out R6 and replacing it by a jumper wire. You can salvage a cut off resistor or capacitor leg for this.
+##### 1.2.3. Pin header
+We will continue with the pin header J1. In order to solder it nice and flush to the board the best way is to first solder just one pin. Then while heating the pin again with your iron move the socket from the other end so it sits right on the board. Once your happy with the placement of the sochet apply solder to the remaining pins.
 
-For the upright resistors R1, R2 and R4 bend one of the legs so it becomes parallel to the other leg. You may want to add these last to make it easier t assemble the other components by working from smallest to tallest.
+##### 1.2.4. The crystal
+Now we will attach the 3.579 MHz crystal XTAL1 which will provide the clock signal for the OPL2. Stick the legs of the crystal through the holes (orientation doesn't matter) and just like you did with the resistors before bed the legs out a little so the part won't fall out. After soldering it down clip off the leads.
 
-### Assembling the capacitors
-Insert the capacitors into the board just like you did with the resistors and bend their legs outward a little to stop them from falling out when you flip to board over. For C1, C2, C7 and C8 the polarity does not matter. Remember that C8 is optional, though recommended.
+##### 1.2.5. Capacitors (part 1)
+Next it's time for capacitors C1 through C8. For these orientation doesn't matter. Give them the same treatment as the resistors and the crystal.
 
-For the other electrolytic capacitors C3 through C6 and C9 make sure you place them according to their polarity markings. Each electrolytic capacitor has a bright colored band on its side that marks which pin is negative. The negative leg of the capacitor should go into the hole with a square pad, also marked with a '-' sign on the pcb. Like the upright resistors you may want to add these components last to make soldering easier.
+##### 1.2.6. Sockets or ICs
+Now you will have to make a choice. Do you want to solder the ICs straight onto the board or do you want to place them into sockets. Either way is fine, but I would recommend to use sockets since it will make it much easier should you ever want to replace an IC.
 
-### Crystal, trimmer, pin header and audio jack
-Now let's assemble the 3.579 MHz crystal XTAL1, the pin header, Trimmer resistor R3 and the audio jack. Polarity of XTAL1 doesn't matter. YOu can bend the legs outward a little to stop it from falling out when flipping the board over.
+Place the sockets (or ICs) for IC1 through IC6 on the board and mind the orientation of the cutouts! To make sure you assemble your sockts or chips flat an easy trick is to solder just one pin. Then heat the pin back up and give the other end of the component a little push until it sits flat on the board. Once the solder joint has cooled down solder the remaining pins and you will have a great result.
 
-### Assembling the chips
-When placing the ICs on the board make sure that the notches (or dot) of the ICs face toward the gaps in the markings on the PCB. Notice that for all ICs except IC6 the notches should face up.
+If you went with the sockets don't insert the ICs yet! We will do that last.
 
-You may have to bend the legs of some of the ICs inward a little for them to align with the holes in the board. An easy way to do this is by laying the chip on its side on the table and carefully and very slightly bending it toward the end of the legs. This way all pins will bend evenly.
+##### 1.2.7. Headphone jack
+Time to make another choice. If you want to use the 3.5 mm jack plug socket then solder it in at J2. If you want to attach speakers using a wire then you should use the 3-pin terminal block and skip this step. 
 
-# Inspect your work
+To mount the socket flat onto the board you can use the same trick as we did for the IC sockets. First solder the center pin, reheat it and apply some preasure from the top of the socket to make it sit flat and then solder the remaining pins.
+
+##### 1.2.8. Resistors (Part 2)
+For the upright resistors R1 and R2 first bend one of the legs so it becomes parallel to the other leg. Then inster them into the holes (orientation does not matter) and bend their legs out a bit. For the best result solder the long legs where the resistor bodies touches the board first. Then carefully bend the resistors so they sit neatly upright and solder the other pins. 
+
+##### 1.2.9. Volume adjustment pot
+Next we will continue with the volume adjustment pot R5. Insert its pins and solder it down.
+
+##### 1.2.10. Capacitors (part 2)
+We still have two capacitors left C9 and C10. Mind their values and the marking of the negative pin as you insert them. The negative band goes toward the hole with the minus symbol or the square pads. Ben the pins out a little, solder them down and clip off excess leads.
+
+##### 1.2.11. Speaker terminal
+If you decided to skip step 6 then this is the time to solder the speaker terminal at J2, otherwise you can skip this step
+
+##### 1.2.12. Placing the ICs
+Finally insert the ICs into their sockets. Make sure you line-up the notches on the ICs with the notches on the board. Some ICs have a little round cut-out in the upper left corner. This cut out must face the notch.
+
+Be careful when inserting the chips to not bend their pins. If an IC's pins do not line up with the socket then carfully bend the pins inward. A good way to do this is to lie the chip on its side on your bench and carefully roll it slightly to bend one row of pins inward. Repeat this process on both sides but be careful not to over bend the pins!
+
+**IMPORTANT!**
+Please be aware that due to some last minute changes IC5 will be marked as 7404 on the board and in the brief assembly instructions, while you should use the included 7414!
+
+All done! :)
+
+### 1.3. Inspect your work
 Now you've assembled the board carefully inspect the solder joints and make sure that they're all looking nice and clean and that no blobs of solder have spread between components. 
 
-# Connecting the OPL2 Audio Board
-Connect some speakers or headphones to the 3.5mm jack. See the tables below how to connect the pin header on the board to your development platform.
+## 2. Connecting the OPL2 Audio Board
+Connect some speakers or headphones to the board. To attach the OPL2 Audio Board to your favorite development board see the tables below:
 
 #### Arduino
 | OPL2 Board | Arduino Pin |
@@ -68,7 +100,7 @@ Connect some speakers or headphones to the 3.5mm jack. See the tables below how 
 | Shift | 13<sup>*</sup> |
 | Reset | 8 |
 
-<sup>*</sup>Use pins 51 and 52 respectively on Arduino Mega, or refer to https://www.arduino.cc/en/Reference/SPI for your Arduino board.
+<sup>*</sup>Use pins 51 and 52 respectively on Arduino Mega, or refer to [https://www.arduino.cc/en/Reference/SPI](https://www.arduino.cc/en/Reference/SPI) for your Arduino board.
 
 #### Raspberry Pi / Orange Pi
 | OPL2 Board | GPIO Pin |
@@ -81,19 +113,21 @@ Connect some speakers or headphones to the 3.5mm jack. See the tables below how 
 | Shift | 23 |
 | Reset | 18 |
 
-# Installing the software
+## 3. Installing the software
 #### Arduino
-The easiest way to install the library is to clone this repo in the `libraries` folder of the Arduino IDE. Alternatively you can download the zip file and extract it in the libraries folder.
+The easiest way to install the library it do download it through the Arduino Library Manager. Open the Library Manager from your Arduino IDE's Sketch > Include Library > Library Manager menu. A new window will open that allows you to search for a library. Search for 'Arduino OPL2' and it should show this libarary. Select the library, click the install button and you're good to go.
+
+Alternatively you can clone this repo in the `libraries` folder of the Arduino IDE. or you can download the zip file and extract it in the libraries folder.
 
 For more information see the [instructions](https://www.arduino.cc/en/Guide/Libraries) on the Arduino website.
 
 #### Raspberry Pi / Orange Pi
-To install the library onto your Pi clone this repo and run `./build`. You can specify the type of board you are using as a command line agrument. Use `./build -opi` for Orange Pi or `./build -rpi` for Raspberry Pi. If you do not specify a board type the build will assume you're building the library for a Raspberry Pi.
+To install the library onto your Pi clone this repo and run `sudo ./build`. You can specify the type of board you are using as a command line agrument. Use  `sudo ./build -rpi` for Raspberry Pi or `sudo ./build -opi` for Orange Pi. If you do not specify a board type the build will assume you're building the library for a Raspberry Pi.
 
 The OPL2 library requires [WiringPi](http://wiringpi.com/) to be installed on your Pi. Normally this library is already installed.
 
-# Testing
-It's finally time to hear that sweet OPL2 FM-synth from your board for the first time. If you don't hear anything or if the audio is distorted use a small screwdriver to adjust trimmer R3 until the audio sounds right.
+# 4. Testing
+It's finally time to hear that sweet OPL2 FM-synth from your board for the first time. If you don't hear anything or if the audio is distorted use a small screwdriver to adjust trimmer R5 until the audio sounds right.
 
 #### Arduino
 After installing the library and restarting the Arduino IDE you will find a number of examples under the File > Examples > ArduinoOPL2 menu. These examples can be found in the `examples` folder of the library. Open the `DemoTune` example and send it to your Arduino. You will hear a short piano tune play. 
