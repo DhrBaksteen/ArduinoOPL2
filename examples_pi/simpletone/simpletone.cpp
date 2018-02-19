@@ -41,10 +41,7 @@ int main(int argc, char **argv) {
 
   // Play notes on alternating channels.
   for (byte i = 0; i < 13; i ++) {
-    short freq = opl2.getNoteFrequency(i % 3, 4, i);
-    opl2.setFrequency(i % 3, freq);
-    opl2.setKeyOn    (i % 3, false);
-    opl2.setKeyOn    (i % 3, true);
+  	opl2.playNote(i % 3, 4, i);
     delay(500);
   }
   

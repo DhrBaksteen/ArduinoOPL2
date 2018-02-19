@@ -38,11 +38,11 @@ int main(int argc, char **argv) {
   opl2.setInstrument(0, CYMBAL1);
   opl2.setInstrument(0, HIHAT2);
   opl2.setBlock     (6, 4);
-  opl2.setFrequency (6, opl2.getNoteFrequency(6, 4, NOTE_C));
+  opl2.setFNumber   (6, opl2.getNoteFNumber(6, 4, NOTE_C));
   opl2.setBlock     (7, 4);
-  opl2.setFrequency (7, opl2.getNoteFrequency(7, 3, NOTE_C));
+  opl2.setFNumber   (7, opl2.getNoteFNumber(7, 3, NOTE_C));
   opl2.setBlock     (8, 4);
-  opl2.setFrequency (8, opl2.getNoteFrequency(8, 3, NOTE_A));
+  opl2.setFNumber   (8, opl2.getNoteFNumber(8, 3, NOTE_A));
   
   while (true) {
 		opl2.setDrums(i % 4 == 0, (i + 2) % 4 == 0, 0, i % 32 == 0 , i % 2);

@@ -107,9 +107,7 @@ void parseNote(struct Tune *tune) {
   tune->nextNoteTime = millis() + duration;
   tune->releaseTime = millis() + (duration * tune->noteLength);
 
-  opl2.setKeyOn(tune->channel, false);
-  opl2.setFrequency(tune->channel, opl2.getNoteFrequency(tune->channel, tune->octave, noteDefs[note]));
-  opl2.setKeyOn(tune->channel, true);
+  opl2.playNote(tune->channel, tune->octave, noteDefs[note]);
 }
 
 

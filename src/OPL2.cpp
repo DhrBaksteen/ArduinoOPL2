@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
  *                    \/           \/             \/                \/               
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.2.2
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.3.0
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
@@ -37,7 +37,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2017-11-26
+ * Last updated 2018-02-20
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -98,6 +98,20 @@ void OPL2::init() {
 
 
 /**
+ * Hard reset the OPL2 chip. This should be done before sending any register data to the chip.
+ */
+void OPL2::reset() {
+	digitalWrite(pinReset, LOW);
+	delay(1);
+	digitalWrite(pinReset, HIGH);
+
+	for(int i = 0; i < 256; i ++) {
+		oplRegisters[i] = 0x00;
+	}
+}
+
+
+/**
  * Send the given byte of data to the given register of the OPL2 chip.
  */
 void OPL2::write(byte reg, byte data) {
@@ -126,48 +140,104 @@ void OPL2::write(byte reg, byte data) {
 
 
 /**
+ * Get the current value of the given register.
+ */
+byte OPL2::getRegister(byte reg) {
+	return oplRegisters[reg];
+}
+
+
+/**
+ * Sets the given register to the given value.
+ */
+byte OPL2::setRegister(byte reg, byte value) {
+	oplRegisters[reg] = value;
+	write(reg, value);
+	return reg;
+}
+
+
+/**
  * Calculate register offet based on channel and operator.
  */
-byte OPL2::getRegisterOffset(byte ch, bool op2) {
-	ch = max(0, min(ch, 8));
-	return offset[op2][ch];
+byte OPL2::getRegisterOffset(byte channel, byte operatorNum) {
+	channel = max(0, min(channel, 8));
+	operatorNum = max(0, min(operatorNum, 1));
+	return offset[operatorNum][channel];
 }
 
 
-/**
- * Hard reset the OPL2 chip. This should be done before sending any register data to the chip.
- */
-void OPL2::reset() {
-	digitalWrite(pinReset, LOW);
-	delay(1);
-	digitalWrite(pinReset, HIGH);
-
-	for(int i = 0; i < 256; i ++) {
-		oplRegisters[i] = 0x00;
-	}
-}
-
 
 /**
- * Get the F-number for the given note for a given channel. Note the the channel must have an appropriate block set
+ * Get the F-number for the given note, octave and channel. Note that the channel must have an appropriate block set
  * before calling this function in order to get a useful F-number!
  */
-short OPL2::getNoteFrequency(byte channel, byte octave, byte note) {
+short OPL2::getNoteFNumber(byte channel, byte octave, byte note) {
+	float frequency = getNoteFrequency(octave, note);
+	return getFrequencyFNumber(channel, frequency);
+}
+
+
+/**
+ * Get the F-number for the given frequency for a given channel. When the F-number is calculated the current frequenct
+ * block of the channel is taken into account.
+ */
+short OPL2::getFrequencyFNumber(byte channel, float frequency) {
+	float fInterval = getFrequencyStep(channel);
+	return (short)max(0, min(frequency / fInterval, 1023));
+}
+
+
+/**
+ * Get the F-number for a frequency in the given block,
+ */
+short OPL2::getFNumberForBlock(float frequency, unsigned char block) {
+	float fInterval = fIntervals[max(0, min(block, 7))];
+	return (short)max(0, min(frequency / fInterval, 1023));
+}
+
+
+/**
+ * Get the frequency step per F-number for the current block on the given channel.
+ */
+float OPL2::getFrequencyStep(byte channel) {
+	return fIntervals[getBlock(channel)];
+}
+
+
+/**
+ * Get the frequency in Hz for the given note and octave.
+ */
+float OPL2::getNoteFrequency(byte octave, byte note) {
 	octave = max(0, min(octave + (note / 12), 7));
-	float fInterval = fIntervals[getBlock(channel)];
-	float freq = notes[note % 12];
+	float frequency = notes[note % 12];
 
 	if (octave < 4) {
 		for (int i = 0; i < 4 - octave; i ++) {
-			freq /= 2;
+			frequency /= 2;
 		}
 	} else if (octave > 4) {
 		for (int i = 0; i < octave - 4; i ++) {
-			freq *= 2;
+			frequency *= 2;
 		}
 	}
 
-	return (short)max(0, min(freq / fInterval, 1023));
+	return frequency;
+}
+
+
+
+/**
+ * Get the optimal frequency block for the given frequency.
+ */
+byte OPL2::getFrequencyBlock(float frequency) {
+	for (byte i = 0; i < 8; i ++) {
+		if (frequency < blockFrequencies[i]) {
+			return i;
+		}
+	}
+
+	return 7;
 }
 
 
@@ -176,7 +246,7 @@ short OPL2::getNoteFrequency(byte channel, byte octave, byte note) {
  * the channel will depend on the type of drum and the channel parameter will be ignored.
  * See instruments.h for instrument definition format.
  */
-void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
+void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 	#if BOARD_TYPE == ARDUINO
 		unsigned char percussionChannel = pgm_read_byte_near(instrument);
 	#else
@@ -225,7 +295,7 @@ void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
 		default:	// Melodic instruments...
 			for (byte i = 0; i < 11; i ++) {
 				setRegister(
-					instrumentBaseRegs[i % 6] + getRegisterOffset(ch, i > 5),
+					instrumentBaseRegs[i % 6] + getRegisterOffset(channel, i > 5),
 					#if BOARD_TYPE == ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
@@ -239,20 +309,18 @@ void OPL2::setInstrument(byte ch, const unsigned char *instrument) {
 
 
 /**
- * Get the current value of the given register.
+ * Play a note of a certain octave on the given channel.
  */
-byte OPL2::getRegister(byte reg) {
-	return oplRegisters[reg];
-}
-
-
-/**
- * Sets the given register to the given value.
- */
-byte OPL2::setRegister(byte reg, byte value) {
-	oplRegisters[reg] = value;
-	write(reg, value);
-	return reg;
+void OPL2::playNote(byte channel, byte octave, byte note) {
+	setKeyOn(channel, false);
+	float frequency = getNoteFrequency(octave, note);
+	byte block = getFrequencyBlock(frequency);
+	if (getBlock(channel) != block) {	
+		setBlock(channel, block);
+	}
+	short fNumber = getFrequencyFNumber(channel, frequency);
+	setFNumber(channel, fNumber);
+	setKeyOn(channel, true);
 }
 
 
@@ -279,8 +347,8 @@ byte OPL2::setWaveFormSelect(bool enable) {
 /**
  * Is amplitude modulation enabled for the given operator?
  */
-bool OPL2::getTremolo(byte ch, bool op) {
-	return oplRegisters[0x20 + getRegisterOffset(ch, op)] & 0x80;
+bool OPL2::getTremolo(byte channel, byte operatorNum) {
+	return oplRegisters[0x20 + getRegisterOffset(channel, operatorNum)] & 0x80;
 }
 
 
@@ -288,8 +356,8 @@ bool OPL2::getTremolo(byte ch, bool op) {
  * Apply amplitude modulation when set to true. Modulation depth is controlled globaly by the AM-depth flag in the 0xBD
  * register.
  */
-byte OPL2::setTremolo(byte ch, bool op, bool enable) {
-	byte reg = 0x20 + getRegisterOffset(ch, op);
+byte OPL2::setTremolo(byte channel, byte operatorNum, bool enable) {
+	byte reg = 0x20 + getRegisterOffset(channel, operatorNum);
 	if (enable) {
 		return setRegister(reg, oplRegisters[reg] | 0x80);
 	} else {
@@ -301,16 +369,16 @@ byte OPL2::setTremolo(byte ch, bool op, bool enable) {
 /**
  * Is vibrator enabled for the given channel?
  */
-bool OPL2::getVibrato(byte ch, bool op) {
-	return oplRegisters[0x20 + getRegisterOffset(ch, op)] & 0x40;
+bool OPL2::getVibrato(byte channel, byte operatorNum) {
+	return oplRegisters[0x20 + getRegisterOffset(channel, operatorNum)] & 0x40;
 }
 
 
 /**
  * Apply vibrato when set to true. Vibrato depth is controlled globally by the VIB-depth flag in the 0xBD register.
  */
-byte OPL2::setVibrato(byte ch, bool op, bool enable) {
-	byte reg = 0x20 + getRegisterOffset(ch, op);
+byte OPL2::setVibrato(byte channel, byte operatorNum, bool enable) {
+	byte reg = 0x20 + getRegisterOffset(channel, operatorNum);
 	if (enable) {
 		return setRegister(reg, oplRegisters[reg] | 0x40);
 	} else {
@@ -322,8 +390,8 @@ byte OPL2::setVibrato(byte ch, bool op, bool enable) {
 /**
  * Is sustain being maintained for the given channel?
  */
-bool OPL2::getMaintainSustain(byte ch, bool op) {
-	return oplRegisters[0x20 + getRegisterOffset(ch, op)] & 0x20;
+bool OPL2::getMaintainSustain(byte channel, byte operatorNum) {
+	return oplRegisters[0x20 + getRegisterOffset(channel, operatorNum)] & 0x20;
 }
 
 
@@ -331,8 +399,8 @@ bool OPL2::getMaintainSustain(byte ch, bool op) {
  * When set to true the sustain level of the voice is maintained until released. When false the sound begins to decay
  * immediately after hitting the sustain phase.
  */
-byte OPL2::setMaintainSustain(byte ch, bool op, bool enable) {
-	byte reg = 0x20 + getRegisterOffset(ch, op);
+byte OPL2::setMaintainSustain(byte channel, byte operatorNum, bool enable) {
+	byte reg = 0x20 + getRegisterOffset(channel, operatorNum);
 	if (enable) {
 		return setRegister(reg, oplRegisters[reg] | 0x20);
 	} else {
@@ -344,16 +412,16 @@ byte OPL2::setMaintainSustain(byte ch, bool op, bool enable) {
 /**
  * Is envelope scaling being applied to the given channel?
  */
-bool OPL2::getEnvelopeScaling(byte ch, bool op) {
-	return oplRegisters[0x20 + getRegisterOffset(ch, op)] & 0x10;
+bool OPL2::getEnvelopeScaling(byte channel, byte operatorNum) {
+	return oplRegisters[0x20 + getRegisterOffset(channel, operatorNum)] & 0x10;
 }
 
 
 /**
  * Enable or disable envelope scaling. When set to true higher notes will be shorter than lower ones.
  */
-byte OPL2::setEnvelopeScaling(byte ch, bool op, bool enable) {
-	byte reg = 0x20 + getRegisterOffset(ch, op);
+byte OPL2::setEnvelopeScaling(byte channel, byte operatorNum, bool enable) {
+	byte reg = 0x20 + getRegisterOffset(channel, operatorNum);
 	if (enable) {
 		return setRegister(reg, oplRegisters[reg] | 0x10);
 	} else {
@@ -366,16 +434,16 @@ byte OPL2::setEnvelopeScaling(byte ch, bool op, bool enable) {
 /**
  * Get the frequency multiplier for the given channel.
  */
-byte OPL2::getMultiplier(byte ch, bool op) {
-	return oplRegisters[0x20 + getRegisterOffset(ch, op)] & 0x0F;
+byte OPL2::getMultiplier(byte channel, byte operatorNum) {
+	return oplRegisters[0x20 + getRegisterOffset(channel, operatorNum)] & 0x0F;
 }
 
 
 /**
  * Set frequency multiplier for the given channel. Note that a multiplier of 0 will apply a 0.5 multiplication.
  */
-byte OPL2::setMultiplier(byte ch, bool op, byte multiplier) {
-	byte reg = 0x20 + getRegisterOffset(ch, op);
+byte OPL2::setMultiplier(byte channel, byte operatorNum, byte multiplier) {
+	byte reg = 0x20 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0xF0) | (multiplier & 0x0F));
 }
 
@@ -383,8 +451,8 @@ byte OPL2::setMultiplier(byte ch, bool op, byte multiplier) {
 /**
  * Get the scaling level for the given channel.
  */
-byte OPL2::getScalingLevel(byte ch, bool op) {
-	return (oplRegisters[0x40 + getRegisterOffset(ch, op)] & 0xC0) >> 6;
+byte OPL2::getScalingLevel(byte channel, byte operatorNum) {
+	return (oplRegisters[0x40 + getRegisterOffset(channel, operatorNum)] & 0xC0) >> 6;
 }
 
 
@@ -395,8 +463,8 @@ byte OPL2::getScalingLevel(byte ch, bool op) {
  * 10 - 3.0 dB/oct
  * 11 - 6.0 dB/oct
  */
-byte OPL2::setScalingLevel(byte ch, bool op, byte scaling) {
-	byte reg = 0x40 + getRegisterOffset(ch, op);
+byte OPL2::setScalingLevel(byte channel, byte operatorNum, byte scaling) {
+	byte reg = 0x40 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0x3F) | ((scaling & 0x03) << 6));
 }
 
@@ -404,8 +472,8 @@ byte OPL2::setScalingLevel(byte ch, bool op, byte scaling) {
 /**
  * Get the volume of the given channel. 0x00 is laudest, 0x3F is softest.
  */
-byte OPL2::getVolume(byte ch, bool op) {
-	return oplRegisters[0x40 + getRegisterOffset(ch, op)] & 0x3F;
+byte OPL2::getVolume(byte channel, byte operatorNum) {
+	return oplRegisters[0x40 + getRegisterOffset(channel, operatorNum)] & 0x3F;
 }
 
 
@@ -413,8 +481,8 @@ byte OPL2::getVolume(byte ch, bool op) {
  * Set the volume of the channel.
  * Note that the scale is inverted! 0x00 for loudest, 0x3F for softest.
  */
-byte OPL2::setVolume(byte ch, bool op, byte volume) {
-	byte reg = 0x40 + getRegisterOffset(ch, op);
+byte OPL2::setVolume(byte channel, byte operatorNum, byte volume) {
+	byte reg = 0x40 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0xC0) | (volume & 0x3F));
 }
 
@@ -422,16 +490,16 @@ byte OPL2::setVolume(byte ch, bool op, byte volume) {
 /**
  * Get the attack rate of the given channel.
  */
-byte OPL2::getAttack(byte ch, bool op) {
-	return (oplRegisters[0x60 + getRegisterOffset(ch, op)] & 0xF0) >> 4;
+byte OPL2::getAttack(byte channel, byte operatorNum) {
+	return (oplRegisters[0x60 + getRegisterOffset(channel, operatorNum)] & 0xF0) >> 4;
 }
 
 
 /**
  * Attack rate. 0x00 is slowest, 0x0F is fastest.
  */
-byte OPL2::setAttack(byte ch, bool op, byte attack) {
-	byte reg = 0x60 + getRegisterOffset(ch, op);
+byte OPL2::setAttack(byte channel, byte operatorNum, byte attack) {
+	byte reg = 0x60 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0x0F) | ((attack & 0x0F) << 4));
 }
 
@@ -439,16 +507,16 @@ byte OPL2::setAttack(byte ch, bool op, byte attack) {
 /**
  * Get the decay rate of the given channel.
  */
-byte OPL2::getDecay(byte ch, bool op) {
-	return oplRegisters[0x60 + getRegisterOffset(ch, op)] & 0x0F;
+byte OPL2::getDecay(byte channel, byte operatorNum) {
+	return oplRegisters[0x60 + getRegisterOffset(channel, operatorNum)] & 0x0F;
 }
 
 
 /**
  * Decay rate. 0x00 is slowest, 0x0F is fastest.
  */
-byte OPL2::setDecay(byte ch, bool op, byte decay) {
-	byte reg = 0x60 + getRegisterOffset(ch, op);
+byte OPL2::setDecay(byte channel, byte operatorNum, byte decay) {
+	byte reg = 0x60 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0xF0) | (decay & 0x0F));
 }
 
@@ -456,16 +524,16 @@ byte OPL2::setDecay(byte ch, bool op, byte decay) {
 /**
  * Get the sustain level of the given channel. 0x00 is laudest, 0x0F is softest.
  */
-byte OPL2::getSustain(byte ch, bool op) {
-	return (oplRegisters[0x80 + getRegisterOffset(ch, op)] & 0xF0) >> 4;
+byte OPL2::getSustain(byte channel, byte operatorNum) {
+	return (oplRegisters[0x80 + getRegisterOffset(channel, operatorNum)] & 0xF0) >> 4;
 }
 
 
 /**
  * Sustain level. 0x00 is laudest, 0x0F is softest.
  */
-byte OPL2::setSustain(byte ch, bool op, byte sustain) {
-	byte reg = 0x80 + getRegisterOffset(ch, op);
+byte OPL2::setSustain(byte channel, byte operatorNum, byte sustain) {
+	byte reg = 0x80 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0x0F) | ((sustain & 0x0F) << 4));
 }
 
@@ -473,16 +541,16 @@ byte OPL2::setSustain(byte ch, bool op, byte sustain) {
 /**
  * Get the release rate of the given channel.
  */
-byte OPL2::getRelease(byte ch, bool op) {
-	return oplRegisters[0x80 + getRegisterOffset(ch, op)] & 0x0F;
+byte OPL2::getRelease(byte channel, byte operatorNum) {
+	return oplRegisters[0x80 + getRegisterOffset(channel, operatorNum)] & 0x0F;
 }
 
 
 /**
  * Release rate. 0x00 is flowest, 0x0F is fastest.
  */
-byte OPL2::setRelease(byte ch, bool op, byte release) {
-	byte reg = 0x80 + getRegisterOffset(ch, op);
+byte OPL2::setRelease(byte channel, byte operatorNum, byte release) {
+	byte reg = 0x80 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0xF0) | (release & 0x0F));
 }
 
@@ -490,28 +558,50 @@ byte OPL2::setRelease(byte ch, bool op, byte release) {
 /**
  * Get the frequenct F-number of the given channel.
  */
-short OPL2::getFrequency(byte ch) {
-	byte offset = max(0x00, min(ch, 0x08));
+short OPL2::getFNumber(byte channel) {
+	byte offset = max(0x00, min(channel, 0x08));
 	return ((oplRegisters[0xB0 + offset] & 0x03) << 8) + oplRegisters[0xA0 + offset];
 }
 
 
 /**
- * Set frequency F-number. 
+ * Set frequency F-number [0, 1023] for the given channel. 
  */
-byte OPL2::setFrequency(byte ch, short frequency) {
-	byte reg = 0xA0 + max(0x00, min(ch, 0x08));
-	setRegister(reg, frequency & 0x00FF);
-	setRegister(reg + 0x10, (oplRegisters[reg + 0x10] & 0xFC) | ((frequency & 0x0300) >> 8));
+byte OPL2::setFNumber(byte channel, short fNumber) {
+	byte reg = 0xA0 + max(0x00, min(channel, 0x08));
+	setRegister(reg, fNumber & 0x00FF);
+	setRegister(reg + 0x10, (oplRegisters[reg + 0x10] & 0xFC) | ((fNumber & 0x0300) >> 8));
 	return reg;
+}
+
+
+/**
+ * Get the frequency for the given channel.
+ */
+float OPL2::getFrequency(byte channel) {
+	float fInterval = getFrequencyStep(channel);
+	return getFNumber(channel) * fInterval;
+}
+
+
+/**
+ * Set the frequenct of the given channel and if needed switch to a different block.
+ */
+byte OPL2::setFrequency(byte channel, float frequency) {
+	unsigned char block = getFrequencyBlock(frequency);
+	if (getBlock(channel) != block) {
+		setBlock(channel, block);
+	}
+	short fNumber = getFrequencyFNumber(channel, frequency);
+	return setFNumber(channel, fNumber);
 }
 
 
 /**
  * Get the frequency block of the given channel.
  */
-byte OPL2::getBlock(byte ch) {
-	byte offset = max(0x00, min(ch, 0x08));
+byte OPL2::getBlock(byte channel) {
+	byte offset = max(0x00, min(channel, 0x08));
 	return (oplRegisters[0xB0 + offset] & 0x1C) >> 2;
 }
 
@@ -527,17 +617,17 @@ byte OPL2::getBlock(byte ch) {
  * 6 - 3.034 Hz, Range: 3.034 Hz -> 3104.215 Hz
  * 7 - 6.069 Hz, Range: 6.068 Hz -> 6208.431 Hz
  */
-byte OPL2::setBlock(byte ch, byte octave) {
-	byte reg = 0xB0 + max(0x00, min(ch, 0x08));
-	return setRegister(reg, (oplRegisters[reg] & 0xE3) | ((octave & 0x07) << 2));
+byte OPL2::setBlock(byte channel, byte block) {
+	byte reg = 0xB0 + max(0x00, min(channel, 0x08));
+	return setRegister(reg, (oplRegisters[reg] & 0xE3) | ((block & 0x07) << 2));
 }
 
 
 /**
  * Is the voice of the given channel currently enabled?
  */
-bool OPL2::getKeyOn(byte ch) {
-	byte offset = max(0x00, min(ch, 0x08));
+bool OPL2::getKeyOn(byte channel) {
+	byte offset = max(0x00, min(channel, 0x08));
 	return oplRegisters[0xB0 + offset] & 0x20;
 }
 
@@ -545,8 +635,8 @@ bool OPL2::getKeyOn(byte ch) {
 /**
  * Enable voice on channel.
  */
-byte OPL2::setKeyOn(byte ch, bool keyOn) {
-	byte reg = 0xB0 + max(0x00, min(ch, 0x08));
+byte OPL2::setKeyOn(byte channel, bool keyOn) {
+	byte reg = 0xB0 + max(0x00, min(channel, 0x08));
 	if (keyOn) {
 		return setRegister(reg, oplRegisters[reg] | 0x20);
 	} else {
@@ -558,8 +648,8 @@ byte OPL2::setKeyOn(byte ch, bool keyOn) {
 /**
  * Get the feedback strength of the given channel.
  */
-byte OPL2::getFeedback(byte ch) {
-	byte offset = max(0x00, min(ch, 0x08));
+byte OPL2::getFeedback(byte channel) {
+	byte offset = max(0x00, min(channel, 0x08));
 	return (oplRegisters[0xC0 + offset] & 0xE0) >> 1;
 }
 
@@ -567,8 +657,8 @@ byte OPL2::getFeedback(byte ch) {
 /**
  * Set feedback strength. 0x00 is no feedback, 0x07 is strongest.
  */
-byte OPL2::setFeedback(byte ch, byte feedback) {
-	byte reg = 0xC0 + max(0x00, min(ch, 0x08));
+byte OPL2::setFeedback(byte channel, byte feedback) {
+	byte reg = 0xC0 + max(0x00, min(channel, 0x08));
 	return setRegister(reg, (oplRegisters[reg] & 0x01) | ((feedback & 0x07) << 1));
 }
 
@@ -576,8 +666,8 @@ byte OPL2::setFeedback(byte ch, byte feedback) {
 /**
  * Is the decay algorythm enabled for the given channel?
  */
-bool OPL2::getSynthMode(byte ch) {
-	byte offset = max(0x00, min(ch, 0x08));
+bool OPL2::getSynthMode(byte channel) {
+	byte offset = max(0x00, min(channel, 0x08));
 	return oplRegisters[0xC0 + offset] & 0x01;
 }
 
@@ -586,8 +676,8 @@ bool OPL2::getSynthMode(byte ch) {
  * Set decay algorithm. When false operator 1 modulates operator 2 (operator 2 is the only one to produce sounde). If
  * set to true both operator 1 and operator 2 will produce sound.
  */
-byte OPL2::setSynthMode(byte ch, bool isAdditive) {
-	byte reg = 0xC0 + max(0x00, min(ch, 0x08));
+byte OPL2::setSynthMode(byte channel, bool isAdditive) {
+	byte reg = 0xC0 + max(0x00, min(channel, 0x08));
 	if (isAdditive) {
 		return setRegister(reg, oplRegisters[reg] | 0x01);
 	} else {
@@ -683,15 +773,15 @@ byte OPL2::setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat) {
 /**
  * Get the wave form currently set for the given channel.
  */
-byte OPL2::getWaveForm(byte ch, bool op) {
-	return oplRegisters[0xE0 + getRegisterOffset(ch, op)] & 0x03;
+byte OPL2::getWaveForm(byte channel, byte operatorNum) {
+	return oplRegisters[0xE0 + getRegisterOffset(channel, operatorNum)] & 0x03;
 }
 
 
 /**
  * Select the wave form to use.
  */
-byte OPL2::setWaveForm(byte ch, bool op, byte waveForm) {
-	byte reg = 0xE0 + getRegisterOffset(ch, op);
+byte OPL2::setWaveForm(byte channel, byte operatorNum, byte waveForm) {
+	byte reg = 0xE0 + getRegisterOffset(channel, operatorNum);
 	return setRegister(reg, (oplRegisters[reg] & 0xFC) | (waveForm & 0x03));
 }

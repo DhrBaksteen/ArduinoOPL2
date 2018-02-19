@@ -22,7 +22,7 @@
 
 	// !!! IMPORTANT !!!
 	// In order to correctly compile the library for your platform be sure to set the correct BOARD_TYPE below.
-	#define BOARD_TYPE ARDUINO
+	#define BOARD_TYPE ORANGE_PI
 
 	#if BOARD_TYPE == ARDUINO
 		#define PIN_LATCH 10
@@ -39,10 +39,10 @@
 	#define SPI_CHANNEL 0
 
 	// Operator definitions.
-	#define OPERATOR1 false
-	#define OPERATOR2 true
-	#define MODULATOR false
-	#define CARRIER   true
+	#define OPERATOR1 0
+	#define OPERATOR2 1
+	#define MODULATOR 0
+	#define CARRIER   1
 
 	// Synthesis type definitions.
 	#define FREQ_MODULATION false
@@ -89,21 +89,29 @@
 			void reset();
 			void write(byte, byte);
 
-			short getNoteFrequency(byte, byte, byte);
+			byte getRegisterOffset(byte, byte);
+			short getNoteFNumber(byte channel, byte octave, byte note);
+			short getFrequencyFNumber(byte channel, float frequency);
+			short getFNumberForBlock(float frequency, unsigned char block);
+			float getNoteFrequency(byte octave, byte note);
+			float getFrequencyStep(byte channel);
+			byte getFrequencyBlock(float frequency);
+
 			byte getRegister(byte);
 			bool getWaveFormSelect();
-			bool getTremolo(byte, bool);
-			bool getVibrato(byte, bool);
-			bool getMaintainSustain(byte, bool);
-			bool getEnvelopeScaling(byte, bool);
-			byte getMultiplier(byte, bool);
-			byte getScalingLevel(byte, bool);
-			byte getVolume(byte, bool);
-			byte getAttack(byte, bool);
-			byte getDecay(byte, bool);
-			byte getSustain(byte, bool);
-			byte getRelease(byte, bool);
-			short getFrequency(byte);
+			bool getTremolo(byte, byte);
+			bool getVibrato(byte, byte);
+			bool getMaintainSustain(byte, byte);
+			bool getEnvelopeScaling(byte, byte);
+			byte getMultiplier(byte, byte);
+			byte getScalingLevel(byte, byte);
+			byte getVolume(byte, byte);
+			byte getAttack(byte, byte);
+			byte getDecay(byte, byte);
+			byte getSustain(byte, byte);
+			byte getRelease(byte, byte);
+			short getFNumber(byte);
+			float getFrequency(byte channel);
 			byte getBlock(byte);
 			bool getKeyOn(byte);
 			byte getFeedback(byte);
@@ -112,23 +120,25 @@
 			bool getDeepVibrato();
 			bool getPercussion();
 			byte getDrums();
-			byte getWaveForm(byte, bool);
+			byte getWaveForm(byte, byte);
 
 			void setInstrument(byte, const unsigned char*);
+			void playNote(byte channel, byte octave, byte note);
 			byte setRegister(byte, byte);
 			byte setWaveFormSelect(bool);
-			byte setTremolo(byte, bool, bool);
-			byte setVibrato(byte, bool, bool);
-			byte setMaintainSustain(byte, bool, bool);
-			byte setEnvelopeScaling(byte, bool, bool);
-			byte setMultiplier(byte, bool, byte);
-			byte setScalingLevel(byte, bool, byte);
-			byte setVolume(byte, bool, byte);
-			byte setAttack(byte, bool, byte);
-			byte setDecay(byte, bool, byte);
-			byte setSustain(byte, bool, byte);
-			byte setRelease(byte, bool, byte);
-			byte setFrequency(byte, short);
+			byte setTremolo(byte, byte, bool);
+			byte setVibrato(byte, byte, bool);
+			byte setMaintainSustain(byte, byte, bool);
+			byte setEnvelopeScaling(byte, byte, bool);
+			byte setMultiplier(byte, byte, byte);
+			byte setScalingLevel(byte, byte, byte);
+			byte setVolume(byte, byte, byte);
+			byte setAttack(byte, byte, byte);
+			byte setDecay(byte, byte, byte);
+			byte setSustain(byte, byte, byte);
+			byte setRelease(byte, byte, byte);
+			byte setFNumber(byte, short);
+			byte setFrequency(byte channel, float frequency);
 			byte setBlock(byte, byte);
 			byte setKeyOn(byte, bool);
 			byte setFeedback(byte, byte);
@@ -137,7 +147,7 @@
 			byte setDeepVibrato(bool);
 			byte setPercussion(bool);
 			byte setDrums(bool, bool, bool, bool, bool);
-			byte setWaveForm(byte, bool, byte);
+			byte setWaveForm(byte, byte, byte);
 
 		private:
 			byte pinReset   = PIN_RESET;
@@ -156,6 +166,10 @@
 				440.00, 466.16,		// A, A#
 				493.88				// B
 			};
+			const float blockFrequencies[8] = {
+				 48.503,   97.006,  194.013,  388.026,
+				776.053, 1552.107, 3104.215, 6208.431
+			};
 			const byte offset[2][9] = {  
 				{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 0 */
 				{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 1 */
@@ -167,7 +181,6 @@
 				0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0
 			};
 			byte oplRegisters[256];
-			byte getRegisterOffset(byte, bool);
 	};
 #endif
 
