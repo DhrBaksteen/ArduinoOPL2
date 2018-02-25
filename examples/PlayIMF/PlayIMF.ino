@@ -50,7 +50,7 @@ void loop() {
     wait -= (millis() - time);      // Take into account time that was spent on IO.
 
     if (wait > 0) {
-      delay(wait );
+      delay(wait);
       time = millis();
     }
 
