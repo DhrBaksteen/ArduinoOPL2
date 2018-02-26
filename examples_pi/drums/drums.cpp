@@ -29,28 +29,26 @@ int i = 0;
 
 
 int main(int argc, char **argv) {
-  opl2.init();
+	opl2.init();
 
-  opl2.setPercussion(true);
-  opl2.setInstrument(0, BDRUM1);
-  opl2.setInstrument(0, RKSNARE1);
-  opl2.setInstrument(0, TOM2);
-  opl2.setInstrument(0, CYMBAL1);
-  opl2.setInstrument(0, HIHAT2);
-  opl2.setBlock     (6, 4);
-  opl2.setFNumber   (6, opl2.getNoteFNumber(6, 4, NOTE_C));
-  opl2.setBlock     (7, 4);
-  opl2.setFNumber   (7, opl2.getNoteFNumber(7, 3, NOTE_C));
-  opl2.setBlock     (8, 4);
-  opl2.setFNumber   (8, opl2.getNoteFNumber(8, 3, NOTE_A));
-  
-  while (true) {
+	opl2.setPercussion(true);
+	opl2.setInstrument(0, BDRUM1);
+	opl2.setInstrument(0, RKSNARE1);
+	opl2.setInstrument(0, TOM2);
+	opl2.setInstrument(0, CYMBAL1);
+	opl2.setInstrument(0, HIHAT2);
+	opl2.setBlock     (6, 4);
+	opl2.setFNumber   (6, opl2.getNoteFNumber(6, 4, NOTE_C));
+	opl2.setBlock     (7, 4);
+	opl2.setFNumber   (7, opl2.getNoteFNumber(7, 3, NOTE_C));
+	opl2.setBlock     (8, 4);
+	opl2.setFNumber   (8, opl2.getNoteFNumber(8, 3, NOTE_A));
+
+	while (true) {
 		opl2.setDrums(i % 4 == 0, (i + 2) % 4 == 0, 0, i % 32 == 0 , i % 2);
 		i ++;
 		delay(250);
 	}
-	
+
 	return 0;
 }
-
-

@@ -25,26 +25,25 @@ OPL2 opl2;
 
 
 int main(int argc, char **argv) {
-  opl2.init();
+	opl2.init();
 
-  // Setup channels 0, 1 and 2 to produce a bell sound.
-  for (byte i = 0; i < 3; i ++) {
-    opl2.setTremolo   (i, CARRIER, true);
-    opl2.setVibrato   (i, CARRIER, true);
-    opl2.setMultiplier(i, CARRIER, 0x04);
-    opl2.setAttack    (i, CARRIER, 0x0A);
-    opl2.setDecay     (i, CARRIER, 0x04);
-    opl2.setSustain   (i, CARRIER, 0x0F);
-    opl2.setRelease   (i, CARRIER, 0x0F);
-    opl2.setBlock     (i, 0x05);
-  }
+	// Setup channels 0, 1 and 2 to produce a bell sound.
+	for (byte i = 0; i < 3; i ++) {
+		opl2.setTremolo   (i, CARRIER, true);
+		opl2.setVibrato   (i, CARRIER, true);
+		opl2.setMultiplier(i, CARRIER, 0x04);
+		opl2.setAttack    (i, CARRIER, 0x0A);
+		opl2.setDecay     (i, CARRIER, 0x04);
+		opl2.setSustain   (i, CARRIER, 0x0F);
+		opl2.setRelease   (i, CARRIER, 0x0F);
+		opl2.setBlock     (i, 0x05);
+	}
 
-  // Play notes on alternating channels.
-  for (byte i = 0; i < 13; i ++) {
-  	opl2.playNote(i % 3, 4, i);
-    delay(500);
-  }
-  
-  return 0;
+	// Play notes on alternating channels.
+	for (byte i = 0; i < 13; i ++) {
+		opl2.playNote(i % 3, 4, i);
+		delay(500);
+	}
+
+	return 0;
 }
-
