@@ -122,6 +122,7 @@ unsigned char speed = 6;
 unsigned char slideToBlock[9]    = { 0 };
 unsigned short slideToFNumber[9] = { 0 };
 unsigned char slideSpeed[9]      = { 0 };
+unsigned int overTime = 0;
 Song song;
 Pattern *currPattern;
 
@@ -129,19 +130,19 @@ Pattern *currPattern;
 void setInstrument(unsigned char channel, Instrument *instrument) {
 	unsigned char registerOffset;
 
-	registerOffset = opl2.getRegisterOffset(channel, MODULATOR);
-	opl2.setRegister(0x20 + registerOffset, instrument->modProps);
-	opl2.setRegister(0x40 + registerOffset, instrument->modLevel);
-	opl2.setRegister(0x60 + registerOffset, instrument->modAttackDecay);
-	opl2.setRegister(0x80 + registerOffset, instrument->modSustainRelease);
-	opl2.setRegister(0xE0 + registerOffset, instrument->modWaveform);
-
 	registerOffset = opl2.getRegisterOffset(channel, CARRIER);
 	opl2.setRegister(0x20 + registerOffset, instrument->carProps);
 	opl2.setRegister(0x40 + registerOffset, instrument->carLevel);
 	opl2.setRegister(0x60 + registerOffset, instrument->carAttackDecay);
 	opl2.setRegister(0x80 + registerOffset, instrument->carSustainRelease);
 	opl2.setRegister(0xE0 + registerOffset, instrument->carWaveform);
+
+	registerOffset = opl2.getRegisterOffset(channel, MODULATOR);
+	opl2.setRegister(0x20 + registerOffset, instrument->modProps);
+	opl2.setRegister(0x40 + registerOffset, instrument->modLevel);
+	opl2.setRegister(0x60 + registerOffset, instrument->modAttackDecay);
+	opl2.setRegister(0x80 + registerOffset, instrument->modSustainRelease);
+	opl2.setRegister(0xE0 + registerOffset, instrument->modWaveform);
 
 	opl2.setRegister(0xC0 + channel, instrument->channelProps);
 }
@@ -203,9 +204,9 @@ void pitchAdjustToNote(unsigned char channel) {
 void volumeAdjust(unsigned char channel, unsigned char amount) {
 	unsigned char volume = opl2.getVolume(channel, CARRIER);
 
-	if (note->parameter > 0 && amount < 50) {
+	if (amount > 0 && amount < 50) {
 		volume = min(63, volume + amount);
-	} else if (note->parameter > 50 && amount < 100) {
+	} else if (amount > 50 && amount < 100) {
 		volume = max(0, volume - (amount - 50));
 	}
 
@@ -253,7 +254,10 @@ void playMusic() {
 
 			// Trigger note.
 			else if (note->instrument > 0x00) {
-				setInstrument(channel, song.instruments[note->instrument - 1]);
+				Instrument *instrument = song.instruments[note->instrument - 1];
+				if (instrument != NULL) {
+					setInstrument(channel, instrument);
+				}
 				if (note->effect != EFFECT_NOTE_SLIDE_TO) {
 					playNote(channel, note->octave, note->note);
 				}
@@ -325,14 +329,15 @@ void playMusic() {
 		}
 	}
 
-	int timeSpent = millis() - time;
-	int wait = max(0, (song.hasSlowTimer ? 55 : 20) - timeSpent);
-	delay(wait);
+	int timeSpent = (millis() - time) + overTime;
+	int wait = (song.hasSlowTimer ? 55 : 20) - timeSpent;
+	overTime = -min(wait, 0);
+	delay(max(0, wait));
 }
 
 
 int main(int argc, char **argv) {
-	oplFile = fopen("./tunes/NEOINTRO.RAD", "rb");
+	oplFile = fopen("./tunes/RASTER.RAD", "rb");
 	song = loadRAD(oplFile);
 
 	initPlayer();
