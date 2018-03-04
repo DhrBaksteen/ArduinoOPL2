@@ -18,17 +18,16 @@
 
 	#define ARDUINO      0
 	#define RASPBERRY_PI 1
-	#define ORANGE_PI    2
 
 	// !!! IMPORTANT !!!
 	// In order to correctly compile the library for your platform be sure to set the correct BOARD_TYPE below.
-	#define BOARD_TYPE ORANGE_PI
+	#define BOARD_TYPE ARDUINO
 
 	#if BOARD_TYPE == ARDUINO
 		#define PIN_LATCH 10
 		#define PIN_ADDR   9
 		#define PIN_RESET  8
-	#elif BOARD_TYPE == RASPBERRY_PI or BOARD_TYPE == ORANGE_PI
+	#else
 		#define PIN_LATCH 1				// GPIO header pin 12
 		#define PIN_ADDR  4				// GPIO header pin 16
 		#define PIN_RESET 5				// GPIO header pin 18
