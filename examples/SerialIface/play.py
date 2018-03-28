@@ -28,7 +28,7 @@ Examples:
 
   %s COM4 k5t06.imf
   - Play k5t06.imf at the default frequency
-''' % ((sys.argv[0],) * 5)
+''' % ((sys.argv[0],) * 3)
   )
   sys.exit()
 
