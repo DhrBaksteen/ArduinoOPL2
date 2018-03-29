@@ -42,6 +42,11 @@ def play(opl, vgm_stream):
       delay_us = _samples_to_us(delay_samples)
     elif opcode == END_DATA:
       break
+    elif opcode >= 0x51 and opcode <= 0x5f:
+      # opcodes for writing to other YMF chips, skip
+      vgm_stream(2)
+    elif opcode == 0:
+      pass
     else:
       raise exc.InvalidFormatError('Unrecognized VGM opcode: 0x%02x' % opcode)
 
