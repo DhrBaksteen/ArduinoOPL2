@@ -24,6 +24,12 @@
  * PC:      0xb80a014f02 (write OPL register and delay)
  * Arduino: k
  *
+ * A variant of this protocol is available without the delays. In this
+ * case, the BUF? command should be sent as B0F? The binary protocol
+ * is now using 2-byte binary commands:
+ *   - (uint8)  OPL2 register address
+ *   - (uint8)  OPL2 register data
+ *
  * OPL2 board is connected as follows:
  * Pin  8 - Reset
  * Pin  9 - A0
@@ -36,16 +42,19 @@
 #include <OPL2.h>
 
 // Text command mode
-#define STARTUP_MSG   "HLO!\n"
-#define BUF_SIZE_CMD  "BUF?\n"
+#define STARTUP_MSG       "HLO!\n"
+#define BUF_SIZE_CMD      "BUF?\n"
+#define FAST_BUF_SIZE_CMD "B0F?\n"
 
 // Binary command mode
-#define ACK_RSP         'k'
-#define RESET_CMD       0
-#define BINARY_CMD_SIZE 5
+#define ACK_RSP             'k'
+#define RESET_CMD            0
+#define BINARY_CMD_SIZE      5
+#define FAST_BINARY_CMD_SIZE 2
 
 OPL2 opl2;
 bool ready = false;
+bool fast = false;
 
 void setup() {
   opl2.init();
@@ -85,11 +94,26 @@ void processBinaryCmds() {
   }
 }
 
+void processFastBinaryCmds() {
+  while (Serial.available() >= FAST_BINARY_CMD_SIZE) {
+    byte cmd[FAST_BINARY_CMD_SIZE];
+    Serial.readBytes(cmd, FAST_BINARY_CMD_SIZE);
+
+    if (RESET_CMD != cmd[0]) {
+      opl2.write(cmd[0], cmd[1]);
+    } else {
+      opl2.init();
+    }
+    Serial.write(ACK_RSP);
+  }
+}
+
 void waitForBufSizeCmd() {
   if (Serial.available() >= 5) {
     String cmd = Serial.readString();
-    if (cmd.equals(BUF_SIZE_CMD)) {
+    if (cmd.equals(BUF_SIZE_CMD) || cmd.equals(FAST_BUF_SIZE_CMD)) {
       ready = true;
+      fast = cmd.equals(FAST_BUF_SIZE_CMD);
       Serial.print(SERIAL_RX_BUFFER_SIZE);
       Serial.print("\n");
     }
@@ -98,7 +122,8 @@ void waitForBufSizeCmd() {
 
 void loop() {
   if (ready) {
-    processBinaryCmds();
+    if (fast) processFastBinaryCmds();
+    else processBinaryCmds();
   } else {
     waitForBufSizeCmd();
   }
