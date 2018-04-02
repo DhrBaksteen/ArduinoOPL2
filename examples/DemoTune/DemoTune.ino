@@ -6,8 +6,8 @@
  * Pin  8 - Reset
  * Pin  9 - A0
  * Pin 10 - Latch
- * Pin 11 - Data
- * Pin 13 - Shift
+ * Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-04-13
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
@@ -37,13 +37,13 @@ struct Tune {
   int octave;
   float noteDuration;
   float noteLength;
-  int nextNoteTime;
-  int releaseTime;
+  unsigned long nextNoteTime;
+  unsigned long releaseTime;
   int index;
 };
 
 const String tuneData[3] = {
-  "t150m200o5l8egredgrdcerc<b>er<ba>aragdefefedr4.regredgrdcerc<b>er<ba>aragdedcr4.c<g>cea>cr<ag>cr<gfarfearedgrdcfrc<bagab>cdfegredgrdcerc<b>er<ba>aragdedcr4.cro3c2",
+  "t150m200o5l8egredgrdcerc<b>er<ba>a<a>agdefefedr4.regredgrdcerc<b>er<ba>a<a>agdedcr4.c<g>cea>cr<ag>cr<gfarfearedgrdcfrc<bagab>cdfegredgrdcerc<b>er<ba>a<a>agdedcr4.cro3c2",
   "m85o3l8crer<br>dr<ar>cr<grbrfr>cr<grbr>crer<gb>dgcrer<br>dr<ar>cr<grbrfr>cr<grbr>ceger4.rfrafergedrfdcrec<br>d<bar>c<agrgd<gr4.o4crer<br>dr<ar>cr<grbrfr>cr<grbr>cege",
   "m85o3l8r4gr4.gr4.er4.err4fr4.gr4.gr4.grr4gr4.er4.er4.frr4gr4>ccr4ccr4<aarraar4ggr4ffr4.ro4gab>dr4.r<gr4.gr4.err4er4.fr4.g"
 };

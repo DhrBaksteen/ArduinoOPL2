@@ -6,8 +6,8 @@
  * Pin  8 - Reset
  * Pin  9 - A0
  * Pin 10 - Latch
- * Pin 11 - Data
- * Pin 13 - Shift
+ * Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  *
  * Connect the SD card with Arduino SPI pins as usual and use pin 7 as CS.
  *
@@ -16,58 +16,67 @@
  * http://www.shikadi.net/moddingwiki/IMF_Format
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-17
- * Song from the game Keen5 by Bobby Prince 1991
+ * Songs from the games Bio Menace and Duke Nukem II by Bobby Prince
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
 
 #include <SPI.h>
-#include <SdFat.h>
+#include <SD.h>
 #include <OPL2.h>
 
 OPL2 opl2;
-SdFat SD;
-SdFile file;
+File imfFile;
 
+float imfSpeed;
 long songLength = 0;
-float imfSpeed  = 560.0;
 
 void setup() {
   opl2.init();
   SD.begin(7);
 
-  loadImfSong("k5t06.imf");
+  imfSpeed = 560.0;
+  loadImfSong("city.imf");
+
+  // imfSpeed = 280.0;
+  // loadImfSong("kickbuta.imf");
 }
 
 void loop() {
+  unsigned long time = millis();
+
   while (songLength > 0) {
     int wait = playImfSong();
+    wait -= (millis() - time);      // Take into account time that was spent on IO.
+
     if (wait > 0) {
       delay(wait);
+      time = millis();
     }
+
     songLength --;
   }
 }
 
 
 void loadImfSong(char* fileName) {
-  file.open(fileName);
-  file.seekSet(0);
+  imfFile = SD.open(fileName, FILE_READ);
+  imfFile.seek(0);
 
-  songLength  = file.read();
-  songLength += file.read() << 8;
+  songLength  = imfFile.read();
+  songLength += imfFile.read() << 8;
   if (songLength == 0) {
     songLength = 65535;
-    file.seekSet(4);
+    imfFile.seek(4);
   }
 }
 
 
 int playImfSong() {
-  byte reg  = file.read();
-  byte data = file.read();
-  float  wait = file.read();
-  wait += file.read() << 8;
+  byte reg  = imfFile.read();
+  byte data = imfFile.read();
+  float  wait = imfFile.read();
+  wait += imfFile.read() << 8;
 
   if (reg != 0x00) {
     opl2.write(reg, data);

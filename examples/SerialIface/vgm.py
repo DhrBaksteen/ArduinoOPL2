@@ -13,7 +13,7 @@ END_DATA = 0x66
 SKIP = {
   0x30: 4, # YM2151 clock
   0x50: 4, # YM3812 clock
-  0x51: 2  # Write YM2413
+  0x51: 2, # Write YM2413
 }
 
 def _samples_to_us(n):
