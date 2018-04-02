@@ -10,6 +10,12 @@ DELAY_882 = 0x63
 DELAY_N1 = 0x70
 END_DATA = 0x66
 
+SKIP = {
+  0x30: 4, # YM2151 clock
+  0x50: 4, # YM3812 clock
+  0x51: 2  # Write YM2413
+}
+
 def _samples_to_us(n):
   return 1000000 * n // SAMPLE_RATE
 
@@ -32,16 +38,18 @@ def play(opl, vgm_stream):
       delay_us = 0
     elif DELAY_N == opcode:
       delay_samples, = struct.unpack_from('H', vgm_stream.read(2))
-      delay_us = _samples_to_us(delay_samples)
+      delay_us += _samples_to_us(delay_samples)
     elif DELAY_735 == opcode:
-      delay_us = _samples_to_us(735)
+      delay_us += _samples_to_us(735)
     elif DELAY_882 == opcode:
-      delay_us = _samples_to_us(882)
+      delay_us += _samples_to_us(882)
     elif opcode >= DELAY_N1:
       delay_samples = 1 + int(opcode & 0xf)
-      delay_us = _samples_to_us(delay_samples)
+      delay_us += _samples_to_us(delay_samples)
     elif opcode == END_DATA:
       break
+    elif opcode in SKIP:
+      vgm_stream.read(SKIP[opcode])
     else:
       raise exc.InvalidFormatError('Unrecognized VGM opcode: 0x%02x' % opcode)
 
