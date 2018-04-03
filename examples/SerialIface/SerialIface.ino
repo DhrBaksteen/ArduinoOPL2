@@ -55,7 +55,7 @@
 OPL2 opl2;
 
 // This function pointer will be set when in binary command mode.
-void (*processBinaryCmdFn)(void) = 0x0;
+void (*processCmdFn)(void) = &waitForBufSizeCmd;
 
 void setup() {
   opl2.init();
@@ -114,9 +114,9 @@ void waitForBufSizeCmd() {
     String cmd = Serial.readString();
     if (cmd.equals(BUF_SIZE_CMD) || cmd.equals(FAST_BUF_SIZE_CMD)) {
       if (cmd.equals(FAST_BUF_SIZE_CMD)) {
-        processBinaryCmdFn = &processFastBinaryCmds;
+        processCmdFn = &processFastBinaryCmds;
       } else {
-        processBinaryCmdFn = &processBinaryCmds;
+        processCmdFn = &processBinaryCmds;
       }
       Serial.print(SERIAL_RX_BUFFER_SIZE);
       Serial.print("\n");
@@ -125,10 +125,6 @@ void waitForBufSizeCmd() {
 }
 
 void loop() {
-  if (processBinaryCmdFn) {
-    processBinaryCmdFn();
-  } else {
-    waitForBufSizeCmd();
-  }
+  processCmdFn();
 }
 
