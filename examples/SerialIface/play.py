@@ -65,6 +65,8 @@ def handle_arguments():
         device = opl.ArduinoOpl(portname)
         player.play(device, f, **player_opts)
       except (KeyboardInterrupt, SystemExit):
+        pass
+      finally:
         device.close()
 
 
