@@ -10,6 +10,10 @@ DELAY_882 = 0x63
 DELAY_N1 = 0x70
 END_DATA = 0x66
 
+YM_CHIP_1 = 0x50 # 1st YM chip commands
+YM_CHIP_2 = 0xa0 # 2nd YM chip commands
+
+
 def _samples_to_us(n):
   return 1000000 * n // SAMPLE_RATE
 
@@ -32,21 +36,18 @@ def play(opl, vgm_stream):
       delay_us = 0
     elif DELAY_N == opcode:
       delay_samples, = struct.unpack_from('H', vgm_stream.read(2))
-      delay_us = _samples_to_us(delay_samples)
+      delay_us += _samples_to_us(delay_samples)
     elif DELAY_735 == opcode:
-      delay_us = _samples_to_us(735)
+      delay_us += _samples_to_us(735)
     elif DELAY_882 == opcode:
-      delay_us = _samples_to_us(882)
-    elif opcode >= DELAY_N1:
+      delay_us += _samples_to_us(882)
+    elif DELAY_N1 == opcode & 0xf0:
       delay_samples = 1 + int(opcode & 0xf)
-      delay_us = _samples_to_us(delay_samples)
+      delay_us += _samples_to_us(delay_samples)
     elif opcode == END_DATA:
       break
-    elif opcode >= 0x51 and opcode <= 0x5f:
-      # opcodes for writing to other YMF chips, skip
-      vgm_stream(2)
-    elif opcode == 0:
-      pass
+    elif (opcode & 0xf0) in (YM_CHIP_1, YM_CHIP_2):
+      vgm_stream.read(2 if (opcode & 0x0f) else 1)
     else:
       raise exc.InvalidFormatError('Unrecognized VGM opcode: 0x%02x' % opcode)
 
@@ -66,5 +67,11 @@ def parse_header(vgm_stream):
   if ver_major >= 0x1 and ver_minor >= 0x50:
     vgm_stream.seek(0x34)
     data_offset, = struct.unpack('<I', vgm_stream.read(4))
+    vgm_stream.seek(0x50)
+    ym3812_clock, = struct.unpack('<I', vgm_stream.read(4))
+    if not ym3812_clock:
+      raise exc.InvalidDeviceError(
+        'No YM3812 clock specified. VGM data for another chip.'
+      )
 
   return 0x100 + data_offset

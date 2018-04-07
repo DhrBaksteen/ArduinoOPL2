@@ -2,6 +2,7 @@
 
 import sys
 
+import exc
 import opl
 import imf
 import vgm
@@ -66,6 +67,9 @@ def handle_arguments():
         player.play(device, f, **player_opts)
       except (KeyboardInterrupt, SystemExit):
         device.close()
+      except exc.InvalidDeviceError as e:
+        device.close()
+        print(e)
 
 
 if __name__ == '__main__':
