@@ -1,4 +1,5 @@
 import struct
+import time
 
 import serial
 
@@ -16,6 +17,11 @@ class ArduinoOpl:
     self.ready = False
     self.n_outstanding = 0
     self.debug = debug
+
+    # Delay estimation
+    self.started = None
+    self.delay_total = 0
+    self.underflows = 0
 
     # Opening port resets Arduino. Wait for ready message.
     self.wait_for_rsp(self.STARTUP_MSG)
@@ -45,6 +51,7 @@ class ArduinoOpl:
     self.write_reg_unbuffered(addr, data, delay_us, predelay)
 
   def write_reg_unbuffered(self, addr, data, delay_us, predelay):
+    self.delay_total += delay_us
     delay_ms = delay_us // 1000
     delay_remainder = delay_us % 1000
     if predelay:
@@ -57,11 +64,27 @@ class ArduinoOpl:
     if delay_us > 0:
       self._debug('%8d.%03d milliseconds' % (delay_ms, delay_remainder))
     self._status(cmd)
+    if self.started is None:
+      self.started = time.time()
 
   def _status(self, last_tx):
     status = 'Initialized' if self.ready else 'Initializing'
     tx_txt = 'Tx: %s' % ' '.join('%02x' % b for b in last_tx)
-    status_str = "STATUS %-12s BUFFERED: %5d   %s" % (status, self.n_outstanding, tx_txt)
+    delay = float('nan')
+    if self.started is not None:
+      elapsed = (time.time() - self.started) * 1000
+      delay = elapsed - self.delay_total / 1000.
+      if delay > 0 and elapsed > 50:
+        self.underflows += 1
+    status_str = ("STATUS %-12s  "
+                  "BUFFERED: %5d  "
+                  "DELAY: %8.2fms  "
+                  "UNDERFLOWS: %2d   "
+                  "%s") % (status,
+                           self.n_outstanding,
+                           delay,
+                           self.underflows,
+                           tx_txt)
     print("%s\r" % status_str.ljust(79), end='')
 
   def _debug(self, txt):
