@@ -36,12 +36,15 @@ class ArduinoOpl:
     if not rx.endswith(rsp):
       raise RuntimeError('Expected: %s, received: %s' % (rsp, rx))
 
+  def wait_for_ack(self):
+    rsp = self.port.read()
+    if rsp != self.ACK_RSP:
+      raise RuntimeError('Expected: %s, received: %s' % (rsp, self.ACK_RSP))
+    self.n_outstanding -= 1
+
   def write_reg(self, addr, data, delay_us=0, predelay=False):
     if self.n_outstanding >= self.max_write_ahead:
-      rsp = self.port.read()
-      if rsp != self.ACK_RSP:
-        raise RuntimeError('Expected: %s, received: %s' % (rsp, self.ACK_RSP))
-      self.n_outstanding -= 1
+      self.wait_for_ack()
     self.write_reg_unbuffered(addr, data, delay_us, predelay)
 
   def write_reg_unbuffered(self, addr, data, delay_us, predelay):
@@ -69,6 +72,8 @@ class ArduinoOpl:
       print(txt)
 
   def close(self):
+    while self.n_outstanding:
+      self.wait_for_ack()
     self.port.write(self.RESET_CMD)
     self._status(self.RESET_CMD)
     self.port.close()
