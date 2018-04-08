@@ -10,18 +10,16 @@
  * A very simple serial protocol is used.
  *
  * - Initial 3-way handshake to overcome reset delay / serial noise issues.
- * - 5-byte binary commands to write registers.
+ * - 2-byte binary commands to write registers.
  *   - (uint8)  OPL2 register address
  *   - (uint8)  OPL2 register data
- *   - (int16)  delay (milliseconds); negative -> pre-delay; positive -> post-delay
- *   - (uint8)  delay (microseconds / 4)
  *
  * Example session:
  *
  * Arduino: HLO!
  * PC:      BUF?
  * Arduino: 256 (switches to binary mode)
- * PC:      0xb80a014f02 (write OPL register and delay)
+ * PC:      0xb80a (write OPL register)
  * Arduino: k
  *
  * OPL2 board is connected as follows:
@@ -42,7 +40,7 @@
 // Binary command mode
 #define ACK_RSP         'k'
 #define RESET_CMD       0
-#define BINARY_CMD_SIZE 5
+#define BINARY_CMD_SIZE 2
 
 OPL2 opl2;
 bool ready = false;
@@ -56,28 +54,13 @@ void setup() {
   Serial.write(STARTUP_MSG);
 }
 
-void delayMsUs(signed short ms, unsigned short us) {
-  if (ms > 0) {
-    delay(ms);
-  }
-  if (us > 0) {
-    delayMicroseconds(us);
-  }
-}
-
 void processBinaryCmds() {
   while (Serial.available() >= BINARY_CMD_SIZE) {
     byte cmd[BINARY_CMD_SIZE];
     Serial.readBytes(cmd, BINARY_CMD_SIZE);
 
     if (RESET_CMD != cmd[0]) {
-      signed short delayMs = (cmd[2] << 8) | cmd[3];
-      unsigned short delayUs = cmd[4] << 2;
-      bool isPredelay = delayMs < 0;
-
-      if (isPredelay) delayMsUs(-delayMs, delayUs);
       opl2.write(cmd[0], cmd[1]);
-      if (!isPredelay) delayMsUs(delayMs, delayUs);
     } else {
       opl2.init();
     }
