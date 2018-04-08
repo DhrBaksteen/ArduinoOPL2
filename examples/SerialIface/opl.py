@@ -1,5 +1,5 @@
 import struct
-import threading
+import multiprocessing
 import time
 
 import serial
@@ -29,21 +29,24 @@ class ArduinoOpl:
     self.buffer_size = opl_rx_buf_bytes // self.BINARY_CMD_SIZE
     self._status(self.READY_CMD)
 
-    self.sem = threading.Semaphore(self.buffer_size)
-    self.ack_thread = threading.Thread(target=self.ack)
+    self.sem = multiprocessing.Semaphore(self.buffer_size)
+    self.ack_thread = multiprocessing.Process(target=self.ack)
     self.ack_thread.daemon = True
     self.ack_thread.start()
 
     self.ready = True
 
   def ack(self):
-    while True:
-      rsp = self.port.read()
-      if rsp == '':
-        break
-      if rsp != self.ACK_RSP:
-        raise RuntimeError('Expected: %s, received: %s' % (rsp, self.ACK_RSP))
-      self.sem.release()
+    try:
+      while True:
+        rsp = self.port.read()
+        if rsp == '':
+          break
+        if rsp != self.ACK_RSP:
+          raise RuntimeError('Expected: %s, received: %s' % (rsp, self.ACK_RSP))
+        self.sem.release()
+    except KeyboardInterrupt:
+      pass
 
   def wait_for_rsp(self, rsp):
     self._debug('Awaiting: %s' % rsp)
