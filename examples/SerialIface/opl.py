@@ -16,8 +16,10 @@ class ArduinoOpl:
   def __init__(self, portname, baudrate=115200, debug=False):
     self.port = serial.Serial(portname, baudrate, timeout=None)
     self.ready = False
-    self.overdelay = 0
+    self.overdelay_tx = 0
+    self.overdelay_cpu = 0
     self.debug = debug
+    self.last = None
 
     # Opening port resets Arduino. Wait for ready message.
     self.wait_for_rsp(self.STARTUP_MSG)
@@ -35,6 +37,20 @@ class ArduinoOpl:
     self.ack_thread.start()
 
     self.ready = True
+
+  def sleep(self, delay):
+    if self.last is None:
+      time.sleep(delay)
+      self.last = time.time()
+      return
+    now = time.time()
+    delay -= now - self.last
+    if delay > 0:
+      time.sleep(delay)
+      self.last = now + delay
+    else:
+      self.overdelay_cpu += 1
+      self.last = now
 
   def ack(self):
     try:
@@ -63,25 +79,28 @@ class ArduinoOpl:
 
   def write_reg(self, addr, data, delay_us, predelay=False):
     if predelay and delay_us > 0:
-      time.sleep(delay_us / 1000000.)
+      self.sleep(delay_us / 1000000.)
 
     cmd = struct.pack('!BB', addr, data)
     if not self.sem.acquire(False):
-      self.overdelay += 1
+      self.overdelay_tx += 1
       self.sem.acquire()
     self.port.write(cmd)
     self._debug('Tx: %s' % ['%02x' % b for b in cmd])
     if not predelay and delay_us > 0:
-      time.sleep(delay_us / 1000000.)
+      self.sleep(delay_us / 1000000.)
     self._status(cmd)
 
   def _status(self, last_tx):
     status = 'Initialized' if self.ready else 'Initializing'
     tx_txt = 'Tx: %s' % ' '.join('%02x' % b for b in last_tx)
-    status_str = "STATUS %-12s BUFFER: %5d LATE: %3d   %s" % (status,
-                                                              self.buffer_size,
-                                                              self.overdelay,
-                                                              tx_txt)
+    status_str = ("STATUS %-12s BUFFER: %5d "
+                  "LATE/TX: %3d LATE/CPU: %3d "
+                  "%s") % (status,
+                           self.buffer_size,
+                           self.overdelay_tx,
+                           self.overdelay_cpu,
+                           tx_txt)
     print("%s\r" % status_str.ljust(79), end='')
 
   def _debug(self, txt):
