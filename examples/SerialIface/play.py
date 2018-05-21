@@ -2,6 +2,7 @@
 
 import sys
 
+import exc
 import opl
 import imf
 import vgm
@@ -28,7 +29,7 @@ Examples:
 
   %s COM4 k5t06.imf
   - Play k5t06.imf at the default frequency
-''' % ((sys.argv[0],) * 5)
+''' % ((sys.argv[0],) * 3)
   )
   sys.exit()
 
@@ -66,6 +67,9 @@ def handle_arguments():
         player.play(device, f, **player_opts)
       except (KeyboardInterrupt, SystemExit):
         device.close()
+      except exc.InvalidDeviceError as e:
+        device.close()
+        print(e)
 
 
 if __name__ == '__main__':

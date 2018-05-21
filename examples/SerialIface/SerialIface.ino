@@ -90,7 +90,8 @@ void waitForBufSizeCmd() {
     String cmd = Serial.readString();
     if (cmd.equals(BUF_SIZE_CMD)) {
       ready = true;
-      Serial.println(SERIAL_RX_BUFFER_SIZE);
+      Serial.print(SERIAL_RX_BUFFER_SIZE);
+      Serial.print("\n");
     }
   }
 }
