@@ -21,8 +21,6 @@
 
 
 OPL2 opl2;
-float t = 0.0;
-
 
 int main(int argc, char **argv) {
 	opl2.init();
@@ -36,10 +34,14 @@ int main(int argc, char **argv) {
 	// Start tone.
 	opl2.setKeyOn(0, true);
 	while (true) {
-		float freq = sin(t) * 250 + 500;
-		opl2.setFrequency(0, freq);
+		for (int f = 250; f < 750; f += 10) {
+			opl2.setFrequency(0, f);
+			delay(10);
+		}
 
-		t += .01;
-		delay(10);
+		for (int f = 750; f > 250; f -= 10) {
+			opl2.setFrequency(0, f);
+			delay(10);
+		}
 	}
 }

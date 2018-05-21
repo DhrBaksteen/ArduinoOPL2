@@ -22,12 +22,26 @@ echo "Library version 1.4.0, 21st of May 2018"
 echo "Copyright (c) 2016-2018 Maarten Janssen, Cheerful"
 echo ""
 
+echo -n "Checking for SPI devices... "
+if [ "$(ls /dev/*spi* 2>/dev/null)" != "" ]
+then
+	echo "\033[0;32mOk\033[0m"
+else
+	echo "\033[0;31mFailed\033[0m"
+	echo "\nNo SPI devices were found enabled on your Pi."
+	echo "Please run '\033[1;34msudo raspi-config\033[0m' and enable SPI from the 'Interfacing Options'"
+	echo "menu. If you are using a different board then please consult its documentation"
+	echo "on how to enable SPI on your board."
+	echo ""
+	exit
+fi
+
 echo -n "Checking for WiringPi... "
 if ! type "gpio" > /dev/null
 then
 	echo "\033[0;31mFailed\033[0m"
 	echo "\nWiringPi was not found."
-	echo -n "Do you want to install it now? "
+	echo -n "Do you want to download and install it now? "
 	read REPLY
 	REPLY=$(echo "$REPLY" | awk '{gsub(/ /, "", $0); print toupper(substr($0==""?"N":$0, 1, 1))}')
 
@@ -54,6 +68,7 @@ then
 		echo "\033[0;32mDone\033[0m"
 	else
 		echo "OPL2 Audio Board installation cannot continue without WiringPi."
+		echo ""
 		exit
 	fi
 else
@@ -80,7 +95,7 @@ echo "\033[0;32mDone\033[0m"
 echo "Installation complete."
 
 echo ""
-./connecting.sh
+./connecting
 
 echo -n "Are you ready to try your OPL2 Audio Board? "
 read REPLY
