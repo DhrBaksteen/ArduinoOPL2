@@ -1,22 +1,22 @@
 /**
  * ________ __________.____    ________      _____            .___.__         .____    ._____.    
- * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ___   |    |   |__\_ |__  
- *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/ __\  |    |   |  || __ \ 
- * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  ( /_/ ) |    |___|  || \_\ \
- * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\___/  |_______ \__||___  /
- *         \/                 \/       \/ _____   \/           \/                    \/       \/ 
- *                                      _/ ____\__________ 
- *                                      \   __\/ __\_  __ \
- *                                       |  | ( /_/ )  | \/
- *                                       |__|  \___/|__|   
- *               _____            .___    .__                  ____    __________.__ 
- *              /  _  \_______  __| _/_ __|__| ____   ___    /  _ \   \______   \__|
- *             /  /_\  \_  __ \/ __ |  |  \  |/    \ / __\   >  _ </\  |     ___/  |
- *            /    |    \  | \/ /_/ |  |  /  |   |  ( /_/ ) /  (_\ \/  |    |   |  |
- *            \____|__  /__|  \____ |____/|__|___|  /\___/  \_____\ \  |____|   |__|
- *                    \/           \/             \/               \/               
+ * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ____   |    |   |__\_ |__  
+ *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \ 
+ * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  (  <_> ) |    |___|  || \_\ \
+ * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\____/  |_______ \__||___  /
+ *         \/                 \/       \/ _____   \/           \/                     \/       \/ 
+ *                                      _/ ____\___________                                       
+ *                                      \   __\/  _ \_  __ \                                      
+ *                                       |  | (  <_> )  | \/                                      
+ *                                       |__|  \____/|__|                                         
+ *               _____            .___    .__                  ____    __________.__              
+ *              /  _  \_______  __| _/_ __|__| ____   ____    /  _ \   \______   \__|             
+ *             /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \   >  _ </\  |     ___/  |             
+ *            /    |    \  | \/ /_/ |  |  /  |   |  (  <_> ) /  <_\ \/  |    |   |  |             
+ *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|             
+ *                    \/           \/             \/                \/                            
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and compatibles v1.3.0
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.0
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
@@ -37,7 +37,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2018-02-20
+ * Last updated 2018-04-29
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -163,23 +163,12 @@ byte OPL2::setRegister(byte reg, byte value) {
 byte OPL2::getRegisterOffset(byte channel, byte operatorNum) {
 	channel = max(0, min(channel, 8));
 	operatorNum = max(0, min(operatorNum, 1));
-	return offset[operatorNum][channel];
-}
-
-
-
-/**
- * Get the F-number for the given note, octave and channel. Note that the channel must have an appropriate block set
- * before calling this function in order to get a useful F-number!
- */
-short OPL2::getNoteFNumber(byte channel, byte octave, byte note) {
-	float frequency = getNoteFrequency(octave, note);
-	return getFrequencyFNumber(channel, frequency);
+	return registerOffsets[operatorNum][channel];
 }
 
 
 /**
- * Get the F-number for the given frequency for a given channel. When the F-number is calculated the current frequenct
+ * Get the F-number for the given frequency for a given channel. When the F-number is calculated the current frequency
  * block of the channel is taken into account.
  */
 short OPL2::getFrequencyFNumber(byte channel, float frequency) {
@@ -188,14 +177,9 @@ short OPL2::getFrequencyFNumber(byte channel, float frequency) {
 }
 
 
-/**
- * Get the F-number for a frequency in the given block,
- */
-short OPL2::getFNumberForBlock(float frequency, unsigned char block) {
-	float fInterval = fIntervals[max(0, min(block, 7))];
-	return (short)max(0, min(frequency / fInterval, 1023));
+short OPL2::getNoteFNumber(byte note) {
+	return noteFNumbers[max(0, min(note, 11))];
 }
-
 
 /**
  * Get the frequency step per F-number for the current block on the given channel.
@@ -203,28 +187,6 @@ short OPL2::getFNumberForBlock(float frequency, unsigned char block) {
 float OPL2::getFrequencyStep(byte channel) {
 	return fIntervals[getBlock(channel)];
 }
-
-
-/**
- * Get the frequency in Hz for the given note and octave.
- */
-float OPL2::getNoteFrequency(byte octave, byte note) {
-	octave = max(0, min(octave + (note / 12), 7));
-	float frequency = notes[note % 12];
-
-	if (octave < 4) {
-		for (int i = 0; i < 4 - octave; i ++) {
-			frequency /= 2;
-		}
-	} else if (octave > 4) {
-		for (int i = 0; i < octave - 4; i ++) {
-			frequency *= 2;
-		}
-	}
-
-	return frequency;
-}
-
 
 
 /**
@@ -236,7 +198,6 @@ byte OPL2::getFrequencyBlock(float frequency) {
 			return i;
 		}
 	}
-
 	return 7;
 }
 
@@ -258,7 +219,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 		case 6:		// Base drum...
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
-					instrumentBaseRegs[i] + drumOffset[0],
+					instrumentBaseRegs[i] + drumOffsets[0],
 					#if BOARD_TYPE == ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
@@ -266,7 +227,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 					#endif
 				);
 				setRegister(
-					instrumentBaseRegs[i] + drumOffset[1],
+					instrumentBaseRegs[i] + drumOffsets[1],
 					#if BOARD_TYPE == ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
@@ -282,7 +243,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 		case 10:	// Hi hat...
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
-					instrumentBaseRegs[i] + drumOffset[percussionChannel - 5],
+					instrumentBaseRegs[i] + drumOffsets[percussionChannel - 5],
 					#if BOARD_TYPE == ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
@@ -313,13 +274,8 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
  */
 void OPL2::playNote(byte channel, byte octave, byte note) {
 	setKeyOn(channel, false);
-	float frequency = getNoteFrequency(octave, note);
-	byte block = getFrequencyBlock(frequency);
-	if (getBlock(channel) != block) {	
-		setBlock(channel, block);
-	}
-	short fNumber = getFrequencyFNumber(channel, frequency);
-	setFNumber(channel, fNumber);
+	setBlock(channel, max(0, min(octave, 7)));
+	setFNumber(channel, noteFNumbers[max(0, min(note, 11))]);
 	setKeyOn(channel, true);
 }
 
@@ -761,12 +717,13 @@ byte OPL2::getDrums() {
  */
 byte OPL2::setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat) {
 	byte drums = 0;
-	drums |= bass   ? DRUM_BASS   : 0x00;
-	drums |= snare  ? DRUM_SNARE  : 0x00;
-	drums |= tom    ? DRUM_TOM    : 0x00;
-	drums |= cymbal ? DRUM_CYMBAL : 0x00;
-	drums |= hihat  ? DRUM_HI_HAT : 0x00;
-	return setRegister(0xBD, (oplRegisters[0xBD] & 0xE0) | drums);
+	drums += bass   ? DRUM_BASS   : 0x00;
+	drums += snare  ? DRUM_SNARE  : 0x00;
+	drums += tom    ? DRUM_TOM    : 0x00;
+	drums += cymbal ? DRUM_CYMBAL : 0x00;
+	drums += hihat  ? DRUM_HI_HAT : 0x00;
+	setRegister(0xBD, oplRegisters[0xBD] & ~drums);
+	return setRegister(0xBD, oplRegisters[0xBD] | drums);
 }
 
 

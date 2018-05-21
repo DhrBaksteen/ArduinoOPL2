@@ -18,7 +18,7 @@ echo "\033[1;36m   /    |    \\  |  / /_/ | |  ( /_/ )  |    |   ( /_/ ) __ \\| 
 echo "\033[1;34m   \\____|__  /____/\\____ | |__|\\___/   |______  /\\___(____  /__|  \\____ | "
 echo "\033[1;34m           \\/           \\/                    \\/          \\/           \\/ \033[0m"
 echo "Installation script for Raspberry Pi and compatibles"
-echo "Library version 1.4.0, 3rd March 2018"
+echo "Library version 1.4.0, 21st of May 2018"
 echo "Copyright (c) 2016-2018 Maarten Janssen, Cheerful"
 echo ""
 
@@ -26,7 +26,8 @@ echo -n "Checking for WiringPi... "
 if ! type "gpio" > /dev/null
 then
 	echo "\033[0;31mFailed\033[0m"
-	echo -n "\nWiringPi was not found. Do you want to install it now? "
+	echo "\nWiringPi was not found."
+	echo -n "Do you want to install it now? "
 	read REPLY
 	REPLY=$(echo "$REPLY" | awk '{gsub(/ /, "", $0); print toupper(substr($0==""?"N":$0, 1, 1))}')
 
@@ -34,14 +35,14 @@ then
 	then
 		echo -n "Downloading and installing WiringPi... "
 		apt-get install -y git-core > /dev/null
-		rm -rf temp
-		mkdir temp
-		cd temp
+		rm -rf opl2_temp
+		mkdir opl2_temp
+		cd opl2_temp
 		git clone --quiet git://git.drogon.net/wiringPi > /dev/null
 		cd wiringPi
 		./build > /dev/null
 		cd ../..
-		rm -rf temp
+		rm -rf opl2_temp
 	
 		# Check if WiringPi installed ok...
 		if ! type "gpio" > /dev/null; then

@@ -24,13 +24,13 @@
 
 
 const int noteDefs[21] = {
-	NOTE_A, NOTE_A - 1, NOTE_A + 1,
-	NOTE_B, NOTE_B - 1, NOTE_B + 1,
-	NOTE_C, NOTE_C - 1, NOTE_C + 1,
-	NOTE_D, NOTE_D - 1, NOTE_D + 1,
-	NOTE_E, NOTE_E - 1, NOTE_E + 1,
-	NOTE_F, NOTE_F - 1, NOTE_F + 1,
-	NOTE_G, NOTE_G - 1, NOTE_G + 1
+	NOTE_A, NOTE_GS, NOTE_AS,
+	NOTE_B, NOTE_AS, NOTE_B,
+	NOTE_C, NOTE_C,  NOTE_CS,
+	NOTE_D, NOTE_CS, NOTE_DS,
+	NOTE_E, NOTE_DS, NOTE_F,
+	NOTE_F, NOTE_E,  NOTE_FS,
+	NOTE_G, NOTE_FS, NOTE_GS
 };
 
 float tempo;

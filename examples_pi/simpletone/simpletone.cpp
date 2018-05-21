@@ -36,13 +36,14 @@ int main(int argc, char **argv) {
 		opl2.setDecay     (i, CARRIER, 0x04);
 		opl2.setSustain   (i, CARRIER, 0x0F);
 		opl2.setRelease   (i, CARRIER, 0x0F);
-		opl2.setBlock     (i, 0x05);
 	}
 
 	// Play notes on alternating channels.
 	for (byte i = 0; i < 13; i ++) {
-		opl2.playNote(i % 3, 4, i);
-		delay(500);
+		byte octave = 3 + (i / 12);
+		byte note = i % 12;
+		opl2.playNote(i % 3, octave, note);
+		delay(300);
 	}
 
 	return 0;
