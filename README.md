@@ -1,7 +1,7 @@
 # OPL2 Audio Board
 This repository contains the OPL2 Audio Board library for Arduino, Raspberry Pi and Orange Pi as well as a number of examples on how the board can be used. Use this library to control the YM3812 chip and play music, sound effects or have fun with OPL2 FM-synthesis.
 
-Current library version is 1.2.2
+Current library version is 1.4.0
 
 To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.com/products/DhrBaksteen/opl2-audio-board/).
 
@@ -23,10 +23,8 @@ Alternatively you can clone this repo in the `libraries` folder of the Arduino I
 
 For more information see the [instructions](https://www.arduino.cc/en/Guide/Libraries) on the Arduino website.
 
-#### Raspberry Pi / Orange Pi
-To install the library onto your Pi clone this repo and run `./build`. You can specify the type of board you are using as a command line agrument. Use `./build -rpi` for Raspberry Pi or `./build -opi` for Orange Pi. If you do not specify a board type the build will assume you're building the library for a Raspberry Pi.
-
-The OPL2 library requires [WiringPi](http://wiringpi.com/) to be installed on your Pi. Normally this library is already installed.
+#### Raspberry Pi / Orange Pi and compatibles
+To install the library onto your Pi clone this repo and run `./build`. The OPL2 library requires [WiringPi](http://wiringpi.com/) to be installed on your Pi. Normally this library is already installed, but if this is not the case then the build script can install it for you.
 
 ## 3. Connecting the OPL2 Audio Board
 You can connect the OPL2 Audio Board directly to a speaker, however for the best results I recommend you connect some active (amplified) speakers. Headphones or line level recording will also work great. See the tables below how to connect the OPL2 Audio Board to your development platform.
@@ -43,6 +41,8 @@ You can connect the OPL2 Audio Board directly to a speaker, however for the best
 <sup>*</sup>Use pins 51 and 52 respectively on Arduino Mega, or refer to [https://www.arduino.cc/en/Reference/SPI](https://www.arduino.cc/en/Reference/SPI) for your Arduino board.
 
 #### Raspberry Pi / Orange Pi
+After installing the library you can run `./connecting` to see how to connect your OPL2 board to the Pi. Normally connections are as follows:
+
 | OPL2 Board | GPIO Pin |
 |------------|-------------|
 | +5v | 2 |

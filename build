@@ -43,14 +43,14 @@ then
 		./build > /dev/null
 		cd ../..
 		rm -rf opl2_temp
-	
+
 		# Check if WiringPi installed ok...
 		if ! type "gpio" > /dev/null; then
 			echo "\033[0;31mFailed\033[0m"
 			echo "WiringPi installation failed! Sorry mate, you're on your own."
 			echo ""
 			exit
-		fi	
+		fi
 		echo "\033[0;32mDone\033[0m"
 	else
 		echo "OPL2 Audio Board installation cannot continue without WiringPi."
@@ -75,6 +75,7 @@ gcc -std=c++11 -Wall -o examples_pi/demotune/demotune examples_pi/demotune/demot
 gcc -std=c++11 -Wall -o examples_pi/drums/drums examples_pi/drums/drums.cpp -lOPL2 -lwiringPi
 gcc -std=c++11 -Wall -o examples_pi/simpletone/simpletone examples_pi/simpletone/simpletone.cpp -lOPL2 -lwiringPi
 gcc -std=c++11 -Wall -o examples_pi/opl2play/opl2play examples_pi/opl2play/opl2play.cpp -lOPL2 -lwiringPi -lz
+gcc -std=c++11 -Wall -o examples_pi/frequency_sweep/sweep examples_pi/frequency_sweep/sweep.cpp -lOPL2 -lwiringPi -lz
 echo "\033[0;32mDone\033[0m"
 echo "Installation complete."
 
