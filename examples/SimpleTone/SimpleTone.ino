@@ -33,16 +33,14 @@ void setup() {
     opl2.setDecay     (i, CARRIER, 0x04);
     opl2.setSustain   (i, CARRIER, 0x0F);
     opl2.setRelease   (i, CARRIER, 0x0F);
-    opl2.setBlock     (i, 0x05);
   }
 
-  // Play notes on alternating channels.
-  for (byte i = 0; i < 13; i ++) {
-    short freq = opl2.getNoteFrequency(i % 3, 4, i);
-    opl2.setFrequency(i % 3, freq);
-    opl2.setKeyOn    (i % 3, false);
-    opl2.setKeyOn    (i % 3, true);
-    delay(500);
+  // Play notes C-3 through B-4 on alternating channels.
+  for (byte i = 0; i < 24; i ++) {
+    byte octave = 3 + (i / 12);
+    byte note = i % 12;
+    opl2.playNote(i % 3, octave, note);
+    delay(300);
   }
 }
 

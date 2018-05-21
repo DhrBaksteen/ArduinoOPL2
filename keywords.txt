@@ -15,7 +15,11 @@ OPL2	KEYWORD1
 init	KEYWORD2
 reset	KEYWORD2
 write	KEYWORD2
-getNoteFrequency	KEYWORD2
+getRegisterOffset	KEYWORD2
+getFrequencyBlock	KEYWORD2
+getFrequencyFNumber	KEYWORD2
+getNoteFNumber	KEYWORD2
+getFrequencyStep	KEYWORD2
 getRegister	KEYWORD2
 getWaveFormSelect	KEYWORD2
 getTremolo	KEYWORD2
@@ -29,6 +33,7 @@ getAttack	KEYWORD2
 getDecay	KEYWORD2
 getSustain	KEYWORD2
 getRelease	KEYWORD2
+getFNumber	KEYWORD2
 getFrequency	KEYWORD2
 getBlock	KEYWORD2
 getKeyOn	KEYWORD2
@@ -40,6 +45,8 @@ getPercussion	KEYWORD2
 getDrums	KEYWORD2
 getWaveForm	KEYWORD2
 setInstrument	KEYWORD2
+playNote	KEYWORD2
+playDrum	KEYWORD2
 setRegister	KEYWORD2
 setWaveFormSelect	KEYWORD2
 setTremolo	KEYWORD2
@@ -53,6 +60,7 @@ setAttack	KEYWORD2
 setDecay	KEYWORD2
 setSustain	KEYWORD2
 setRelease	KEYWORD2
+setFNumber	KEYWORD2
 setFrequency	KEYWORD2
 setBlock	KEYWORD2
 setKeyOn	KEYWORD2
@@ -72,6 +80,9 @@ setWaveForm	KEYWORD2
 # Constants (LITERAL1)
 #######################################
 
+PIN_LATCH	LITERAL1
+PIN_ADDR	LITERAL1
+PIN_RESET	LITERAL1
 OPERATOR1	LITERAL1
 OPERATOR2	LITERAL1
 MODULATOR	LITERAL1
