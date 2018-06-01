@@ -1,7 +1,7 @@
 # OPL2 Audio Board
 This repository contains the OPL2 Audio Board library for Arduino, Raspberry Pi and Orange Pi as well as a number of examples on how the board can be used. Use this library to control the YM3812 chip and play music, sound effects or have fun with OPL2 FM-synthesis.
 
-Current library version is 1.4.0
+Current library version is 1.4.1
 
 To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.com/products/DhrBaksteen/opl2-audio-board/).
 
