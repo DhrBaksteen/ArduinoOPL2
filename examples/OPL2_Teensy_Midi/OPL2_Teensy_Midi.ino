@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <OPL2.h>
 #include <midi_instruments.h>
+#include "midi_drums.h"
 
 #define CONTROL_VOLUME          7
 #define CONTROL_ALL_SOUND_OFF 120
@@ -9,6 +10,7 @@
 
 #define MIDI_CHANNELS 16
 #define OPL2_CHANNELS 9
+#define DRUM_BASE_NOTE 27
 
 const unsigned char *instruments[] = {
   PIANO1, PIANO2, PIANO3, HONKTONK, EP1, EP2, HARPSIC, CLAVIC, CELESTA, GLOCK, MUSICBOX, VIBES, MARIMBA, XYLO, TUBEBELL, SANTUR,
@@ -19,6 +21,18 @@ const unsigned char *instruments[] = {
   SQUARWAV, SAWWAV, SYNCALLI, CHIFLEAD, CHARANG, SOLOVOX, FIFTHSAW, BASSLEAD, FANTASIA, WARMPAD, POLYSYN, SPACEVOX, BOWEDGLS, METALPAD, HALOPAD, SWEEPPAD,
   ICERAIN, SOUNDTRK, CRYSTAL, ATMOSPH, BRIGHT, GOBLIN, ECHODROP, STARTHEM, SITAR, BANJO, SHAMISEN, KOTO, KALIMBA, BAGPIPE, FIDDLE, SHANNAI,
   TINKLBEL, AGOGO, STEELDRM, WOODBLOK, TAIKO, MELOTOM, SYNDRUM, REVRSCYM, FRETNOIS, BRTHNOIS, SEASHORE, BIRDS, TELEPHON, HELICOPT, APPLAUSE
+};
+const unsigned char *drums[] = {
+  INSTRUMENT_CLAP2, INSTRUMENT_SCRATCH1, INSTRUMENT_SCRATCH2, INSTRUMENT_RIMSHOT2, INSTRUMENT_HIQ, INSTRUMENT_WOODBLOK,
+  INSTRUMENT_GLOCK, INSTRUMENT_BASS_DR2, INSTRUMENT_BASS_DR1, INSTRUMENT_RIMSHOT, INSTRUMENT_SNARE_AC, INSTRUMENT_CLAP,
+  INSTRUMENT_SNARE_EL, INSTRUMENT_LO_TOMS, INSTRUMENT_HIHAT_CL, INSTRUMENT_HI_TOMS, INSTRUMENT_HIHAT_PL, INSTRUMENT_LOW_TOM,
+  INSTRUMENT_HIHAT_OP, INSTRUMENT_LTOM_MID, INSTRUMENT_HTOM_MID, INSTRUMENT_CRASH, INSTRUMENT_TOM_HIGH, INSTRUMENT_RIDE_CY,
+  INSTRUMENT_TAMBOUR, INSTRUMENT_CYMBAL, INSTRUMENT_TAMBOU2, INSTRUMENT_SPLASH, INSTRUMENT_COWBELL, INSTRUMENT_CRASH2,
+  INSTRUMENT_VIBRASLA, INSTRUMENT_RIDE2, INSTRUMENT_HI_BONGO, INSTRUMENT_LO_BONGO, INSTRUMENT_MUTECONG, INSTRUMENT_OPENCONG,
+  INSTRUMENT_LOWCONGA, INSTRUMENT_HI_TIMBA, INSTRUMENT_LO_TIMBA, INSTRUMENT_HI_AGOGO, INSTRUMENT_LO_AGOGO, INSTRUMENT_CABASA,
+  INSTRUMENT_MARACAS, INSTRUMENT_S_WHISTL, INSTRUMENT_L_WHISTL, INSTRUMENT_S_GUIRO, INSTRUMENT_L_GUIRO, INSTRUMENT_CLAVES,
+  INSTRUMENT_HI_WDBLK, INSTRUMENT_LO_WDBLK, INSTRUMENT_MU_CUICA, INSTRUMENT_OP_CUICA, INSTRUMENT_MU_TRNGL, INSTRUMENT_OP_TRNGL,
+  INSTRUMENT_SHAKER, INSTRUMENT_TRIANGL1, INSTRUMENT_TRIANGL2, INSTRUMENT_RIMSHOT3, INSTRUMENT_RIMSHOT4 ,INSTRUMENT_TAIKO,
 };
 
 struct ChannelMapping {
@@ -58,10 +72,21 @@ void loop() {
 byte getFreeChannel(byte midiChannel) {  
   byte opl2Channel = 255;
 
-  for (byte i = 0; i < OPL2_CHANNELS; i ++) {
-    if (!opl2.getKeyOn(i)) {
-      opl2Channel = i;
-      break;
+  // if (midiChannel == 10) {
+  //   for (byte i = 0; i < OPL2_CHANNELS; i ++) {
+  //     if (channelMap[i].midiChannel == 10) {
+  //       opl2Channel = i;
+  //       break;
+  //     }
+  //   }
+  // }
+
+  if (opl2Channel == 255) {
+    for (byte i = 0; i < OPL2_CHANNELS; i ++) {
+      if (!opl2.getKeyOn(i)) {
+        opl2Channel = i;
+        break;
+      }
     }
   }
 
@@ -103,12 +128,18 @@ void onNoteOn(byte channel, byte note, byte velocity) {
     onNoteOff(channel, note, velocity);
     return;
   }
-  
-  if (channel == 10) return;
 
   // Get an available OPL2 channel and setup instrument parameters.
   byte i = getFreeChannel(channel);
-  opl2.setInstrument(i, instruments[programMap[channel]]);
+  if (channel != 10) {
+    opl2.setInstrument(i, instruments[programMap[channel]]);
+  } else {
+    if (note >= DRUM_BASE_NOTE && note < DRUM_BASE_NOTE + 60) {
+      opl2.setInstrument(i, drums[note - DRUM_BASE_NOTE]);
+    } else {
+      return;
+    }
+  }
   channelMap[i].midiChannel  = channel;
   channelMap[i].midiNote     = note;
   channelMap[i].midiVelocity = round(velocity / 127.0);
