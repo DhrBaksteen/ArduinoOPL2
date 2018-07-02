@@ -2,7 +2,7 @@
  * This is a demonstration sketch for the OPL2 Audio Board. It demonstrates playing a little tune on 3 channels using
  * a piano from the MIDI instrument defenitions.
  *
- * OPL2 board is connedted as follows:
+ * OPL2 board is connected as follows:
  * Pin  8 - Reset
  * Pin  9 - A0
  * Pin 10 - Latch
@@ -72,11 +72,11 @@ void setup() {
   opl2.init();
 
   // Setup channels 0, 1 and 2.
-  opl2.setInstrument(0, PIANO1);
+  opl2.setInstrument(0, INSTRUMENT_PIANO1);
   opl2.setBlock     (0, 5);
-  opl2.setInstrument(1, PIANO1);
+  opl2.setInstrument(1, INSTRUMENT_PIANO1);
   opl2.setBlock     (1, 4);
-  opl2.setInstrument(2, PIANO1);
+  opl2.setInstrument(2, INSTRUMENT_PIANO1);
   opl2.setBlock     (2, 4);
 }
 

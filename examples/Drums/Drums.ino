@@ -4,11 +4,11 @@
  * used by tom tom and cymbal.
  *
  * OPL2 board is connected as follows:
- * Pin  8 - Reset
- * Pin  9 - A0
- * Pin 10 - Latch
- * Pin 11 - Data     (Use pin 51 for Arduino Mega)
- * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ *   Pin  8 - Reset
+ *   Pin  9 - A0
+ *   Pin 10 - Latch
+ *   Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ *   Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2017-04-13
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
@@ -29,11 +29,11 @@ void setup() {
 
   // Set percussion mode and load instruments.
   opl2.setPercussion(true);
-  opl2.setInstrument(0, BDRUM1);
-  opl2.setInstrument(0, RKSNARE1);
-  opl2.setInstrument(0, TOM2);
-  opl2.setInstrument(0, CYMBAL1);
-  opl2.setInstrument(0, HIHAT2);
+  opl2.setInstrument(0, INSTRUMENT_BDRUM1);
+  opl2.setInstrument(0, INSTRUMENT_RKSNARE1);
+  opl2.setInstrument(0, INSTRUMENT_TOM2);
+  opl2.setInstrument(0, INSTRUMENT_CYMBAL1);
+  opl2.setInstrument(0, INSTRUMENT_HIHAT2);
 
   // Set octave and frequency for bass drum.
   opl2.setBlock(6, 4);

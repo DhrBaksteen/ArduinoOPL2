@@ -2,14 +2,12 @@
  * This is a simple demo for the OPL2 library that demonstrates altering the frequency of an active channel. This demo
  * sweeps the frequency between 250 and 750 Hz on channel 0.
  *
- * The OPL2 board is connedted as follows:
- *   OPL2 Board | Raspberry Pi | Orange Pi
- *  ------------+--------------+-----------
- *     Reset    |      13      |    18     
- *     A0       |      12      |    16     
- *     Latch    |      11      |    12     
- *     Data     |      19      |    19     
- *     Shift    |      23      |    23     
+ * The OPL2 board is connected as follows or run `./connecting`.
+ *   Pin 13 - Reset
+ *   Pin 12 - A0
+ *   Pin 11 - Latch
+ *   Pin 19 - Data
+ *   Pin 23 - Shift
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2018-04-30
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2

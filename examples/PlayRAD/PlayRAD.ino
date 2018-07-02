@@ -7,12 +7,12 @@
  * SdFat library by Bill Greiman which is more memory friendly. You can install it using the Arduino Library Manager or
  * download it from github at https://github.com/greiman/SdFat.
  *
- * OPL2 board is connedted as follows:
- * Pin  8 - Reset
- * Pin  9 - A0
- * Pin 10 - Latch
- * Pin 11 - Data     (Use pin 51 for Arduino Mega)
- * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ * OPL2 board is connected as follows:
+ *   Pin  8 - Reset
+ *   Pin  9 - A0
+ *   Pin 10 - Latch
+ *   Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ *   Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  *
  * Connect the SD card with Arduino SPI pins as usual and use pin 7 as CS.
  *

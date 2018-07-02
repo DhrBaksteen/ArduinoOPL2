@@ -37,6 +37,9 @@
 		#define SPI_CHANNEL 0
 	#endif
 
+	// General OPL2 definitions.
+	#define OPL2_NUM_CHANNELS 9
+
 	// Operator definitions.
 	#define OPERATOR1 0
 	#define OPERATOR2 1
@@ -119,7 +122,7 @@
 			byte getDrums();
 			byte getWaveForm(byte channel, byte operatorNum);
 
-			void setInstrument(byte, const unsigned char*);
+			void setInstrument(byte channel, const unsigned char *instrument);
 			void playNote(byte channel, byte octave, byte note);
 			void playDrum(byte drum, byte octave, byte note);
 			byte setRegister(byte reg, byte value);

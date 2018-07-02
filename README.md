@@ -1,7 +1,7 @@
 # OPL2 Audio Board
-This repository contains the OPL2 Audio Board library for Arduino, Raspberry Pi and Orange Pi as well as a number of examples on how the board can be used. Use this library to control the YM3812 chip and play music, sound effects or have fun with OPL2 FM-synthesis.
+This repository contains the OPL2 Audio Board library for Arduino, Teensy, Raspberry Pi and Orange Pi as well as a number of examples on how the board can be used. Use this library to control the YM3812 chip and play music, sound effects or have fun with OPL2 FM-synthesis. If you are using a Teensy 2.0 or later you can even use the OPL2 Audio board as a MIDI device.
 
-Current library version is 1.4.1
+Current library version is 1.4.2
 
 To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.com/products/DhrBaksteen/opl2-audio-board/).
 
@@ -29,8 +29,8 @@ To install the library onto your Pi clone this repo and run `./build`. The OPL2 
 ## 3. Connecting the OPL2 Audio Board
 You can connect the OPL2 Audio Board directly to a speaker, however for the best results I recommend you connect some active (amplified) speakers. Headphones or line level recording will also work great. See the tables below how to connect the OPL2 Audio Board to your development platform.
 
-#### Arduino
-| OPL2 Board | Arduino Pin |
+#### Arduino / Teensy
+| OPL2 Board | Arduino / Teensy Pin |
 |------------|-------------|
 | A0 | 9 |
 | Data | 11<sup>*</sup> |

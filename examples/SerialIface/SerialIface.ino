@@ -25,11 +25,11 @@
  * Arduino: k
  *
  * OPL2 board is connected as follows:
- * Pin  8 - Reset
- * Pin  9 - A0
- * Pin 10 - Latch
- * Pin 11 - Data     (Use pin 51 for Arduino Mega)
- * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ *   Pin  8 - Reset
+ *   Pin  9 - A0
+ *   Pin 10 - Latch
+ *   Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ *   Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  */
 
 #include <SPI.h>

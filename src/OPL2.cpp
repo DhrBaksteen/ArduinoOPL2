@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|             
  *                    \/           \/             \/                \/                            
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.0
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.2
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
@@ -37,7 +37,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2018-05-21
+ * Last updated 2018-07-02
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -177,6 +177,9 @@ short OPL2::getFrequencyFNumber(byte channel, float frequency) {
 }
 
 
+/**
+ * Get the F-Number for the given note. In this case the block is assumed to be the octave.
+ */
 short OPL2::getNoteFNumber(byte note) {
 	return noteFNumbers[max(0, min(note, 11))];
 }

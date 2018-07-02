@@ -2,12 +2,12 @@
  * This is a simple demo sketch for the OPL2 library. It plays a musical scale on channels 0, 1 and 2 of the YM3812
  * using a bell sound.
  *
- * OPL2 board is connedted as follows:
- * Pin  8 - Reset
- * Pin  9 - A0
- * Pin 10 - Latch
- * Pin 11 - Data     (Use pin 51 for Arduino Mega)
- * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ * OPL2 board is connected as follows:
+ *   Pin  8 - Reset
+ *   Pin  9 - A0
+ *   Pin 10 - Latch
+ *   Pin 11 - Data     (Use pin 51 for Arduino Mega)
+ *   Pin 13 - Shift    (Use pin 52 for Arduino Mega)
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
