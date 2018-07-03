@@ -172,7 +172,7 @@ void onNoteOff(byte channel, byte note, byte velocity) {
  * Handle instrument change on the given MIDI channel.
  */
 void onProgramChange(byte channel, byte program) {
-	programMap[channel] = program;
+	programMap[channel] = min(program, 127);
 }
 
 
