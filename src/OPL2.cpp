@@ -48,7 +48,7 @@
 
 #include "OPL2.h"
 
-#if BOARD_TYPE == ARDUINO
+#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 	#include <SPI.h>
 	#include <Arduino.h>
 #else
@@ -78,7 +78,7 @@ OPL2::OPL2(byte reset, byte address, byte latch) {
  * Initialize the YM3812.
  */
 void OPL2::init() {
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.begin();
 	#else
 		wiringPiSetup();
@@ -116,7 +116,7 @@ void OPL2::reset() {
  */
 void OPL2::write(byte reg, byte data) {
 	digitalWrite(pinAddress, LOW);
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.transfer(reg);
 	#else
 		wiringPiSPIDataRW(SPI_CHANNEL, &reg, 1);
@@ -127,7 +127,7 @@ void OPL2::write(byte reg, byte data) {
 	delayMicroseconds(4);
 
 	digitalWrite(pinAddress, HIGH);
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.transfer(data);
 	#else
 		wiringPiSPIDataRW(SPI_CHANNEL, &data, 1);
@@ -211,7 +211,7 @@ byte OPL2::getFrequencyBlock(float frequency) {
  * See instruments.h for instrument definition format.
  */
 void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		unsigned char percussionChannel = pgm_read_byte_near(instrument);
 	#else
 		unsigned char percussionChannel = instrument[0];
@@ -223,7 +223,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
 					instrumentBaseRegs[i] + drumOffsets[0],
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]
@@ -231,7 +231,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 				);
 				setRegister(
 					instrumentBaseRegs[i] + drumOffsets[1],
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]
@@ -247,7 +247,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
 					instrumentBaseRegs[i] + drumOffsets[percussionChannel - 5],
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]
@@ -260,7 +260,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 			for (byte i = 0; i < 11; i ++) {
 				setRegister(
 					instrumentBaseRegs[i % 6] + getRegisterOffset(channel, i > 5),
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]

@@ -16,14 +16,14 @@
 #ifndef OPL2_LIB_H_
 	#define OPL2_LIB_H_
 
-	#define ARDUINO      0
-	#define RASPBERRY_PI 1
+	#define OPL2_BOARD_TYPE_ARDUINO      0
+	#define OPL2_BOARD_TYPE_RASPBERRY_PI 1
 
 	// !!! IMPORTANT !!!
 	// In order to correctly compile the library for your platform be sure to set the correct BOARD_TYPE below.
-	#define BOARD_TYPE ARDUINO
+	#define BOARD_TYPE OPL2_BOARD_TYPE_ARDUINO
 
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#define PIN_LATCH 10
 		#define PIN_ADDR   9
 		#define PIN_RESET  8
@@ -72,7 +72,7 @@
 	#define NOTE_B  11
 
 
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#include <Arduino.h>
 	#else
 		#include <stdint.h>
@@ -167,8 +167,8 @@
 				776.053, 1552.107, 3104.215, 6208.431
 			};
 			const byte registerOffsets[2][9] = {  
-				{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 0 */
-				{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 1 */
+				{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 1 */
+				{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 2 */
 			};
 			const byte drumOffsets[6] = {
 				0x10, 0x13, 0x14, 0x12, 0x15, 0x11
