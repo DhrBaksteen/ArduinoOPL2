@@ -28,7 +28,6 @@
 #define CONTROL_RESET_ALL     121
 #define CONTROL_ALL_NOTES_OFF 123
 
-
 // Channel mapping to keep track of MIDI to OPL2 channel mapping.
 struct ChannelMapping {
 	byte midiChannel;
@@ -82,9 +81,15 @@ byte getFreeChannel(byte midiChannel) {
 		}
 	}
 
-	// If no channels are free then recycle the oldest.
+	// If no channels are free then recycle the oldest, where drum channels will be the first to be recycled. Only if
+	// no drum channels are left will the actual oldest channel be recycled.
 	if (opl2Channel == 255) {
 		opl2Channel = oldestChannel[0];
+		for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
+			if (channelMap[oldestChannel[i]].midiChannel == MIDI_DRUM_CHANNEL) {
+				opl2Channel = oldestChannel[i];
+			}
+		}
 	}
 
 	// Update the list of last used channels by moving the current channel to the bottom so the last updated channel
@@ -148,9 +153,13 @@ void onNoteOn(byte channel, byte note, byte velocity) {
 	setOpl2ChannelVolume(i, channel);
 
 	// Calculate octave and note number and play note!
-	note = max(24, min(note, 119));
-	byte opl2Octave = 1 + (note - 24) / 12;
-	byte opl2Note   = note % 12;
+	byte opl2Octave = 4;
+	byte opl2Note = NOTE_C;
+	if (channel != MIDI_DRUM_CHANNEL) {
+		note = max(24, min(note, 119));
+		opl2Octave = 1 + (note - 24) / 12;
+		opl2Note   = note % 12;
+	}
 	opl2.playNote(i, opl2Octave, opl2Note);
 }
 

@@ -1,4 +1,4 @@
-#include <usb_names.h>
+#include "usb_names.h"
 
 #define MIDI_NAME     { 'O','P','L','2',' ','A','u','d','i','o',' ','B','o','a','r','d',' ','M','I','D','I' }
 #define MIDI_NAME_LEN 21
