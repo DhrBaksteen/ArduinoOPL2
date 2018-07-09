@@ -52,7 +52,6 @@ void setup() {
 	usbMIDI.setHandleNoteOn(onNoteOn);
 	usbMIDI.setHandleNoteOff(onNoteOff);
 	usbMIDI.setHandleProgramChange(onProgramChange);
-	usbMIDI.setHandlePitchChange(onPitchChange);
 	usbMIDI.setHandleControlChange(onControlChange);
 	usbMIDI.setHandleSystemReset(onSystemReset);
 	onSystemReset();
@@ -186,14 +185,6 @@ void onProgramChange(byte channel, byte program) {
 
 
 /**
- * Hansle pitch change on the given MIDI channel.
- */
-void onPitchChange(byte channel, int pitch) {
-	// TODO!
-}
-
-
-/**
  * Handle MIDI control changes on the given channel.
  */
 void onControlChange(byte channel, byte control, byte value) {
@@ -218,8 +209,15 @@ void onControlChange(byte channel, byte control, byte value) {
 			}
 		break;
 
-		// Silence all MIDI channels.
+		// Immediately silence all channels.
+		// Intentionally cascade into CONTROL_ALL_NOTES_OFF!
 		case CONTROL_ALL_SOUND_OFF:
+			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
+				opl2.setRelease(i, OPERATOR1, 0);
+				opl2.setRelease(i, OPERATOR2, 0);
+			}
+
+		// Silence all MIDI channels.
 		case CONTROL_ALL_NOTES_OFF: {
 			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 				if (channelMap[i].midiChannel == channel) {

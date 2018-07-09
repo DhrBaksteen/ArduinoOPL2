@@ -7,8 +7,11 @@
  *   Pin  8 - Reset
  *   Pin  9 - A0
  *   Pin 10 - Latch
- *   Pin 11 - Data     (Use pin 51 for Arduino Mega)
- *   Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ *   Pin 11 - Data
+ *   Pin 13 - Shift
+ *
+ * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
+ * of choice!
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2017-04-13
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
