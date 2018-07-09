@@ -21,18 +21,16 @@
  *
  * Look for example code on how to use this library in the examples folder.
  *
- * Connect the OPL2 Audio Board as follows:
- *               |         | Raspberry Pi 
- *    OPL2 Board | Arduino |   Orange Pi
+ * Connect the OPL2 Audio Board as follows. To learn how to connect your favorite development platform visit the wiki at
+ * https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting.
+ *    OPL2 Board | Arduino | Raspberry Pi 
  *   ------------+---------+--------------
- *      Reset    |    8    |      18
- *      A0       |    9    |      16
- *      Latch    |   10    |      12
- *      Data     |   11*   |      19
- *      Shift    |   13*   |      23
+ *      Reset    |    8    |      18      
+ *      A0       |    9    |      16      
+ *      Latch    |   10    |      12      
+ *      Data     |   11    |      19      
+ *      Shift    |   13    |      23      
  *
- * Arduino pins 11 and 13 are based on Arduino Uno. For Arduino Mega use pins 51 and 52 respectively, or refer to
- * https://www.arduino.cc/en/Reference/SPI for your Arduino board.
  *
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
