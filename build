@@ -76,7 +76,7 @@ else
 fi
 
 echo -n "Building the OPL2 library... "
-sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE RASPBERRY_PI/' src/OPL2.h
+sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE OPL2_BOARD_TYPE_RASPBERRY_PI/' src/OPL2.h
 gcc -std=c++11 -c -fPIC src/OPL2.cpp -lwiringPi
 gcc -shared -o libOPL2.so OPL2.o
 mv libOPL2.so /usr/lib/
