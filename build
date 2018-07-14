@@ -18,7 +18,7 @@ echo "\033[1;36m   /    |    \\  |  / /_/ | |  ( /_/ )  |    |   ( /_/ ) __ \\| 
 echo "\033[1;34m   \\____|__  /____/\\____ | |__|\\___/   |______  /\\___(____  /__|  \\____ | "
 echo "\033[1;34m           \\/           \\/                    \\/          \\/           \\/ \033[0m"
 echo "Installation script for Raspberry Pi and compatibles"
-echo "Library version 1.4.1, 1st of June 2018"
+echo "Library version 1.4.2, 14th of July 2018"
 echo "Copyright (c) 2016-2018 Maarten Janssen, Cheerful"
 echo ""
 
@@ -76,7 +76,7 @@ else
 fi
 
 echo -n "Building the OPL2 library... "
-sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE RASPBERRY_PI/' src/OPL2.h
+sed -i 's/^\s*#define BOARD_TYPE.*/\t#define BOARD_TYPE OPL2_BOARD_TYPE_RASPBERRY_PI/' src/OPL2.h
 gcc -std=c++11 -c -fPIC src/OPL2.cpp -lwiringPi
 gcc -shared -o libOPL2.so OPL2.o
 mv libOPL2.so /usr/lib/

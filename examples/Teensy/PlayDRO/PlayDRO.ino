@@ -1,35 +1,33 @@
 /**
  * This is an example sketch from the OPL2 library for Arduino. It plays a DRO audio file from SD card using the YM3812
- * audio chip.
+ * audio chip. This example requires a Teensy with onboard SD card slot and the SdFat library by Bill Greiman. You can
+ * install it using the Arduino Library Manager or download it from github at https://github.com/greiman/SdFat. If you
+ * use an SPI based breakout board for SPI then please use the Arduino version of this sketch.
  *
  * OPL2 board is connected as follows:
  *   Pin  8 - Reset
  *   Pin  9 - A0
  *   Pin 10 - Latch
- *   Pin 11 - Data
- *   Pin 13 - Shift
- *
- * Connect the SD card with Arduino SPI pins as usual and use pin 7 as CS.
- *
- * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
- * of choice!
+ *   Pin 11 - Data     (Use pin 22 for Teensy ++ 2.0)
+ *   Pin 13 - Shift    (Use pin 21 for Teensy ++ 2.0)
  *
  * By default this example will look for the phemopop.dro file in the root of the SD card. This file is found among the
  * files for this example. For more information about the DRO file format please visit
  * http://www.shikadi.net/moddingwiki/DRO_Format
  *
- * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-17
+ * Code by Maarten Janssen (maarten@cheerful.nl) 2018-07-09
  * Song Phemo-pop! by Olli Niemitalo/Yehar 1996
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
 
 #include <SPI.h>
-#include <SD.h>
+#include <SdFat.h>
 #include <OPL2.h>
 
 OPL2 opl2;
-File droFile;
+SdFatSdio SD;
+SdFile droFile;
 
 unsigned long offset       = 0;
 unsigned long songLength   = 0;
@@ -42,7 +40,7 @@ byte registerMap[256];
 
 void setup() {
   opl2.init();
-  SD.begin(7);
+  SD.begin();
 
   loadDroSong("phemopop.dro");
   // loadDroSong("strikefo.dro");
@@ -67,8 +65,8 @@ void loop() {
 
 
 void loadDroSong(char* fileName) {
-  droFile = SD.open(fileName, FILE_READ);
-  droFile.seek(12);
+  droFile.open(fileName, FILE_READ);
+  droFile.seekSet(12);
 
   songLength  = droFile.read();
   songLength += droFile.read() << 8;
@@ -80,7 +78,7 @@ void loadDroSong(char* fileName) {
   songDuration += droFile.read() << 16;
   songDuration += droFile.read() << 24;
 
-  droFile.seek(23);
+  droFile.seekSet(23);
   codeShortDelay = droFile.read();
   codeLongDelay  = droFile.read();
   registerMapLength = droFile.read();

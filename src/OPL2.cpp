@@ -16,28 +16,26 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|             
  *                    \/           \/             \/                \/                            
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.0
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.2
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
  *
- * Connect the OPL2 Audio Board as follows:
- *               |         | Raspberry Pi 
- *    OPL2 Board | Arduino |   Orange Pi
+ * Connect the OPL2 Audio Board as follows. To learn how to connect your favorite development platform visit the wiki at
+ * https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting.
+ *    OPL2 Board | Arduino | Raspberry Pi 
  *   ------------+---------+--------------
- *      Reset    |    8    |      18
- *      A0       |    9    |      16
- *      Latch    |   10    |      12
- *      Data     |   11*   |      19
- *      Shift    |   13*   |      23
+ *      Reset    |    8    |      18      
+ *      A0       |    9    |      16      
+ *      Latch    |   10    |      12      
+ *      Data     |   11    |      19      
+ *      Shift    |   13    |      23      
  *
- * Arduino pins 11 and 13 are based on Arduino Uno. For Arduino Mega use pins 51 and 52 respectively, or refer to
- * https://www.arduino.cc/en/Reference/SPI for your Arduino board.
  *
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2018-05-21
+ * Last updated 2018-07-02
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -48,7 +46,7 @@
 
 #include "OPL2.h"
 
-#if BOARD_TYPE == ARDUINO
+#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 	#include <SPI.h>
 	#include <Arduino.h>
 #else
@@ -78,7 +76,7 @@ OPL2::OPL2(byte reset, byte address, byte latch) {
  * Initialize the YM3812.
  */
 void OPL2::init() {
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.begin();
 	#else
 		wiringPiSetup();
@@ -116,7 +114,7 @@ void OPL2::reset() {
  */
 void OPL2::write(byte reg, byte data) {
 	digitalWrite(pinAddress, LOW);
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.transfer(reg);
 	#else
 		wiringPiSPIDataRW(SPI_CHANNEL, &reg, 1);
@@ -127,7 +125,7 @@ void OPL2::write(byte reg, byte data) {
 	delayMicroseconds(4);
 
 	digitalWrite(pinAddress, HIGH);
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.transfer(data);
 	#else
 		wiringPiSPIDataRW(SPI_CHANNEL, &data, 1);
@@ -177,6 +175,9 @@ short OPL2::getFrequencyFNumber(byte channel, float frequency) {
 }
 
 
+/**
+ * Get the F-Number for the given note. In this case the block is assumed to be the octave.
+ */
 short OPL2::getNoteFNumber(byte note) {
 	return noteFNumbers[max(0, min(note, 11))];
 }
@@ -208,7 +209,7 @@ byte OPL2::getFrequencyBlock(float frequency) {
  * See instruments.h for instrument definition format.
  */
 void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
-	#if BOARD_TYPE == ARDUINO
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		unsigned char percussionChannel = pgm_read_byte_near(instrument);
 	#else
 		unsigned char percussionChannel = instrument[0];
@@ -220,7 +221,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
 					instrumentBaseRegs[i] + drumOffsets[0],
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]
@@ -228,7 +229,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 				);
 				setRegister(
 					instrumentBaseRegs[i] + drumOffsets[1],
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]
@@ -244,7 +245,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 			for (byte i = 0; i < 5; i ++) {
 				setRegister(
 					instrumentBaseRegs[i] + drumOffsets[percussionChannel - 5],
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]
@@ -257,7 +258,7 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 			for (byte i = 0; i < 11; i ++) {
 				setRegister(
 					instrumentBaseRegs[i % 6] + getRegisterOffset(channel, i > 5),
-					#if BOARD_TYPE == ARDUINO
+					#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 						pgm_read_byte_near(instrument + i + 1)
 					#else
 						instrument[i + 1]

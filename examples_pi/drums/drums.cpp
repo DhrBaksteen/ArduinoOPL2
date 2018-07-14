@@ -3,14 +3,12 @@
  * instrument library. Note that channel 6 is used by the base drum, 7 is used by snare and hi-hat and 8 is used by tom
  * tom and cymbal.
  *
- * The OPL2 board is connedted as follows:
- *   OPL2 Board | Raspberry Pi | Orange Pi
- *  ------------+--------------+-----------
- *     Reset    |      13      |    18     
- *     A0       |      12      |    16     
- *     Latch    |      11      |    12     
- *     Data     |      19      |    19     
- *     Shift    |      23      |    23     
+ * The OPL2 board is connected as follows or run `./connecting`.
+ *   Pin 13 - Reset
+ *   Pin 12 - A0
+ *   Pin 11 - Latch
+ *   Pin 19 - Data
+ *   Pin 23 - Shift
  *
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
@@ -33,11 +31,11 @@ int main(int argc, char **argv) {
 
 	// Set percussion mode and load instruments.
 	opl2.setPercussion(true);
-	opl2.setInstrument(0, BDRUM1);
-	opl2.setInstrument(0, RKSNARE1);
-	opl2.setInstrument(0, TOM2);
-	opl2.setInstrument(0, CYMBAL1);
-	opl2.setInstrument(0, HIHAT2);
+	opl2.setInstrument(0, INSTRUMENT_BDRUM1);
+	opl2.setInstrument(0, INSTRUMENT_RKSNARE1);
+	opl2.setInstrument(0, INSTRUMENT_TOM2);
+	opl2.setInstrument(0, INSTRUMENT_CYMBAL1);
+	opl2.setInstrument(0, INSTRUMENT_HIHAT2);
 
 	// Set octave and frequency for bass drum.
 	opl2.setBlock(6, 4);

@@ -2,12 +2,15 @@
  * This is a simple demo sketch for the OPL2 library that demonstrates altering the frequency of an active channel. This
  * demo sweeps the frequency between 250 and 750 Hz on channel 0.
  *
- * OPL2 board is connedted as follows:
- * Pin  8 - Reset
- * Pin  9 - A0
- * Pin 10 - Latch
- * Pin 11 - Data     (Use pin 51 for Arduino Mega)
- * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ * OPL2 board is connected as follows:
+ *   Pin  8 - Reset
+ *   Pin  9 - A0
+ *   Pin 10 - Latch
+ *   Pin 11 - Data
+ *   Pin 13 - Shift
+ *
+ * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
+ * of choice!
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2018-04-30
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2

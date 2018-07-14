@@ -1,29 +1,22 @@
 /**
- * This is an example sketch from the OPL2 library for Arduino. It plays Reality Adlib Tracker (RAD) files from SD card
- * using the YM3812 audio chip.
- *
- * !!IMPORTANT!!
- * Due to the default Arduino SD library requiring too much memory to still do anything useful you need to download the
- * SdFat library by Bill Greiman which is more memory friendly. You can install it using the Arduino Library Manager or
- * download it from github at https://github.com/greiman/SdFat.
+ * This is an example sketch from the OPL2 library for Teensy. It plays Reality Adlib Tracker (RAD) files from SD card
+ * using the YM3812 audio chip. This example requires a Teensy with onboard SD card slot and the SdFat library by Bill
+ * Greiman. You can install it using the Arduino Library Manager or download it from github at
+ * https://github.com/greiman/SdFat. If you use an SPI based breakout board for SD then please use the Arduino version
+ * of this sketch.
  *
  * OPL2 board is connected as follows:
  *   Pin  8 - Reset
  *   Pin  9 - A0
  *   Pin 10 - Latch
- *   Pin 11 - Data
- *   Pin 13 - Shift
- *
- * Connect the SD card with Arduino SPI pins as usual and use pin 7 as CS.
- *
- * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
- * of choice!
+ *   Pin 11 - Data     (Use pin 22 for Teensy ++ 2.0)
+ *   Pin 13 - Shift    (Use pin 21 for Teensy ++ 2.0)
  *
  * By default this example will look for the shotrad file in the root of the SD card. This file is found among the
  * files for this example. For more information about the RAD file format download the Reality Adlib Tracker from
  * http://www.pouet.net/prod.php?which=48994
  *
- * Code by Maarten Janssen (maarten@cheerful.nl) 2018-04-30
+ * Code by Maarten Janssen (maarten@cheerful.nl) 2018-07-09
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
@@ -81,12 +74,12 @@ byte patternBreak = 0xFF;                         // Pattern break at end of lin
 
 
 OPL2 opl2;
-SdFat SD;
+SdFatSdio SD;
 SdFile radFile;
 
 
 void setup() {
-  SD.begin(7);
+  SD.begin();
 
   // Load one of the included RAD files.
   loadRadFile("adlibsp.rad");

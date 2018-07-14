@@ -2,12 +2,15 @@
  * This is a demonstration sketch for the OPL2 Audio Board. It demonstrates playing a little tune on 3 channels using
  * a piano from the MIDI instrument defenitions.
  *
- * OPL2 board is connedted as follows:
+ * OPL2 board is connected as follows:
  * Pin  8 - Reset
  * Pin  9 - A0
  * Pin 10 - Latch
- * Pin 11 - Data     (Use pin 51 for Arduino Mega)
- * Pin 13 - Shift    (Use pin 52 for Arduino Mega)
+ * Pin 11 - Data
+ * Pin 13 - Shift
+ *
+ * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
+ * of choice!
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-04-13
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
@@ -72,11 +75,11 @@ void setup() {
   opl2.init();
 
   // Setup channels 0, 1 and 2.
-  opl2.setInstrument(0, PIANO1);
+  opl2.setInstrument(0, INSTRUMENT_PIANO1);
   opl2.setBlock     (0, 5);
-  opl2.setInstrument(1, PIANO1);
+  opl2.setInstrument(1, INSTRUMENT_PIANO1);
   opl2.setBlock     (1, 4);
-  opl2.setInstrument(2, PIANO1);
+  opl2.setInstrument(2, INSTRUMENT_PIANO1);
   opl2.setBlock     (2, 4);
 }
 
