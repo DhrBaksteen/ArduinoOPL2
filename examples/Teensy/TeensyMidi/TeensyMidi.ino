@@ -17,6 +17,9 @@
 
 #include <SPI.h>
 #include <OPL2.h>
+
+// For better results with midi files created for Window exchange midi_instruments.h for midi_instruments_win31.h
+// #include <midi_instruments_win31.h>
 #include <midi_instruments.h>
 #include <midi_drums.h>
 
@@ -55,6 +58,9 @@ void setup() {
 	usbMIDI.setHandleControlChange(onControlChange);
 	usbMIDI.setHandleSystemReset(onSystemReset);
 	onSystemReset();
+
+	opl2.setDeepVibrato(true);
+	opl2.setDeepTremolo(true);
 }
 
 
@@ -123,6 +129,8 @@ void setOpl2ChannelVolume(byte opl2Channel, byte midiChannel) {
  * Handle a note on MIDI event to play a note.
  */
 void onNoteOn(byte channel, byte note, byte velocity) {
+	channel = channel % 16;
+
 	// Treat notes with a velocity of 0 as note off.
 	if (velocity == 0) {
 		onNoteOff(channel, note, velocity);
@@ -167,6 +175,7 @@ void onNoteOn(byte channel, byte note, byte velocity) {
  * Handle a note off MIDI event to stop playing a note.
  */
 void onNoteOff(byte channel, byte note, byte velocity) {
+	channel = channel % 16;
 	for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 		if (channelMap[i].midiChannel == channel && channelMap[i].midiNote == note) {
 			opl2.setKeyOn(i, false);
@@ -180,7 +189,7 @@ void onNoteOff(byte channel, byte note, byte velocity) {
  * Handle instrument change on the given MIDI channel.
  */
 void onProgramChange(byte channel, byte program) {
-	programMap[channel] = min(program, 127);
+	programMap[channel % 16] = min(program, 127);
 }
 
 
@@ -188,12 +197,13 @@ void onProgramChange(byte channel, byte program) {
  * Handle MIDI control changes on the given channel.
  */
 void onControlChange(byte channel, byte control, byte value) {
+	channel = channel % 16;
+
 	switch (control) {
 
-		// Change volume of a MIDI channel.
+		// Change volume of a MIDI channel. (Limited to 0.8 to prevent clipping)
 		case CONTROL_VOLUME: {
-			channelVolumes[channel] = round(min(value, 63) / 63.0);
-
+			channelVolumes[channel] = min(value / 127.0, 0.8);
 			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 				if (channelMap[i].midiChannel == channel && opl2.getKeyOn(i)) {
 					setOpl2ChannelVolume(i, channel);
