@@ -18,7 +18,7 @@ echo "\033[1;36m   /    |    \\  |  / /_/ | |  ( /_/ )  |    |   ( /_/ ) __ \\| 
 echo "\033[1;34m   \\____|__  /____/\\____ | |__|\\___/   |______  /\\___(____  /__|  \\____ | "
 echo "\033[1;34m           \\/           \\/                    \\/          \\/           \\/ \033[0m"
 echo "Installation script for Raspberry Pi and compatibles"
-echo "Library version 1.4.2, 14th of July 2018"
+echo "Library version 1.4.4, 18th of November 2018"
 echo "Copyright (c) 2016-2018 Maarten Janssen, Cheerful"
 echo ""
 
