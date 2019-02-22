@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 				FILE *tempFile = fopen("./temp.vgm", "w");
 				int result = inflate(oplFile, tempFile);
 				fclose(tempFile);
-				
+
 				if (result == 0) {
 					fclose(oplFile);
 					oplFile = fopen("./temp.vgm", "rb");
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 					playVgmMusic(vgm);
 				} else {
 					printf("Decompression error %d\n", result);
-				}				
+				}
 			}
 
 			fclose(oplFile);
@@ -123,8 +123,8 @@ void playDroMusic(DRO dro) {
 		if (registerCode == dro.codeShortDelay) {
 			delay(value);
 		} else if (registerCode == dro.codeLongDelay) {
-			delay((value) << 8);
-		} else {
+			delay(value << 8);
+		} else if (registerCode < 128) {
 			reg = dro.registerMap[registerCode];
 			opl2.write(reg, value);
 		}
@@ -213,17 +213,17 @@ void playVgmMusic(VGM vgm) {
 	for (unsigned long i = 0; i < dataSize; i ++) {
 		fileData[i] = fileRead(vgm.file);
 	}
-	
+
 	// Play!
 	unsigned long offset = 0;
 	unsigned char command;
 	unsigned char reg;
 	unsigned char data;
 	unsigned int sampleDelay;
-	
+
 	while(offset < dataSize) {
 		command = fileData[offset ++];
-		
+
 		switch (command) {
 			// YM3812 command.
 			case 0x5A: {
@@ -232,7 +232,7 @@ void playVgmMusic(VGM vgm) {
 				opl2.write(reg, data);
 				break;
 			}
-				
+
 			// Sample delay long.
 			case 0x61: {
 				sampleDelay  = fileData[offset ++];
@@ -240,19 +240,19 @@ void playVgmMusic(VGM vgm) {
 				delay(sampleDelay * 0.023);
 				break;
 			}
-				
+
 			// 60 Hz delay.
 			case 0x62: {
 				delay(17);
 				break;
 			}
-				
+
 			// 50 Hz delay.
 			case 0x63: {
 				delay(20);
 				break;
 			}
-			
+
 			// End of song data. Stop or loop.
 			case 0x66: {
 				if (repeat && vgm.loopOffset > 0) {
@@ -262,14 +262,14 @@ void playVgmMusic(VGM vgm) {
 				}
 				break;
 			}
-			
+
 			// Sample dalay short.
 			case 0x70 ... 0x7F: {
 				sampleDelay = (command % 0x0F) + 1;
 				delay(sampleDelay * 0.023);
-				break;				
+				break;
 			}
-			
+
 			// Unsupported sample
 			case 0x51 ... 0x59:
 			case 0x5B ... 0x5F: {
@@ -277,7 +277,7 @@ void playVgmMusic(VGM vgm) {
 				break;
 			}
 		}
-		
+
 		// Do we need to loop?
 		if (repeat && vgm.loopOffset >= 0 && vgm.loopLength > 0 && offset > vgm.loopLength) {
 			offset = vgm.loopOffset;
@@ -289,29 +289,29 @@ void playVgmMusic(VGM vgm) {
 VGM loadVgm(FILE *vgmFile) {
 	VGM vgm;
 	vgm.file = NULL;
-	
+
 	if (fileRead(vgmFile) == 0x56 && fileRead(vgmFile) == 0x67 && fileRead(vgmFile) == 0x6D) {
 		fseek(vgmFile, 0x50, SEEK_SET);
 		unsigned long clockSpeed = readDWord(vgmFile);
-		
+
 		if (clockSpeed > 0) {
 			fseek(vgmFile, 0x18, SEEK_SET);
 			vgm.songLength = readDWord(vgmFile);
 			vgm.loopOffset = readDWord(vgmFile);
 			vgm.loopLength = readDWord(vgmFile);
-			
+
 			// Calculate loop offset relative to song data offset.
 			if (vgm.loopOffset > 0) {
 				vgm.loopOffset -= 0xE4;
 			}
-			
+
 			fseek(vgmFile, 0x100, SEEK_SET);
 			vgm.file = vgmFile;
 		} else {
 			printf("No YM3812 sample data!\n");
 		}
 	}
-	
+
 	return vgm;
 }
 
@@ -360,63 +360,63 @@ int fileError() {
    the version of the library linked do not match, or Z_ERRNO if there
    is an error reading or writing the files. */
 int inflate(FILE *source, FILE *dest) {
-    int ret;
-    unsigned int have;
-    z_stream strm;
-    unsigned char in[CHUNK];
-    unsigned char out[CHUNK];
-    
-        /* allocate inflate state */
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;
-    strm.next_in = Z_NULL;
-    ret = inflateInit2(&strm, 16 + MAX_WBITS);
-    if (ret != Z_OK)
-        return ret;
-        
-    
-    /* decompress until deflate stream ends or end of file */
-    do {
-        strm.avail_in = fread(in, 1, CHUNK, source);
-        if (ferror(source)) {
-            (void)inflateEnd(&strm);
-            return Z_ERRNO;
-        }
-        if (strm.avail_in == 0)
-            break;
-        strm.next_in = in;
-        
-        /* run inflate() on input until output buffer not full */
-        do {
-            strm.avail_out = CHUNK;
-            strm.next_out = out;              
+	int ret;
+	unsigned int have;
+	z_stream strm;
+	unsigned char in[CHUNK];
+	unsigned char out[CHUNK];
 
-            ret = inflate(&strm, Z_NO_FLUSH);
-            //assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-            switch (ret) {
-            case Z_NEED_DICT:
-                ret = Z_DATA_ERROR;     /* and fall through */
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
-                (void)inflateEnd(&strm);
-                return ret;
-            }
+		/* allocate inflate state */
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+	ret = inflateInit2(&strm, 16 + MAX_WBITS);
+	if (ret != Z_OK)
+		return ret;
 
-            have = CHUNK - strm.avail_out;
-            if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
-                (void)inflateEnd(&strm);
-                return Z_ERRNO;
-            }
 
-        } while (strm.avail_out == 0);            
-        /* done when inflate() says it's done */
-    } while (ret != Z_STREAM_END);
+	/* decompress until deflate stream ends or end of file */
+	do {
+		strm.avail_in = fread(in, 1, CHUNK, source);
+		if (ferror(source)) {
+			(void)inflateEnd(&strm);
+			return Z_ERRNO;
+		}
+		if (strm.avail_in == 0)
+			break;
+		strm.next_in = in;
 
-    /* clean up and return */
-    (void)inflateEnd(&strm);
-    return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+		/* run inflate() on input until output buffer not full */
+		do {
+			strm.avail_out = CHUNK;
+			strm.next_out = out;
+
+			ret = inflate(&strm, Z_NO_FLUSH);
+			//assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+			switch (ret) {
+			case Z_NEED_DICT:
+				ret = Z_DATA_ERROR;     /* and fall through */
+			case Z_DATA_ERROR:
+			case Z_MEM_ERROR:
+				(void)inflateEnd(&strm);
+				return ret;
+			}
+
+			have = CHUNK - strm.avail_out;
+			if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
+				(void)inflateEnd(&strm);
+				return Z_ERRNO;
+			}
+
+		} while (strm.avail_out == 0);
+		/* done when inflate() says it's done */
+	} while (ret != Z_STREAM_END);
+
+	/* clean up and return */
+	(void)inflateEnd(&strm);
+	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
 
@@ -429,7 +429,8 @@ void printHeader() {
 		printf("\033[1;36m/    |    \\    |   |    |___/       \\     |  |_> >  |__/ __ \\\\___  |\n");
 		printf("\033[1;34m\\_______  /____|   |_______ \\_______ \\ /\\ |   __/|____(____  / ____|\n");
 		printf("\033[0;34m        \\/                 \\/       \\/ \\/ |__|             \\/\\/     \n");
-		printf("\033[0mOPL2.play v1.1.0 for the OPL2 Audio Board by Maarten Janssen in 2017\n");
+		printf("\033[0mOPL2.play v1.1.1 for the OPL2 Audio Board\n");
+		printf("By Maarten Janssen in 2017 - 2019\n");
 		printf("Visit \033[1;34mhttp://github.com/DhrBaksteen/ArduinoOPL2\033[0m to learn more!\n\n");
 	}
 }

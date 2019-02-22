@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|             
  *                    \/           \/             \/                \/                            
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.4
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.5
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
@@ -35,7 +35,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2018-11-18
+ * Last updated 2019-02-25
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -257,10 +257,13 @@ void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
 		default:	// Melodic instruments...
 			for (byte i = 0; i < 11; i ++) {
 				byte reg;
-				if (i == 5) //Channel parameters C0..C8
+				if (i == 5) {
+					//Channel parameters C0..C8
 					reg = 0xC0 + max(0x00, min(channel, 0x08));
-				else //Operator parameters 20..35, 40..55, 60..75, 80..95, E0..F5
+				} else {
+					//Operator parameters 20..35, 40..55, 60..75, 80..95, E0..F5
 					reg = instrumentBaseRegs[i % 6] + getRegisterOffset(channel, i > 5);
+				}
 
 				setRegister(
 					reg,
