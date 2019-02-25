@@ -50,10 +50,13 @@ void loop() {
 
   while (songLength > 0) {
     int wait = playImfSong();
-    wait -= (millis() - time);      // Take into account time that was spent on IO.
 
     if (wait > 0) {
-      delay(wait);
+      // Take into account time that was spent on IO.
+      unsigned long ioTime = millis() - time;
+      if (ioTime < wait) {
+        delay(wait - ioTime);
+      }
       time = millis();
     }
 
