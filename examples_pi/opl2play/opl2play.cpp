@@ -121,9 +121,9 @@ void playDroMusic(DRO dro) {
 		value        = fileData[offset ++];
 
 		if (registerCode == dro.codeShortDelay) {
-			delay(value);
+			delay(value + 1);
 		} else if (registerCode == dro.codeLongDelay) {
-			delay(value << 8);
+			delay((value + 1) << 8);
 		} else if (registerCode < 128) {
 			reg = dro.registerMap[registerCode];
 			opl2.write(reg, value);
