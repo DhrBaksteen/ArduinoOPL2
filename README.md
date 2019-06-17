@@ -20,9 +20,6 @@ For more info visit the [Hackaday project page](https://hackaday.io/project/1899
 ## 1. Assembling the kit
 For a step by step guide on how to assemble the kit please read the [Assembly guide](https://github.com/DhrBaksteen/ArduinoOPL2/blob/master/assembling.md).
 
-**IMPORTANT!**
-Please be aware that due to some last minute changes IC5 will be marked as 7404 on the board and in the brief assembly instructions, while you should use the included 7414!
-
 
 ## 2. Installing the library
 #### Arduino / Teensy
