@@ -9,23 +9,23 @@ Before we start let's make sure that you have all the parts needed to assemble t
 | Part  | Description | Quantity | Markings / Notes |
 | ----- | ----------- | -------- | ----- |
 |            | PCB                          | 1 | |
-| C1         | 4.7nF capacitor              | 1 | 472 |
-| C2, C3     | 0.1μF capacitor              | 2 | 104 |
-| C4 ... C7  | 10μF capacitor               | 4 | 106 |
-| C8         | 10pF capacitor               | 1 | 10 |
-| C9         | 100μF electrolytic capacitor | 1 | Mind negative pin marking |
+| C1 ... C4  | 10μF capacitor               | 4 | 106 |
+| C5         | 0.1μF capacitor              | 1 | 104 |
+| C6 ... C8  | 10pF capacitor               | 3 | 10 |
+| C9         | 47μF electrolytic capacitor  | 1 | Mind negative pin marking |
 | C10        | 220μF electrolytic capacitor | 1 | Mind negative pin marking |
-| IC1        | YM3812                       | 1 | Mind position of the notch |
+| IC1        | YM3812                       | 1 | Mind position of the notch or dot that marks pin 1 |
 | IC2        | Y3014B                       | 1 | Mind the dot that marks pin 1 |
 | IC3        | LM358                        | 1 | Mind position of the notch |
 | IC4        | LM386                        | 1 | Mind position of the notch |
-| IC5        | 7414 (board shows 7404!)     | 1 | Mind position of the notch |
+| IC5        | 7414                         | 1 | Mind position of the notch |
 | IC6        | 74595                        | 1 | Mind position of the notch |
 | J1         | 7-pin male header            | 1 ||
 | J2         | 3.5mm jack plug socket or 3-pin speaker terminal | 1 | You can use either one |
-| R1, R2     | 470Ω  resistor              | 2 | ![](https://placehold.it/15/F0F000/000000?text=+) Yellow, ![](https://placehold.it/15/A000A0/000000?text=+) Violet, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
-| R3         | 15kΩ resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/00A000/000000?text=+) Green, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/FF0000/000000?text=+) Red |
-| R4         | 100Ω resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
+| R1         | 15kΩ resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/00A000/000000?text=+) Green, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/FF0000/000000?text=+) Red |
+| R2         | 100Ω resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
+| R3         | 1MΩ resistor                | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/F0F000/000000?text=+) Yellow, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
+| R4         | 1kΩ resistor               | 1 | ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/A06000/000000?text=+) Brown, ![](https://placehold.it/15/000000/000000?text=+) Black, ![](https://placehold.it/15/000000/000000?text=+) Black |
 | R5         | 10kΩ trimmer potentiometer  | 1 | 103 |
 | XTAL1      | 3.579 MHz crystal            | 1 ||
 || 24-pin DIP socket | 1 | Optional socket for IC1 |
@@ -39,8 +39,8 @@ Besides these parts you are going to need a soldering iron, some solder, flush c
 ##### 1.2.1. Before we begin
 We will assemble the board in the order of component height working from smallest to tallest. Before starting to assemble the board think about how you are going to use it. Are you going to use headphones or are you attaching a loose speaker? Depending on your answer you should either use the socket for a jack plug or the terminal block to simply connect some wires for a speaker.
 
-##### 1.2.2. Assembling the resistors (part 1)
-We will start with resistors R3 and R4. Bend their legs 90 degrees and stick them throught the PCB. Polarity does not matter. Bend the legs backwards a little so the resistors won't fall out when you flip the board over to solder them in. Once soldered clip off the excess leads.
+##### 1.2.2. Assembling the resistors
+We will start with resistors R1 through R4. Bend their legs 90 degrees and stick them throught the PCB. Polarity does not matter. Bend the legs backwards a little so the resistors won't fall out when you flip the board over to solder them in. Once soldered clip off the excess leads.
 
 ##### 1.2.3. Pin header
 We will continue with the pin header J1. In order to solder it nice and flush to the board the best way is to first solder just one pin. Then while heating the pin again with your iron move the socket from the other end so it sits right on the board. Once your happy with the placement of the sochet apply solder to the remaining pins.
@@ -63,25 +63,19 @@ Time to make another choice. If you want to use the 3.5 mm jack plug socket then
 
 To mount the socket flat onto the board you can use the same trick as we did for the IC sockets. First solder the center pin, reheat it and apply some preasure from the top of the socket to make it sit flat and then solder the remaining pins.
 
-##### 1.2.8. Resistors (Part 2)
-For the upright resistors R1 and R2 first bend one of the legs so it becomes parallel to the other leg. Then inster them into the holes (orientation does not matter) and bend their legs out a bit. For the best result solder the long legs where the resistor bodies touches the board first. Then carefully bend the resistors so they sit neatly upright and solder the other pins. 
-
-##### 1.2.9. Volume adjustment pot
+##### 1.2.8. Volume adjustment pot
 Next we will continue with the volume adjustment pot R5. Insert its pins and solder it down.
 
-##### 1.2.10. Capacitors (part 2)
+##### 1.2.9. Capacitors (part 2)
 We still have two capacitors left C9 and C10. Mind their values and the marking of the negative pin as you insert them. The negative band goes toward the hole with the minus symbol or the square pads. Ben the pins out a little, solder them down and clip off excess leads.
 
-##### 1.2.11. Speaker terminal
+##### 1.2.10. Speaker terminal
 If you decided to skip step 6 then this is the time to solder the speaker terminal at J2, otherwise you can skip this step
 
 ##### 1.2.12. Placing the ICs
 Finally insert the ICs into their sockets. Make sure you line-up the notches on the ICs with the notches on the board. Some ICs have a little round cut-out in the upper left corner. This cut out must face the notch.
 
 Be careful when inserting the chips to not bend their pins. If an IC's pins do not line up with the socket then carfully bend the pins inward. A good way to do this is to lie the chip on its side on your bench and carefully roll it slightly to bend one row of pins inward. Repeat this process on both sides but be careful not to over bend the pins!
-
-**IMPORTANT!**
-Please be aware that due to some last minute changes IC5 will be marked as 7404 on the board and in the brief assembly instructions, while you should use the included 7414!
 
 All done! :)
 
