@@ -116,9 +116,7 @@ Alternatively you can clone this repo in the `libraries` folder of the Arduino I
 For more information see the [instructions](https://www.arduino.cc/en/Guide/Libraries) on the Arduino website.
 
 #### Raspberry Pi / Orange Pi
-To install the library onto your Pi clone this repo and run `sudo ./build`. You can specify the type of board you are using as a command line agrument. Use  `sudo ./build -rpi` for Raspberry Pi or `sudo ./build -opi` for Orange Pi. If you do not specify a board type the build will assume you're building the library for a Raspberry Pi.
-
-The OPL2 library requires [WiringPi](http://wiringpi.com/) to be installed on your Pi. Normally this library is already installed.
+To install the library onto your Pi clone this repo and run `sudo ./build`. The OPL2 library requires [WiringPi](http://wiringpi.com/) to be installed on your Pi. Normally this library is already installed, but if it's missing then the installation script can install it for you.
 
 # 4. Testing
 It's finally time to hear that sweet OPL2 FM-synth from your board for the first time. If you don't hear anything or if the audio is distorted use a small screwdriver to adjust trimmer R5 until the audio sounds right.
