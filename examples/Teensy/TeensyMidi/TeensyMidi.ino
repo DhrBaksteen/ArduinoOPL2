@@ -126,8 +126,6 @@ void setOpl2ChannelVolume(byte opl2Channel, byte midiChannel) {
  * Handle a note on MIDI event to play a note.
  */
 void onNoteOn(byte channel, byte note, byte velocity) {
-	channel = channel % 16;
-
 	// Treat notes with a velocity of 0 as note off.
 	if (velocity == 0) {
 		onNoteOff(channel, note, velocity);
