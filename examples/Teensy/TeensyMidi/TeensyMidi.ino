@@ -217,7 +217,7 @@ void onControlChange(byte channel, byte control, byte value) {
 
 		// Change volume of a MIDI channel.
 		case CONTROL_VOLUME: {
-			channelVolumes[channel] = log(min((float)velocity, 127.0)) / log(127.0);
+			channelVolumes[channel] = log(min((float)value, 127.0)) / log(127.0);
 			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 				if (channelMap[i].midiChannel == channel && opl2.getKeyOn(i)) {
 					setOpl2ChannelVolume(i, channel);
