@@ -149,7 +149,7 @@ void onNoteOn(byte channel, byte note, byte velocity) {
 	// Register channel mapping.
 	channelMap[opl2Channel].midiChannel  = channel;
 	channelMap[opl2Channel].midiNote     = note;
-	channelMap[opl2Channel].midiVelocity = min((float)velocity / 64.0, 1.0);
+	channelMap[opl2Channel].midiVelocity = log(min((float)velocity, 127.0)) / log(127.0);
 	channelMap[opl2Channel].op1Level     = (float)(63 - opl2.getVolume(opl2Channel, OPERATOR1)) / 63.0;
 	channelMap[opl2Channel].op2Level     = (float)(63 - opl2.getVolume(opl2Channel, OPERATOR2)) / 63.0;
 
@@ -215,9 +215,9 @@ void onControlChange(byte channel, byte control, byte value) {
 
 	switch (control) {
 
-		// Change volume of a MIDI channel. (Limited to 0.8 to prevent clipping)
+		// Change volume of a MIDI channel.
 		case CONTROL_VOLUME: {
-			channelVolumes[channel] = min(value / 127.0, 0.8);
+			channelVolumes[channel] = log(min((float)value, 127.0)) / log(127.0);
 			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 				if (channelMap[i].midiChannel == channel && opl2.getKeyOn(i)) {
 					setOpl2ChannelVolume(i, channel);
