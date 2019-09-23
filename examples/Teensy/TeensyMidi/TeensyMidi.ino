@@ -17,9 +17,6 @@
 
 #include <SPI.h>
 #include <OPL2.h>
-
-// For better results with midi files created for Window exchange midi_instruments.h for midi_instruments_win31.h
-// #include <midi_instruments_win31.h>
 #include <midi_instruments.h>
 #include <midi_drums.h>
 
@@ -77,11 +74,13 @@ void loop() {
  */
 byte getFreeChannel(byte midiChannel) {  
 	byte opl2Channel = 255;
+	byte oldestIndex = 0;
 
-	// Look for a free OPL2 channel.
+	// Look for a free OPL2 channel starting with the oldest.
 	for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
-		if (!opl2.getKeyOn(i)) {
-			opl2Channel = i;
+		if (!opl2.getKeyOn(oldestChannel[i])) {
+			opl2Channel = oldestChannel[i];
+			oldestIndex = i;
 			break;
 		}
 	}
@@ -93,21 +92,19 @@ byte getFreeChannel(byte midiChannel) {
 		for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 			if (channelMap[oldestChannel[i]].midiChannel == MIDI_DRUM_CHANNEL) {
 				opl2Channel = oldestChannel[i];
+				oldestIndex = i;
+				break;
 			}
 		}
+		opl2.setKeyOn(opl2Channel, false);
 	}
 
 	// Update the list of last used channels by moving the current channel to the bottom so the last updated channel
 	// will move to the front of the list. If no more OPL2 channels are free then the last updated one will be recycled.
-	byte i;
-	for (i = 0; i < OPL2_NUM_CHANNELS && oldestChannel[i] != opl2Channel; i ++) {}
-
-	while (i < OPL2_NUM_CHANNELS - 1) {
-		byte temp = oldestChannel[i + 1];
-		oldestChannel[i + 1] = oldestChannel[i];
-		oldestChannel[i] = temp;
-		i ++;
+	for (byte i = oldestIndex; i < OPL2_NUM_CHANNELS - 1; i ++) {
+		oldestChannel[i] = oldestChannel[i + 1];
 	}
+	oldestChannel[OPL2_NUM_CHANNELS - 1] = opl2Channel;
 
 	return opl2Channel;
 }
@@ -138,26 +135,26 @@ void onNoteOn(byte channel, byte note, byte velocity) {
 	}
 
 	// Get an available OPL2 channel and setup instrument parameters.
-	byte i = getFreeChannel(channel);
+	byte opl2Channel = getFreeChannel(channel);
 	if (channel != MIDI_DRUM_CHANNEL) {
-		opl2.setInstrument(i, midiInstruments[programMap[channel]]);
+		opl2.setInstrument(opl2Channel, midiInstruments[programMap[channel]]);
 	} else {
 		if (note >= DRUM_NOTE_BASE && note < DRUM_NOTE_BASE + NUM_MIDI_DRUMS) {
-			opl2.setInstrument(i, midiDrums[note - DRUM_NOTE_BASE]);
+			opl2.setInstrument(opl2Channel, midiDrums[note - DRUM_NOTE_BASE]);
 		} else {
 			return;
 		}
 	}
 
 	// Register channel mapping.
-	channelMap[i].midiChannel  = channel;
-	channelMap[i].midiNote     = note;
-	channelMap[i].midiVelocity = round(velocity / 127.0);
-	channelMap[i].op1Level     = round((63 - opl2.getVolume(i, OPERATOR1)) / 63.0);
-	channelMap[i].op2Level     = round((63 - opl2.getVolume(i, OPERATOR2)) / 63.0);
+	channelMap[opl2Channel].midiChannel  = channel;
+	channelMap[opl2Channel].midiNote     = note;
+	channelMap[opl2Channel].midiVelocity = min((float)velocity / 64.0, 1.0);
+	channelMap[opl2Channel].op1Level     = (float)(63 - opl2.getVolume(opl2Channel, OPERATOR1)) / 63.0;
+	channelMap[opl2Channel].op2Level     = (float)(63 - opl2.getVolume(opl2Channel, OPERATOR2)) / 63.0;
 
 	// Set operator output levels based on note velocity.
-	setOpl2ChannelVolume(i, channel);
+	setOpl2ChannelVolume(opl2Channel, channel);
 
 	// Calculate octave and note number and play note!
 	byte opl2Octave = 4;
@@ -167,7 +164,7 @@ void onNoteOn(byte channel, byte note, byte velocity) {
 		opl2Octave = 1 + (note - 24) / 12;
 		opl2Note   = note % 12;
 	}
-	opl2.playNote(i, opl2Octave, opl2Note);
+	opl2.playNote(opl2Channel, opl2Octave, opl2Note);
 }
 
 
@@ -179,6 +176,23 @@ void onNoteOff(byte channel, byte note, byte velocity) {
 	for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
 		if (channelMap[i].midiChannel == channel && channelMap[i].midiNote == note) {
 			opl2.setKeyOn(i, false);
+			channelMap[i].midiChannel = 0xFF;
+			channelMap[i].midiNote = 0x00;
+
+			// Move channel to the back of recently used channels list to prevent it from
+			// being reused immediately and the release portion of the note being clubbored.
+			byte oldestIndex = 0;
+			for (byte j = 0; j < OPL2_NUM_CHANNELS; j ++) {
+				if (oldestChannel[j] == i) {
+					oldestIndex = j;
+					break;
+				}
+			}
+			for (byte j = oldestIndex; j < OPL2_NUM_CHANNELS - 1; j ++) {
+				oldestChannel[j] = oldestChannel[j + 1];
+			}
+			oldestChannel[OPL2_NUM_CHANNELS - 1] = i;
+
 			break;
 		}
 	}
