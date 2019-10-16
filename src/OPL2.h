@@ -176,7 +176,7 @@
 			const byte drumBits[5] = {
 				0x10, 0x08, 0x04, 0x02, 0x01
 			};
-			const byte instrumentBaseRegs[11] = {
+			const byte instrumentBaseRegs[6] = {
 				0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0
 			};
 			byte oplRegisters[256];
