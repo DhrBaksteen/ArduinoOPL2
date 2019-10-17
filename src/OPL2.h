@@ -71,6 +71,12 @@
 	#define NOTE_AS 10
 	#define NOTE_B  11
 
+	// Instrument data sources (Arduino only).
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+		#define INSTRUMENT_DATA_PROGMEM true
+		#define INSTRUMENT_DATA_SRAM false
+	#endif
+
 	// Instrument type definitions.
 	#define MELODIC_INSTRUMENT 0
 
@@ -124,7 +130,11 @@
 			float getFrequencyStep(byte channel);
 
 			Instrument createInstrument();
-			Instrument loadInstrument(const unsigned char *instrument);
+			#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+				Instrument loadInstrument(const unsigned char *instrument, bool fromProgmem = INSTRUMENT_DATA_PROGMEM);
+			#else
+				Instrument loadInstrument(const unsigned char *instrument);
+			#endif
 			Instrument getInstrument(byte channel);
 			void setInstrument(byte channel, Instrument instrument, float volume = 1.0);
 			void setInstrument(byte channel, const unsigned char *instrument);

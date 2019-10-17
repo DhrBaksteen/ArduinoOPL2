@@ -212,9 +212,9 @@ Instrument OPL2::createInstrument() {
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
 		instrument.operators[op].hasTremolo = false;
 		instrument.operators[op].hasVibrato = false;
-		instrument.operators[op].hasSustain = true;
+		instrument.operators[op].hasSustain = false;
 		instrument.operators[op].hasEnvelopeScaling = false;
-		instrument.operators[op].frequencyMultiplier = 1;
+		instrument.operators[op].frequencyMultiplier = 0;
 		instrument.operators[op].keyScaleLevel = 0;
 		instrument.operators[op].outputLevel = 0;
 		instrument.operators[op].attack = 0;
@@ -235,13 +235,21 @@ Instrument OPL2::createInstrument() {
 /**
  * Create an instrument and load it with instrument parameters from the given instrument data pointer.
  */
-Instrument OPL2::loadInstrument(const unsigned char *instrumentData) {
+#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+	Instrument OPL2::loadInstrument(const unsigned char *instrumentData, bool fromProgmem) {
+#else
+	Instrument OPL2::loadInstrument(const unsigned char *instrumentData) {
+#endif
 	Instrument instrument = createInstrument();
 
 	byte data[12];
 	for (byte i = 0; i < 12; i ++) {
 		#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
-			data[i] = pgm_read_byte_near(instrumentData + i);
+			if (fromProgmem) {
+				data[i] = pgm_read_byte_near(instrumentData + i);
+			} else {
+				data[i] = instrumentData[i];
+			}
 		#else
 			data[i] = instrumentData[i];
 		#endif
