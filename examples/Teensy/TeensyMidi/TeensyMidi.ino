@@ -119,9 +119,10 @@ byte getFreeChannel(byte midiChannel) {
  * Set the volume of operators 1 and 2 of the given OPL2 channel according to the settings of the given MIDI channel.
  */
 void setOpl2ChannelVolume(byte opl2Channel, byte midiChannel) {
+	Instrument instrument = midiChannelMap[midiChannel].instrument;
 	float volume = opl2ChannelMap[opl2Channel].noteVelocity * midiChannelMap[midiChannel].volume;
-	float op1Level = (float)(63 - opl2ChannelMap[opl2Channel].operators[OPERATOR1].outputLevel) / 63.0;
-	float op2Level = (float)(63 - opl2ChannelMap[opl2Channel].operators[OPERATOR2].outputLevel) / 63.0;
+	float op1Level = (float)(63 - instrument.operators[OPERATOR1].outputLevel) / 63.0;
+	float op2Level = (float)(63 - instrument.operators[OPERATOR2].outputLevel) / 63.0;
 	byte volumeOp1 = round(op1Level * volume * 63.0);
 	byte volumeOp2 = round(op2Level * volume * 63.0);
 	opl2.setVolume(opl2Channel, OPERATOR1, 63 - volumeOp1);

@@ -315,8 +315,10 @@ Instrument OPL2::getInstrument(byte channel) {
  * because using the individual functions vs directly setting the registers makes instruments sound different.
  */
 void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
+	channel = max(0, min(channel, 8));
 	volume = max(0.0, min(volume, 1.0));
 
+	setWaveFormSelect(true);
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
 		byte outputLevel = 63 - round((63.0 - (float)instrument.operators[op].outputLevel) * volume);
 		byte registerOffset = registerOffsets[op][channel];
