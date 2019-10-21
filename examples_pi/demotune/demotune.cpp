@@ -176,9 +176,10 @@ int main(int argc, char **argv) {
 	opl2.init();
 
 	// Setup channels 0, 1 and 2 instruments.
-	opl2.setInstrument(0, INSTRUMENT_PIANO1);
-	opl2.setInstrument(1, INSTRUMENT_PIANO1);
-	opl2.setInstrument(2, INSTRUMENT_PIANO1);
+	Instrument piano = opl2.loadInstrument(INSTRUMENT_PIANO1);
+	for (int i = 0; i < 3; i ++) {
+		opl2.setInstrument(i, piano);
+	}
 
 	int hasData = 1;
 	while(hasData) {

@@ -2,7 +2,7 @@
  * This example can be used together with a Teensy 2.0 or later to use the OPL2 Audio Board as a MIDI device. To
  * configure the Teensy as a MIDI device set USB Type to MIDI in the IDE using Tools > USB Type > MIDI. Once connected
  * the board should appear in the device list as 'OPL2 AUdio Board MIDI'. You can now use test the board with, for
- * example, MIDI-OX, your favorite music creation software or DosBox! 
+ * example, MIDI-OX, your favorite music creation software or DosBox!
  *
  * OPL2 board is connected as follows:
  *   Pin  8 - Reset
@@ -28,21 +28,26 @@
 #define CONTROL_RESET_ALL     121
 #define CONTROL_ALL_NOTES_OFF 123
 
-// Channel mapping to keep track of MIDI to OPL2 channel mapping.
-struct ChannelMapping {
+
+// OPL2 channel properties.
+struct Opl2Channel {
 	byte midiChannel;
 	byte midiNote;
-	float midiVelocity;
-	float op1Level;
-	float op2Level;
+	float noteVelocity;
 };
 
+// Midi channel properties.
+struct MidiChannel {
+	Instrument instrument;
+	unsigned char *instrumentDataPtr;
+	byte program;
+	float volume;
+};
 
 OPL2 opl2;
-ChannelMapping channelMap[OPL2_NUM_CHANNELS];
+Opl2Channel opl2ChannelMap[OPL2_NUM_CHANNELS];
+MidiChannel midiChannelMap[MIDI_NUM_CHANNELS];
 byte oldestChannel[OPL2_NUM_CHANNELS];
-byte programMap[MIDI_NUM_CHANNELS];
-float channelVolumes[MIDI_NUM_CHANNELS];
 
 
 /**
@@ -72,7 +77,7 @@ void loop() {
 /**
  * Get a free OPL2 channel to play a note. If all channels are occupied then recycle the oldes one.
  */
-byte getFreeChannel(byte midiChannel) {  
+byte getFreeChannel(byte midiChannel) {
 	byte opl2Channel = 255;
 	byte oldestIndex = 0;
 
@@ -90,7 +95,7 @@ byte getFreeChannel(byte midiChannel) {
 	if (opl2Channel == 255) {
 		opl2Channel = oldestChannel[0];
 		for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
-			if (channelMap[oldestChannel[i]].midiChannel == MIDI_DRUM_CHANNEL) {
+			if (opl2ChannelMap[oldestChannel[i]].midiChannel == MIDI_DRUM_CHANNEL) {
 				opl2Channel = oldestChannel[i];
 				oldestIndex = i;
 				break;
@@ -114,9 +119,11 @@ byte getFreeChannel(byte midiChannel) {
  * Set the volume of operators 1 and 2 of the given OPL2 channel according to the settings of the given MIDI channel.
  */
 void setOpl2ChannelVolume(byte opl2Channel, byte midiChannel) {
-	float volume = channelMap[opl2Channel].midiVelocity * channelVolumes[midiChannel];
-	byte volumeOp1 = round(channelMap[opl2Channel].op1Level * volume * 63.0);
-	byte volumeOp2 = round(channelMap[opl2Channel].op2Level * volume * 63.0);
+	float volume = opl2ChannelMap[opl2Channel].noteVelocity * midiChannelMap[midiChannel].volume;
+	float op1Level = (float)(63 - opl2ChannelMap[opl2Channel].operators[OPERATOR1].outputLevel) / 63.0;
+	float op2Level = (float)(63 - opl2ChannelMap[opl2Channel].operators[OPERATOR2].outputLevel) / 63.0;
+	byte volumeOp1 = round(op1Level * volume * 63.0);
+	byte volumeOp2 = round(op2Level * volume * 63.0);
 	opl2.setVolume(opl2Channel, OPERATOR1, 63 - volumeOp1);
 	opl2.setVolume(opl2Channel, OPERATOR2, 63 - volumeOp2);
 }
@@ -125,59 +132,62 @@ void setOpl2ChannelVolume(byte opl2Channel, byte midiChannel) {
 /**
  * Handle a note on MIDI event to play a note.
  */
-void onNoteOn(byte channel, byte note, byte velocity) {
-	channel = channel % 16;
+void onNoteOn(byte midiChannel, byte note, byte velocity) {
+	midiChannel = midiChannel % 16;
 
 	// Treat notes with a velocity of 0 as note off.
 	if (velocity == 0) {
-		onNoteOff(channel, note, velocity);
+		onNoteOff(midiChannel, note, velocity);
 		return;
 	}
 
-	// Get an available OPL2 channel and setup instrument parameters.
-	byte opl2Channel = getFreeChannel(channel);
-	if (channel != MIDI_DRUM_CHANNEL) {
-		opl2.setInstrument(opl2Channel, midiInstruments[programMap[channel]]);
-	} else {
-		if (note >= DRUM_NOTE_BASE && note < DRUM_NOTE_BASE + NUM_MIDI_DRUMS) {
-			opl2.setInstrument(opl2Channel, midiDrums[note - DRUM_NOTE_BASE]);
-		} else {
-			return;
+	// Fetch pointer to the instrument.
+	unsigned char *instrumentDataPtr = NULL;
+	if (midiChannel != MIDI_DRUM_CHANNEL) {
+		instrumentDataPtr = midiInstruments[midiChannelMap[midiChannel].program];
+	} else if (note >= DRUM_NOTE_BASE && note < DRUM_NOTE_BASE + NUM_MIDI_DRUMS) {
+		instrumentDataPtr = midiDrums[note - DRUM_NOTE_BASE];
+	}
+
+	if (instrumentDataPtr != NULL) {
+		// Load new instrument if needed.
+		if (instrumentDataPtr != midiChannelMap[midiChannel].instrumentDataPtr) {
+			midiChannelMap[midiChannel].instrument = opl2.loadInstrument(instrumentDataPtr);
 		}
+
+		// Register channel mapping.
+		byte opl2Channel = getFreeChannel(midiChannel);
+		opl2ChannelMap[opl2Channel].midiChannel  = midiChannel;
+		opl2ChannelMap[opl2Channel].midiNote     = note;
+		opl2ChannelMap[opl2Channel].noteVelocity = log(min((float)velocity, 127.0)) / log(127.0);
+
+		// Calculate octave and note number.
+		byte opl2Octave = 4;
+		byte opl2Note = NOTE_C;
+		if (midiChannel != MIDI_DRUM_CHANNEL) {
+			note = max(24, min(note, 119));
+			opl2Octave = 1 + (note - 24) / 12;
+			opl2Note   = note % 12;
+		}
+
+		// Set instrument registers and play note.
+		opl2.setInstrument(opl2Channel, midiChannelMap[midiChannel].instrument, opl2ChannelMap[opl2Channel].noteVelocity);
+		opl2.playNote(opl2Channel, opl2Octave, opl2Note);
 	}
-
-	// Register channel mapping.
-	channelMap[opl2Channel].midiChannel  = channel;
-	channelMap[opl2Channel].midiNote     = note;
-	channelMap[opl2Channel].midiVelocity = log(min((float)velocity, 127.0)) / log(127.0);
-	channelMap[opl2Channel].op1Level     = (float)(63 - opl2.getVolume(opl2Channel, OPERATOR1)) / 63.0;
-	channelMap[opl2Channel].op2Level     = (float)(63 - opl2.getVolume(opl2Channel, OPERATOR2)) / 63.0;
-
-	// Set operator output levels based on note velocity.
-	setOpl2ChannelVolume(opl2Channel, channel);
-
-	// Calculate octave and note number and play note!
-	byte opl2Octave = 4;
-	byte opl2Note = NOTE_C;
-	if (channel != MIDI_DRUM_CHANNEL) {
-		note = max(24, min(note, 119));
-		opl2Octave = 1 + (note - 24) / 12;
-		opl2Note   = note % 12;
-	}
-	opl2.playNote(opl2Channel, opl2Octave, opl2Note);
 }
 
 
 /**
  * Handle a note off MIDI event to stop playing a note.
  */
-void onNoteOff(byte channel, byte note, byte velocity) {
-	channel = channel % 16;
+void onNoteOff(byte midiChannel, byte note, byte velocity) {
+	midiChannel = midiChannel % 16;
+
 	for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
-		if (channelMap[i].midiChannel == channel && channelMap[i].midiNote == note) {
+		if (opl2ChannelMap[i].midiChannel == midiChannel && opl2ChannelMap[i].midiNote == note) {
 			opl2.setKeyOn(i, false);
-			channelMap[i].midiChannel = 0xFF;
-			channelMap[i].midiNote = 0x00;
+			opl2ChannelMap[i].midiChannel = 0xFF;
+			opl2ChannelMap[i].midiNote = 0x00;
 
 			// Move channel to the back of recently used channels list to prevent it from
 			// being reused immediately and the release portion of the note being clubbored.
@@ -202,25 +212,25 @@ void onNoteOff(byte channel, byte note, byte velocity) {
 /**
  * Handle instrument change on the given MIDI channel.
  */
-void onProgramChange(byte channel, byte program) {
-	programMap[channel % 16] = min(program, 127);
+void onProgramChange(byte midiChannel, byte program) {
+	midiChannelMap[midiChannel % 16].program = min(program, 127);
 }
 
 
 /**
  * Handle MIDI control changes on the given channel.
  */
-void onControlChange(byte channel, byte control, byte value) {
-	channel = channel % 16;
+void onControlChange(byte midiChannel, byte control, byte value) {
+	midiChannel = midiChannel % 16;
 
 	switch (control) {
 
 		// Change volume of a MIDI channel.
 		case CONTROL_VOLUME: {
-			channelVolumes[channel] = log(min((float)value, 127.0)) / log(127.0);
+			midiChannelMap[midiChannel].volume = log(min((float)value, 127.0)) / log(127.0);
 			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
-				if (channelMap[i].midiChannel == channel && opl2.getKeyOn(i)) {
-					setOpl2ChannelVolume(i, channel);
+				if (opl2ChannelMap[i].midiChannel == midiChannel && opl2.getKeyOn(i)) {
+					setOpl2ChannelVolume(i, midiChannel);
 				}
 			}
 			break;
@@ -229,7 +239,13 @@ void onControlChange(byte channel, byte control, byte value) {
 		// Reset all controller values.
 		case CONTROL_RESET_ALL:
 			for (byte i = 0; i < MIDI_NUM_CHANNELS; i ++) {
-				channelVolumes[channel] = 0.8;
+				midiChannelMap[i].volume = log(127.0 * 0.8) / log(127.0);
+			}
+
+			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
+				if (opl2.getKeyOn(i)) {
+					setOpl2ChannelVolume(i, opl2ChannelMap[i].midiChannel);
+				}
 			}
 		break;
 
@@ -244,8 +260,8 @@ void onControlChange(byte channel, byte control, byte value) {
 		// Silence all MIDI channels.
 		case CONTROL_ALL_NOTES_OFF: {
 			for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
-				if (channelMap[i].midiChannel == channel) {
-					onNoteOff(channelMap[i].midiChannel, channelMap[i].midiNote, 0);
+				if (opl2ChannelMap[i].midiChannel == midiChannel) {
+					onNoteOff(opl2ChannelMap[i].midiChannel, opl2ChannelMap[i].midiNote, 0);
 				}
 			}
 			break;
@@ -264,16 +280,24 @@ void onControlChange(byte channel, byte control, byte value) {
 void onSystemReset() {
 	opl2.init();
 
-	// Silence all channels and set default instrument.
-	for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
-		opl2.setKeyOn(i, false);
-		opl2.setInstrument(i, midiInstruments[0]);
-		oldestChannel[i] = i;
-	}
+	// Default channel volume to 80%
+	float defaultVolume = log(127.0 * 0.8) / log(127.0);
+	unsigned char *defaultInstrumentPtr = midiInstruments[0];
+	Instrument defaultInstrument = opl2.loadInstrument(defaultInstrumentPtr);
 
 	// Reset default MIDI player parameters.
 	for (byte i = 0; i < MIDI_NUM_CHANNELS; i ++) {
-		programMap[i] = 0;
-		channelVolumes[i] = 0.8;
+		midiChannelMap[i].program = 0;
+		midiChannelMap[i].volume = defaultVolume;
+		midiChannelMap[i].instrumentDataPtr = defaultInstrumentPtr;
+		midiChannelMap[i].instrument = defaultInstrument;
+	}
+
+	// Silence all channels and set default instrument.
+	for (byte i = 0; i < OPL2_NUM_CHANNELS; i ++) {
+		oldestChannel[i] = i;
+		opl2ChannelMap[i].midiChannel = 0;
+		opl2ChannelMap[i].midiNote = 0;
+		opl2ChannelMap[i].noteVelocity = 0.0;
 	}
 }

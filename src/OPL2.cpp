@@ -1,20 +1,20 @@
 /**
- * ________ __________.____    ________      _____            .___.__         .____    ._____.    
- * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ____   |    |   |__\_ |__  
- *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \ 
+ * ________ __________.____    ________      _____            .___.__         .____    ._____.
+ * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ____   |    |   |__\_ |__
+ *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \
  * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  (  <_> ) |    |___|  || \_\ \
  * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\____/  |_______ \__||___  /
- *         \/                 \/       \/ _____   \/           \/                     \/       \/ 
- *                                      _/ ____\___________                                       
- *                                      \   __\/  _ \_  __ \                                      
- *                                       |  | (  <_> )  | \/                                      
- *                                       |__|  \____/|__|                                         
- *               _____            .___    .__                  ____    __________.__              
- *              /  _  \_______  __| _/_ __|__| ____   ____    /  _ \   \______   \__|             
- *             /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \   >  _ </\  |     ___/  |             
- *            /    |    \  | \/ /_/ |  |  /  |   |  (  <_> ) /  <_\ \/  |    |   |  |             
- *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|             
- *                    \/           \/             \/                \/                            
+ *         \/                 \/       \/ _____   \/           \/                     \/       \/
+ *                                      _/ ____\___________
+ *                                      \   __\/  _ \_  __ \
+ *                                       |  | (  <_> )  | \/
+ *                                       |__|  \____/|__|
+ *               _____            .___    .__                  ____    __________.__
+ *              /  _  \_______  __| _/_ __|__| ____   ____    /  _ \   \______   \__|
+ *             /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \   >  _ </\  |     ___/  |
+ *            /    |    \  | \/ /_/ |  |  /  |   |  (  <_> ) /  <_\ \/  |    |   |  |
+ *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
+ *                    \/           \/             \/                \/
  *
  * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.5.0
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
@@ -23,13 +23,13 @@
  *
  * Connect the OPL2 Audio Board as follows. To learn how to connect your favorite development platform visit the wiki at
  * https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting.
- *    OPL2 Board | Arduino | Raspberry Pi 
+ *    OPL2 Board | Arduino | Raspberry Pi
  *   ------------+---------+--------------
- *      Reset    |    8    |      18      
- *      A0       |    9    |      16      
- *      Latch    |   10    |      12      
- *      Data     |   11    |      19      
- *      Shift    |   13    |      23      
+ *      Reset    |    8    |      18
+ *      A0       |    9    |      16
+ *      Latch    |   10    |      12
+ *      Data     |   11    |      19
+ *      Shift    |   13    |      23
  *
  *
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
@@ -105,6 +105,7 @@ void OPL2::reset() {
 
 	for(int i = 0; i < 256; i ++) {
 		oplRegisters[i] = 0x00;
+		write(i, 0x00);
 	}
 }
 
@@ -314,6 +315,8 @@ Instrument OPL2::getInstrument(byte channel) {
  * because using the individual functions vs directly setting the registers makes instruments sound different.
  */
 void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
+	volume = max(0.0, min(volume, 1.0));
+
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
 		byte outputLevel = 63 - round((63.0 - (float)instrument.operators[op].outputLevel) * volume);
 		byte registerOffset = registerOffsets[op][channel];
@@ -673,7 +676,7 @@ short OPL2::getFNumber(byte channel) {
 
 
 /**
- * Set frequency F-number [0, 1023] for the given channel. 
+ * Set frequency F-number [0, 1023] for the given channel.
  */
 byte OPL2::setFNumber(byte channel, short fNumber) {
 	byte reg = 0xA0 + max(0x00, min(channel, 0x08));
