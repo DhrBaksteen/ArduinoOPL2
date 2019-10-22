@@ -78,7 +78,12 @@
 	#endif
 
 	// Instrument type definitions.
-	#define MELODIC_INSTRUMENT 0
+	#define INSTRUMENT_TYPE_MELODIC  0
+	#define INSTRUMENT_TYPE_BASS     6
+	#define INSTRUMENT_TYPE_SNARE    7
+	#define INSTRUMENT_TYPE_TOM      8
+	#define INSTRUMENT_TYPE_CYMBAL   9
+	#define INSTRUMENT_TYPE_HI_HAT  10
 
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#include <Arduino.h>
@@ -111,7 +116,7 @@
 		Operator operators[2];
 		byte feedback;
 		bool isAdditiveSynth;
-		byte drumType;
+		byte type;
 	};
 
 
@@ -136,7 +141,9 @@
 				Instrument loadInstrument(const unsigned char *instrument);
 			#endif
 			Instrument getInstrument(byte channel);
+			Instrument getDrumInstrument(byte drumType);
 			void setInstrument(byte channel, Instrument instrument, float volume = 1.0);
+			void setDrumInstrument(Instrument instrument, float volume = 1.0);
 			void setInstrument(byte channel, const unsigned char *instrument);
 
 			byte getRegister(byte reg);
@@ -208,11 +215,18 @@
 				776.053, 1552.107, 3104.215, 6208.431
 			};
 			const byte registerOffsets[2][9] = {  
-				{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 1 */
-				{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 2 */
+				{ 0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12 } ,   /*  initializers for operator 1 */
+				{ 0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15 }     /*  initializers for operator 2 */
+			};
+			const byte drumRegisterOffsets[2][5] = {
+				{ 0x10, 0xFF, 0x12, 0xFF, 0x11 },
+				{ 0x13, 0x14, 0xFF, 0x15, 0xFF }
 			};
 			const byte drumOffsets[6] = {
 				0x10, 0x13, 0x14, 0x12, 0x15, 0x11
+			};
+			const byte drumChannels[5] = {
+				6, 7, 8, 8, 7
 			};
 			const byte drumBits[5] = {
 				0x10, 0x08, 0x04, 0x02, 0x01
