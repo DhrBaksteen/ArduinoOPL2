@@ -273,7 +273,7 @@ Instrument OPL2::createInstrument() {
 
 	instrument.feedback = (data[6] & 0x0E) >> 1;
 	instrument.isAdditiveSynth = data[6] & 0x01 ? true : false;
-	instrument.type = INSTRUMENT_TYPE_MELODIC;
+	instrument.type = data[0];
 
 	return instrument;
 }
@@ -394,22 +394,22 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 
 		if (registerOffset != 0xFF) {
 			write(0x20 + registerOffset,
-				(instrument.operators[op].hasTremolo ? 0x80 : 0x00) +
-				(instrument.operators[op].hasVibrato ? 0x40 : 0x00) +
-				(instrument.operators[op].hasSustain ? 0x20 : 0x00) +
-				(instrument.operators[op].hasEnvelopeScaling ? 0x10 : 0x00) +
-				(instrument.operators[op].frequencyMultiplier & 0x0F));
+				(instrument.operators[0].hasTremolo ? 0x80 : 0x00) +
+				(instrument.operators[0].hasVibrato ? 0x40 : 0x00) +
+				(instrument.operators[0].hasSustain ? 0x20 : 0x00) +
+				(instrument.operators[0].hasEnvelopeScaling ? 0x10 : 0x00) +
+				(instrument.operators[0].frequencyMultiplier & 0x0F));
 			write(0x40 + registerOffset,
-				((instrument.operators[op].keyScaleLevel & 0x03) << 6) +
+				((instrument.operators[0].keyScaleLevel & 0x03) << 6) +
 				(outputLevel & 0x3F));
 			write(0x60 + registerOffset,
-				((instrument.operators[op].attack & 0x0F) << 4) +
-				(instrument.operators[op].decay & 0x0F));
+				((instrument.operators[0].attack & 0x0F) << 4) +
+				(instrument.operators[0].decay & 0x0F));
 			write(0x80 + registerOffset,
-				((instrument.operators[op].sustain & 0x0F) << 4) +
-				(instrument.operators[op].release & 0x0F));
+				((instrument.operators[0].sustain & 0x0F) << 4) +
+				(instrument.operators[0].release & 0x0F));
 			write(0xE0 + registerOffset,
-				(instrument.operators[op].waveForm & 0x03));
+				(instrument.operators[0].waveForm & 0x03));
 		}
 	}
 
