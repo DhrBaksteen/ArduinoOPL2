@@ -18,8 +18,23 @@
  * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
  * of choice!
  *
- * By default this example will look for the dummy file song.vgm file in the root of the SD card.
- *
+ * By default this example will look for the stunts01.vgm file in the root of the SD card. This file is found among the
+ * files for this example.
+ * 
+ * stunts01.vgm:   https://vgmrips.net/packs/pack/stunts-pc (01. Title Screen)
+ * Track title:    Title Screen
+ * Game Name:      Stunts
+ * Composer:       Michael J. Sokyrka, Kris Hatlelid, Brian Plank
+ * Release:        1990-10
+ * VGM by:         Tom
+ * 
+ * wacky02.vgm:    https://vgmrips.net/packs/pack/wacky-wheels-ibm-pc-at (02. Dream)
+ * Track title:    Dream
+ * Game Name:      Wacky Wheels
+ * Composer:       Mark Klem
+ * Release:        1994-10-24
+ * VGM by:         RandomName
+ * 
  * This program will also print song info to serial output, 9600 baud.
  *
  * VGM is a 44100Hz sample-accurate logging format, able of logging YM3812 data (register/data pairs) and delays.
@@ -72,7 +87,8 @@ uint32_t relativeLoopOffset = 0;
 uint16_t waitSamples = 0;
 enum playbackStatus PlaybackStatus = PLAYBACK_PLAYING;
 
-const byte filename[] = "song.vgm";
+const byte filename[] = "stunts01.vgm";
+//const byte filename[] = "wacky02.vgm";
 
 void error(enum playbackStatus errorcode) {
   PlaybackStatus = errorcode;
