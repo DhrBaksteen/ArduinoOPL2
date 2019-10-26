@@ -18,8 +18,11 @@
  * Refer to the wiki at https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting to learn how to connect your platform
  * of choice!
  *
- * By default this example will look for the dummy file song.vgm file in the root of the SD card.
- *
+ * By default this example will look for the stunts01.vgm file in the root of the SD card. This file is found among the
+ * files for this example.
+ * stunts01.vgm: https://vgmrips.net/packs/pack/stunts-pc              , 01. Title Screen
+ * wacky02.vgm:  https://vgmrips.net/packs/pack/wacky-wheels-ibm-pc-at , 02. Dream
+ * 
  * This program will also print song info to serial output, 9600 baud.
  * 
  * VGM is a 44100Hz sample-accurate logging format, able of logging YM3812 data (register/data pairs) and delays.
@@ -33,6 +36,8 @@
  * http://www.smspower.org/Music/VGMFileFormat
  *
  * Code by Eirik Stople (eirik@pcfood.net) 24-10-19
+ * Song Title Screen (Stunts) by Michael J. Sokyrka, Kris Hatlelid, Brian Plank, 1990
+ * Song Dream (Wacky Wheels) by Mark Klem, 1994
  * Most recent version of the library can be found at GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
@@ -58,7 +63,8 @@ uint32_t relativeLoopOffset = 0;
 uint16_t waitSamples = 0;
 enum playbackStatus PlaybackStatus = PLAYBACK_PLAYING;
 
-const byte filename[] = "song.vgm";
+const byte filename[] = "stunts01.vgm";
+//const byte filename[] = "wacky02.vgm";
 
 void setup() {
   opl2.init();
