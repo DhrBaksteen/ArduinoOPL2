@@ -1,41 +1,41 @@
 /**
- * ________ __________.____    ________      _____            .___.__         .____    ._____.    
- * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ____   |    |   |__\_ |__  
- *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \ 
+ * ________ __________.____    ________      _____            .___.__         .____    ._____.
+ * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ____   |    |   |__\_ |__
+ *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \
  * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  (  <_> ) |    |___|  || \_\ \
  * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\____/  |_______ \__||___  /
- *         \/                 \/       \/ _____   \/           \/                     \/       \/ 
- *                                      _/ ____\___________                                       
- *                                      \   __\/  _ \_  __ \                                      
- *                                       |  | (  <_> )  | \/                                      
- *                                       |__|  \____/|__|                                         
- *               _____            .___    .__                  ____    __________.__              
- *              /  _  \_______  __| _/_ __|__| ____   ____    /  _ \   \______   \__|             
- *             /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \   >  _ </\  |     ___/  |             
- *            /    |    \  | \/ /_/ |  |  /  |   |  (  <_> ) /  <_\ \/  |    |   |  |             
- *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|             
- *                    \/           \/             \/                \/                            
+ *         \/                 \/       \/ _____   \/           \/                     \/       \/
+ *                                      _/ ____\___________
+ *                                      \   __\/  _ \_  __ \
+ *                                       |  | (  <_> )  | \/
+ *                                       |__|  \____/|__|
+ *               _____            .___    .__                  ____    __________.__
+ *              /  _  \_______  __| _/_ __|__| ____   ____    /  _ \   \______   \__|
+ *             /  /_\  \_  __ \/ __ |  |  \  |/    \ /  _ \   >  _ </\  |     ___/  |
+ *            /    |    \  | \/ /_/ |  |  /  |   |  (  <_> ) /  <_\ \/  |    |   |  |
+ *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
+ *                    \/           \/             \/                \/
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.4.5
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.5.0
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
  *
  * Connect the OPL2 Audio Board as follows. To learn how to connect your favorite development platform visit the wiki at
  * https://github.com/DhrBaksteen/ArduinoOPL2/wiki/Connecting.
- *    OPL2 Board | Arduino | Raspberry Pi 
+ *    OPL2 Board | Arduino | Raspberry Pi
  *   ------------+---------+--------------
- *      Reset    |    8    |      18      
- *      A0       |    9    |      16      
- *      Latch    |   10    |      12      
- *      Data     |   11    |      19      
- *      Shift    |   13    |      23      
+ *      Reset    |    8    |      18
+ *      A0       |    9    |      16
+ *      Latch    |   10    |      12
+ *      Data     |   11    |      19
+ *      Shift    |   13    |      23
  *
  *
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2019-06-17
+ * Last updated 2019-11-10
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -68,7 +68,7 @@ OPL2::OPL2() {
 OPL2::OPL2(byte reset, byte address, byte latch) {
 	pinReset   = reset;
 	pinAddress = address;
-	pinLatch   = latch;	
+	pinLatch   = latch;
 }
 
 
@@ -105,6 +105,7 @@ void OPL2::reset() {
 
 	for(int i = 0; i < 256; i ++) {
 		oplRegisters[i] = 0x00;
+		write(i, 0x00);
 	}
 }
 
@@ -204,6 +205,223 @@ byte OPL2::getFrequencyBlock(float frequency) {
 
 
 /**
+ * Create and return a new empty instrument.
+ */
+Instrument OPL2::createInstrument() {
+	Instrument instrument;
+
+	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
+		instrument.operators[op].hasTremolo = false;
+		instrument.operators[op].hasVibrato = false;
+		instrument.operators[op].hasSustain = false;
+		instrument.operators[op].hasEnvelopeScaling = false;
+		instrument.operators[op].frequencyMultiplier = 0;
+		instrument.operators[op].keyScaleLevel = 0;
+		instrument.operators[op].outputLevel = 0;
+		instrument.operators[op].attack = 0;
+		instrument.operators[op].decay = 0;
+		instrument.operators[op].sustain = 0;
+		instrument.operators[op].release = 0;
+		instrument.operators[op].waveForm = 0;
+	}
+
+	instrument.feedback = 0;
+	instrument.isAdditiveSynth = false;
+	instrument.type = INSTRUMENT_TYPE_MELODIC;
+
+	return instrument;
+}
+
+
+/**
+ * Create an instrument and load it with instrument parameters from the given instrument data pointer.
+ */
+#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+	Instrument OPL2::loadInstrument(const unsigned char *instrumentData, bool fromProgmem) {
+#else
+	Instrument OPL2::loadInstrument(const unsigned char *instrumentData) {
+#endif
+	Instrument instrument = createInstrument();
+
+	byte data[12];
+	for (byte i = 0; i < 12; i ++) {
+		#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+			if (fromProgmem) {
+				data[i] = pgm_read_byte_near(instrumentData + i);
+			} else {
+				data[i] = instrumentData[i];
+			}
+		#else
+			data[i] = instrumentData[i];
+		#endif
+	}
+
+	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
+		instrument.operators[op].hasTremolo = data[op * 6 + 1] & 0x80 ? true : false;
+		instrument.operators[op].hasVibrato = data[op * 6 + 1] & 0x40 ? true : false;
+		instrument.operators[op].hasSustain = data[op * 6 + 1] & 0x20 ? true : false;
+		instrument.operators[op].hasEnvelopeScaling = data[op * 6 + 1] & 0x10 ? true : false;
+		instrument.operators[op].frequencyMultiplier = (data[op * 6 + 1] & 0x0F);
+		instrument.operators[op].keyScaleLevel = (data[op * 6 + 2] & 0xC0) >> 6;
+		instrument.operators[op].outputLevel = data[op * 6 + 2] & 0x3F;
+		instrument.operators[op].attack = (data[op * 6 + 3] & 0xF0) >> 4;
+		instrument.operators[op].decay = data[op * 6 + 3] & 0x0F;
+		instrument.operators[op].sustain = (data[op * 6 + 4] & 0xF0) >> 4;
+		instrument.operators[op].release = data[op * 6 + 4] & 0x0F;
+		instrument.operators[op].waveForm = data[op * 6 + 5] & 0x03;
+	}
+
+	instrument.feedback = (data[6] & 0x0E) >> 1;
+	instrument.isAdditiveSynth = data[6] & 0x01 ? true : false;
+	instrument.type = data[0];
+
+	return instrument;
+}
+
+
+/**
+ * Create a new instrument from the given OPL2 channel.
+ */
+Instrument OPL2::getInstrument(byte channel) {
+	Instrument instrument;
+
+	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
+		instrument.operators[op].hasTremolo = getTremolo(channel, op);
+		instrument.operators[op].hasVibrato = getVibrato(channel, op);
+		instrument.operators[op].hasSustain = getMaintainSustain(channel, op);
+		instrument.operators[op].hasEnvelopeScaling = getEnvelopeScaling(channel, op);
+		instrument.operators[op].frequencyMultiplier = getMultiplier(channel, op);
+		instrument.operators[op].keyScaleLevel = getScalingLevel(channel, op);
+		instrument.operators[op].outputLevel = getVolume(channel, op);
+		instrument.operators[op].attack = getAttack(channel, op);
+		instrument.operators[op].decay = getDecay(channel, op);
+		instrument.operators[op].sustain = getSustain(channel, op);
+		instrument.operators[op].release = getRelease(channel, op);
+		instrument.operators[op].waveForm = getWaveForm(channel, op);
+	}
+
+	instrument.feedback = getFeedback(channel);
+	instrument.isAdditiveSynth = getSynthMode(channel);
+	instrument.type = INSTRUMENT_TYPE_MELODIC;
+
+	return instrument;
+}
+
+
+/**
+ * Create a new drum instrument that can be used in percussion mode. The drumType is one of INSTRUMENT_TYPE_* other than
+ * MELODIC and this determines the channel operator(s) to be loaded into the instrument object.
+ */
+Instrument OPL2::getDrumInstrument(byte drumType) {
+	byte channel = drumChannels[drumType - INSTRUMENT_TYPE_BASS];
+	Instrument instrument = createInstrument();
+
+	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
+		if (drumRegisterOffsets[op][drumType - INSTRUMENT_TYPE_BASS] != 0xFF) {
+			instrument.operators[op].hasTremolo = getTremolo(channel, op);
+			instrument.operators[op].hasVibrato = getVibrato(channel, op);
+			instrument.operators[op].hasSustain = getMaintainSustain(channel, op);
+			instrument.operators[op].hasEnvelopeScaling = getEnvelopeScaling(channel, op);
+			instrument.operators[op].frequencyMultiplier = getMultiplier(channel, op);
+			instrument.operators[op].keyScaleLevel = getScalingLevel(channel, op);
+			instrument.operators[op].outputLevel = getVolume(channel, op);
+			instrument.operators[op].attack = getAttack(channel, op);
+			instrument.operators[op].decay = getDecay(channel, op);
+			instrument.operators[op].sustain = getSustain(channel, op);
+			instrument.operators[op].release = getRelease(channel, op);
+			instrument.operators[op].waveForm = getWaveForm(channel, op);
+		}
+	}
+
+	instrument.feedback = 0x00;
+	instrument.isAdditiveSynth = false;
+	instrument.type = drumType;
+
+	return instrument;
+}
+
+
+/**
+ * Set the given instrument to a channel. An optional volume may be provided to assign to proper output levels for the
+ * operators.
+ */
+void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
+	channel = max(0, min(channel, 8));
+	volume = max(0.0, min(volume, 1.0));
+
+	setWaveFormSelect(true);
+	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
+		byte outputLevel = 63 - (byte)((63.0 - (float)instrument.operators[op].outputLevel) * volume);
+		byte registerOffset = registerOffsets[op][channel];
+
+		write(0x20 + registerOffset,
+			(instrument.operators[op].hasTremolo ? 0x80 : 0x00) +
+			(instrument.operators[op].hasVibrato ? 0x40 : 0x00) +
+			(instrument.operators[op].hasSustain ? 0x20 : 0x00) +
+			(instrument.operators[op].hasEnvelopeScaling ? 0x10 : 0x00) +
+			(instrument.operators[op].frequencyMultiplier & 0x0F));
+		write(0x40 + registerOffset,
+			((instrument.operators[op].keyScaleLevel & 0x03) << 6) +
+			(outputLevel & 0x3F));
+		write(0x60 + registerOffset,
+			((instrument.operators[op].attack & 0x0F) << 4) +
+			(instrument.operators[op].decay & 0x0F));
+		write(0x80 + registerOffset,
+			((instrument.operators[op].sustain & 0x0F) << 4) +
+			(instrument.operators[op].release & 0x0F));
+		write(0xE0 + registerOffset,
+			(instrument.operators[op].waveForm & 0x03));
+	}
+
+	write(0xC0 + channel,
+		((instrument.feedback & 0x07) << 1) +
+		(instrument.isAdditiveSynth ? 0x01 : 0x00));
+}
+
+
+/**
+ * Set the given drum instrument that can be used in percussion mode. Depending on the type of drum the instrument
+ * parameters will be loaded into the appropriate channel operator(s). An optional volume may be provided to set the
+ * proper output levels for the operator(s).
+ */
+void OPL2::setDrumInstrument(Instrument instrument, float volume) {
+	volume = max(0.0, min(volume, 1.0));
+
+	setWaveFormSelect(true);
+	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
+		byte outputLevel = 63 - (byte)((63.0 - (float)instrument.operators[op].outputLevel) * volume);
+		byte registerOffset = drumRegisterOffsets[op][instrument.type - INSTRUMENT_TYPE_BASS];
+
+		if (registerOffset != 0xFF) {
+			write(0x20 + registerOffset,
+				(instrument.operators[0].hasTremolo ? 0x80 : 0x00) +
+				(instrument.operators[0].hasVibrato ? 0x40 : 0x00) +
+				(instrument.operators[0].hasSustain ? 0x20 : 0x00) +
+				(instrument.operators[0].hasEnvelopeScaling ? 0x10 : 0x00) +
+				(instrument.operators[0].frequencyMultiplier & 0x0F));
+			write(0x40 + registerOffset,
+				((instrument.operators[0].keyScaleLevel & 0x03) << 6) +
+				(outputLevel & 0x3F));
+			write(0x60 + registerOffset,
+				((instrument.operators[0].attack & 0x0F) << 4) +
+				(instrument.operators[0].decay & 0x0F));
+			write(0x80 + registerOffset,
+				((instrument.operators[0].sustain & 0x0F) << 4) +
+				(instrument.operators[0].release & 0x0F));
+			write(0xE0 + registerOffset,
+				(instrument.operators[0].waveForm & 0x03));
+		}
+	}
+
+	write(0xC0 + drumChannels[instrument.type - INSTRUMENT_TYPE_BASS], 0x00);
+}
+
+
+/**
+ * WARNING!
+ * As of v1.5.0 of the OPL2 library this function is deprecated and will be removed in v1.6.0. Please use the newly
+ * provided instrument object and createInstrument / loadInstrument / setInstrument functions.
+ *
  * Load an instrument and apply it to the given channel. If the instrument to be loaded is a percussive instrument then
  * the channel will depend on the type of drum and the channel parameter will be ignored.
  * See instruments.h for instrument definition format.
@@ -531,7 +749,7 @@ short OPL2::getFNumber(byte channel) {
 
 
 /**
- * Set frequency F-number [0, 1023] for the given channel. 
+ * Set frequency F-number [0, 1023] for the given channel.
  */
 byte OPL2::setFNumber(byte channel, short fNumber) {
 	byte reg = 0xA0 + max(0x00, min(channel, 0x08));

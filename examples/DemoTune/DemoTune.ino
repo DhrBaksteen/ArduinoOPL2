@@ -75,12 +75,11 @@ void setup() {
   opl2.init();
 
   // Setup channels 0, 1 and 2.
-  opl2.setInstrument(0, INSTRUMENT_PIANO1);
-  opl2.setBlock     (0, 5);
-  opl2.setInstrument(1, INSTRUMENT_PIANO1);
-  opl2.setBlock     (1, 4);
-  opl2.setInstrument(2, INSTRUMENT_PIANO1);
-  opl2.setBlock     (2, 4);
+  Instrument piano = opl2.loadInstrument(INSTRUMENT_PIANO1);
+  for (int i = 0; i < 3; i ++) {
+    opl2.setInstrument(i, piano);
+    opl2.setBlock(i, 4);
+  }
 }
 
 
@@ -180,7 +179,7 @@ float parseDuration(struct Tune *tune) {
   } else {
     tune->index --;
   }
-  
+
   // Calculate note duration in ms.
   duration = (60.0f / tempo) * duration * 1000;
   return duration;

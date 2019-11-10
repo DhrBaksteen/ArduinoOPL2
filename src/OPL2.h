@@ -71,6 +71,19 @@
 	#define NOTE_AS 10
 	#define NOTE_B  11
 
+	// Instrument data sources (Arduino only).
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+		#define INSTRUMENT_DATA_PROGMEM true
+		#define INSTRUMENT_DATA_SRAM false
+	#endif
+
+	// Instrument type definitions.
+	#define INSTRUMENT_TYPE_MELODIC  0
+	#define INSTRUMENT_TYPE_BASS     6
+	#define INSTRUMENT_TYPE_SNARE    7
+	#define INSTRUMENT_TYPE_TOM      8
+	#define INSTRUMENT_TYPE_CYMBAL   9
+	#define INSTRUMENT_TYPE_HI_HAT  10
 
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#include <Arduino.h>
@@ -81,6 +94,30 @@
 		#define max(a, b) ((a) > (b) ? (a) : (b))
 		#define PROGMEM 
 	#endif
+
+
+	struct Operator {
+		bool hasTremolo;
+		bool hasVibrato;
+		bool hasSustain;
+		bool hasEnvelopeScaling;
+		byte frequencyMultiplier;
+		byte keyScaleLevel;
+		byte outputLevel;
+		byte attack;
+		byte decay;
+		byte sustain;
+		byte release;
+		byte waveForm;
+	};
+
+
+	struct Instrument {
+		Operator operators[2];
+		byte feedback;
+		bool isAdditiveSynth;
+		byte type;
+	};
 
 
 	class OPL2 {
@@ -96,6 +133,18 @@
 			short getFrequencyFNumber(byte channel, float frequency);
 			short getNoteFNumber(byte note);
 			float getFrequencyStep(byte channel);
+
+			Instrument createInstrument();
+			#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+				Instrument loadInstrument(const unsigned char *instrument, bool fromProgmem = INSTRUMENT_DATA_PROGMEM);
+			#else
+				Instrument loadInstrument(const unsigned char *instrument);
+			#endif
+			Instrument getInstrument(byte channel);
+			Instrument getDrumInstrument(byte drumType);
+			void setInstrument(byte channel, Instrument instrument, float volume = 1.0);
+			void setDrumInstrument(Instrument instrument, float volume = 1.0);
+			void setInstrument(byte channel, const unsigned char *instrument);
 
 			byte getRegister(byte reg);
 			bool getWaveFormSelect();
@@ -122,7 +171,6 @@
 			byte getDrums();
 			byte getWaveForm(byte channel, byte operatorNum);
 
-			void setInstrument(byte channel, const unsigned char *instrument);
 			void playNote(byte channel, byte octave, byte note);
 			void playDrum(byte drum, byte octave, byte note);
 			byte setRegister(byte reg, byte value);
@@ -159,19 +207,26 @@
 				0.048, 0.095, 0.190, 0.379, 0.759, 1.517, 3.034, 6.069
 			};
 			const unsigned int noteFNumbers[12] = {
-				0x16B, 0x181, 0x198, 0x1B0, 0x1CA, 0x1E5,
-				0x202, 0x220, 0x241, 0x263, 0x287, 0x2AE
+				0x156, 0x16B, 0x181, 0x198, 0x1B0, 0x1CA,
+				0x1E5, 0x202, 0x220, 0x241, 0x263, 0x287
 			};
 			const float blockFrequencies[8] = {
 				 48.503,   97.006,  194.013,  388.026,
 				776.053, 1552.107, 3104.215, 6208.431
 			};
 			const byte registerOffsets[2][9] = {  
-				{0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12} ,   /*  initializers for operator 1 */
-				{0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15} ,   /*  initializers for operator 2 */
+				{ 0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12 } ,   /*  initializers for operator 1 */
+				{ 0x03, 0x04, 0x05, 0x0B, 0x0C, 0x0D, 0x13, 0x14, 0x15 }     /*  initializers for operator 2 */
+			};
+			const byte drumRegisterOffsets[2][5] = {
+				{ 0x10, 0xFF, 0x12, 0xFF, 0x11 },
+				{ 0x13, 0x14, 0xFF, 0x15, 0xFF }
 			};
 			const byte drumOffsets[6] = {
 				0x10, 0x13, 0x14, 0x12, 0x15, 0x11
+			};
+			const byte drumChannels[5] = {
+				6, 7, 8, 8, 7
 			};
 			const byte drumBits[5] = {
 				0x10, 0x08, 0x04, 0x02, 0x01

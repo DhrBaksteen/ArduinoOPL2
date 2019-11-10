@@ -7,6 +7,8 @@
 #######################################
 
 OPL2	KEYWORD1
+Operator KEYWORD1
+Instrument KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -44,7 +46,12 @@ getDeepVibrato	KEYWORD2
 getPercussion	KEYWORD2
 getDrums	KEYWORD2
 getWaveForm	KEYWORD2
+createInstrument	KEYWORD2
+loadInstrument	KEYWORD2
+getInstrument	KEYWORD2
 setInstrument	KEYWORD2
+getDrumInstrument	KEYWORD2
+setDrumInstrument	KEYWORD2
 playNote	KEYWORD2
 playDrum	KEYWORD2
 setRegister	KEYWORD2
@@ -106,3 +113,6 @@ NOTE_GS	LITERAL1
 NOTE_A	LITERAL1
 NOTE_AS	LITERAL1
 NOTE_B	LITERAL1
+INSTRUMENT_DATA_PROGMEM	LITERAL1
+INSTRUMENT_DATA_SRAM	LITERAL1
+MELODIC_INSTRUMENT	LITERAL1
