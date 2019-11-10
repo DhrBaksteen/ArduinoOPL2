@@ -35,7 +35,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2019-10-17
+ * Last updated 2019-11-10
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -351,7 +351,7 @@ void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
 
 	setWaveFormSelect(true);
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
-		byte outputLevel = 63 - round((63.0 - (float)instrument.operators[op].outputLevel) * volume);
+		byte outputLevel = 63 - (byte)((63.0 - (float)instrument.operators[op].outputLevel) * volume);
 		byte registerOffset = registerOffsets[op][channel];
 
 		write(0x20 + registerOffset,
@@ -389,7 +389,7 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 
 	setWaveFormSelect(true);
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
-		byte outputLevel = 63 - round((63.0 - (float)instrument.operators[op].outputLevel) * volume);
+		byte outputLevel = 63 - (byte)((63.0 - (float)instrument.operators[op].outputLevel) * volume);
 		byte registerOffset = drumRegisterOffsets[op][instrument.type - INSTRUMENT_TYPE_BASS];
 
 		if (registerOffset != 0xFF) {
@@ -418,13 +418,15 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 
 
 /**
+ * WARNING!
+ * As of v1.5.0 of the OPL2 library this function is deprecated and will be removed in v1.6.0. Please use the newly
+ * provided instrument object and createInstrument / loadInstrument / setInstrument functions.
+ *
  * Load an instrument and apply it to the given channel. If the instrument to be loaded is a percussive instrument then
  * the channel will depend on the type of drum and the channel parameter will be ignored.
  * See instruments.h for instrument definition format.
  */
 void OPL2::setInstrument(byte channel, const unsigned char *instrument) {
-	#warning Function void setInstrument(byte channel, const unsigned char *instrument) for melodic instruments is deprecated, please switch to void using setInstrument(byte channel, Instrument instrument, float volume = 1.0).
-
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		unsigned char percussionChannel = pgm_read_byte_near(instrument);
 	#else

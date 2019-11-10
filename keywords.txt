@@ -50,6 +50,8 @@ createInstrument	KEYWORD2
 loadInstrument	KEYWORD2
 getInstrument	KEYWORD2
 setInstrument	KEYWORD2
+getDrumInstrument	KEYWORD2
+setDrumInstrument	KEYWORD2
 playNote	KEYWORD2
 playDrum	KEYWORD2
 setRegister	KEYWORD2
