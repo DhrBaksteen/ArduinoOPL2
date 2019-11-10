@@ -21,13 +21,13 @@
  *  4 - Channel c, operator 1, register 0x80
  *		Sustain(4) | Release(4)
  *
- *  5 - Channel c, register 0xC0
- *		Undefined(4) | Modulation feedback factor(3) | Synth type(1)
- *
- *  6 - Channel c, operator 1, register 0xE0
+ *  5 - Channel c, operator 1, register 0xE0
  *		Undefined(5) | Waveform(3)
  *
- *  7 - Channel c, operator 2, register 0x20 
+ *  6 - Channel c, register 0xC0
+ *		Undefined(4) | Modulation feedback factor(3) | Synth type(1)
+ *
+ *  7 - Channel c, operator 2, register 0x20
  *  8 - Channel c, operator 2, register 0x40
  *  9 - Channel c, operator 2, register 0x60
  * 10 - Channel c, operator 2, register 0x80
