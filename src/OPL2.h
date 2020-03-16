@@ -235,6 +235,16 @@
 				0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0
 			};
 			byte oplRegisters[256];
+
+			const byte ZERO = 0;
+			const byte ONE = 1;
+			const byte CHANNEL_MAX = 8;
+			const byte OCTAVE_MAX = 7;
+			const byte NOTE_MAX = 11;
+			const short F_NUM_MIN = 0;
+			const short F_NUM_MAX = 1023;
+			const float VOLUME_MIN = 0.0;
+			const float VOLUME_MAX = 1.0;
 	};
 #endif
 

@@ -9,7 +9,7 @@ This repository contains the OPL2 Audio Board library for Arduino, Teensy, Raspb
 * Emulation with DosBox; you can use the board to output MIDI music (Teensy++ 2.0 and later)
 * Use the board directly as a synthesizer by using the [OPL3BankEditor](https://github.com/Wohlstand/OPL3BankEditor) software by Wohlstand
 
-Current library version is 1.5.0
+Current library version is 1.5.1
 
 To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.com/products/DhrBaksteen/opl2-audio-board/).
 
