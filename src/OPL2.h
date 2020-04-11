@@ -51,11 +51,18 @@
 	#define ADDITIVE_SYNTH  true
 
 	// Drum sounds.
-	#define DRUM_BASS   0x10
-	#define DRUM_SNARE  0x08
-	#define DRUM_TOM    0x04
-	#define DRUM_CYMBAL 0x02
-	#define DRUM_HI_HAT 0x01
+	#define DRUM_BASS   0
+	#define DRUM_SNARE  1
+	#define DRUM_TOM    2
+	#define DRUM_CYMBAL 3
+	#define DRUM_HI_HAT 4
+
+	// Drum sound bit masks.
+	#define DRUM_BITS_BASS   0x10
+	#define DRUM_BITS_SNARE  0x08
+	#define DRUM_BITS_TOM    0x04
+	#define DRUM_BITS_CYMBAL 0x02
+	#define DRUM_BITS_HI_HAT 0x01
 
 	// Note to frequency mapping.
 	#define NOTE_C   0
@@ -195,6 +202,7 @@
 			byte setDeepTremolo(bool enable);
 			byte setDeepVibrato(bool enable);
 			byte setPercussion(bool enable);
+			byte setDrums(byte drums);
 			byte setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat);
 			byte setWaveForm(byte channel, byte operatorNum, byte waveForm);
 
@@ -229,7 +237,7 @@
 				6, 7, 8, 8, 7
 			};
 			const byte drumBits[5] = {
-				0x10, 0x08, 0x04, 0x02, 0x01
+				DRUM_BITS_BASS, DRUM_BITS_SNARE, DRUM_BITS_TOM, DRUM_BITS_CYMBAL, DRUM_BITS_HI_HAT
 			};
 			const byte instrumentBaseRegs[6] = {
 				0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0
@@ -241,6 +249,7 @@
 			const byte CHANNEL_MAX = 8;
 			const byte OCTAVE_MAX = 7;
 			const byte NOTE_MAX = 11;
+			const byte DRUM_SOUND_MAX = 5;
 			const short F_NUM_MIN = 0;
 			const short F_NUM_MAX = 1023;
 			const float VOLUME_MIN = 0.0;

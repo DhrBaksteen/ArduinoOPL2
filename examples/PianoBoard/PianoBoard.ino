@@ -1,5 +1,6 @@
 /**
- * This is a simple demo sketch for the OPL2 library. It makes use of the Piano Board and assumes then you also have the
+ * This is a simple demo sketch for the OPL2 library. It makes use of the Cheerful Electronic Piano Board
+ * (https://www.tindie.com/products/cheerful/arduino-piano-board-2/) and assumes then you also have the
  * ArduinoPianoBoard library installed (see https://github.com/DhrBaksteen/ArduinoPianoBoard).
  *
  * This sketch makes a simple piano out of the OPL2 Board and the Piano Board. Use the piano keys to play a tune. User
