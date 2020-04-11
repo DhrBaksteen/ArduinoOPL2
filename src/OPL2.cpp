@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
  *                    \/           \/             \/                \/
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.5.1
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v1.5.3
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  *
  * Look for example code on how to use this library in the examples folder.
@@ -35,7 +35,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2020-03-16
+ * Last updated 2020-04-11
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and OPL chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
@@ -509,6 +509,24 @@ void OPL2::playNote(byte channel, byte octave, byte note) {
 
 
 /**
+ * Play a drum sound at a given note and frequency.
+ * The OPL2 must be put into percusive mode first and the parameters of the drum sound must be set in the required
+ * operator(s). Note that changing octave and note frequenct will influence both drum sounds if they occupy only a
+ * single operator (Snare + Hi-hat and Tom + Cymbal).
+ */
+void OPL2::playDrum(byte drum, byte octave, byte note) {
+	drum = drum % DRUM_SOUND_MAX;
+	byte drumState = getDrums();
+
+	setDrums(drumState & ~drumBits[drum]);
+	byte drumChannel = drumChannels[drum % DRUM_SOUND_MAX];
+	setBlock(drumChannel, max(ZERO, min(octave, OCTAVE_MAX)));
+	setFNumber(drumChannel, noteFNumbers[max(ZERO, min(note, NOTE_MAX))]);
+	setDrums(drumState | drumBits[drum]);
+}
+
+
+/**
  * Is wave form selection currently enabled.
  */
 bool OPL2::getWaveFormSelect() {
@@ -940,16 +958,24 @@ byte OPL2::getDrums() {
 
 
 /**
+ * Set the OPL2 drum registers all at once.
+ */
+byte OPL2::setDrums(byte drums) {
+	return setRegister(0xBD, (oplRegisters[0xBD] & 0xE0) | (drums & 0x1F));
+}
+
+
+/**
  * Enable or disable various drum sounds.
  * Note that keyOn for channels 6, 7 and 8 must be false in order to use rhythms.
  */
 byte OPL2::setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat) {
 	byte drums = 0;
-	drums += bass   ? DRUM_BASS   : 0x00;
-	drums += snare  ? DRUM_SNARE  : 0x00;
-	drums += tom    ? DRUM_TOM    : 0x00;
-	drums += cymbal ? DRUM_CYMBAL : 0x00;
-	drums += hihat  ? DRUM_HI_HAT : 0x00;
+	drums += bass   ? DRUM_BITS_BASS   : 0x00;
+	drums += snare  ? DRUM_BITS_SNARE  : 0x00;
+	drums += tom    ? DRUM_BITS_TOM    : 0x00;
+	drums += cymbal ? DRUM_BITS_CYMBAL : 0x00;
+	drums += hihat  ? DRUM_BITS_HI_HAT : 0x00;
 	setRegister(0xBD, oplRegisters[0xBD] & ~drums);
 	return setRegister(0xBD, oplRegisters[0xBD] | drums);
 }
