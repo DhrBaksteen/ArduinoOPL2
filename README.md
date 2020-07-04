@@ -1,4 +1,4 @@
-# OPL2 Audio Board
+# OPL2 Library
 This repository contains the OPL2 Audio Board library for Arduino, Teensy, Raspberry Pi and compatible boards as well as a number of examples on how the board can be used. You can use the OPL2 Audio Board to:
 * Experiment with the YM3812 chip
 * Build your own synthesizer
@@ -16,6 +16,7 @@ To obtain your own OPL2 Audio Board visit the [Tindie store](https://www.tindie.
 For more info visit the [Hackaday project page](https://hackaday.io/project/18995-opl2-audio-board-for-arduino-raspberry-pi).
 
 ![](https://raw.githubusercontent.com/DhrBaksteen/ArduinoOPL2/master/extra/OPL2_board.jpg)
+![](https://raw.githubusercontent.com/DhrBaksteen/ArduinoOPL2/master/extra/OPL3Duo_board.jpg)
 
 
 ## 1. Assembling the kit
