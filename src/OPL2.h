@@ -37,8 +37,9 @@
 		#define SPI_CHANNEL 0
 	#endif
 
-	// General OPL2 definitions.
-	#define OPL2_NUM_CHANNELS 9
+	// Generic OPL2 definitions.
+	#define NUM_OPL2_CHANNELS 9
+	#define CHANNELS_PER_BANK 9
 
 	// Operator definitions.
 	#define OPERATOR1 0
@@ -77,6 +78,11 @@
 	#define NOTE_A   9
 	#define NOTE_AS 10
 	#define NOTE_B  11
+
+	// Tune specific declarations.
+	#define NUM_OCTAVES      7
+	#define NUM_NOTES       12
+	#define NUM_DRUM_SOUNDS  5
 
 	// Instrument data sources (Arduino only).
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -124,6 +130,7 @@
 		byte feedback;
 		bool isAdditiveSynth;
 		byte type;
+		byte transpose;
 	};
 
 
@@ -131,15 +138,29 @@
 		public:
 			OPL2();
 			OPL2(byte reset, byte address, byte latch);
+			virtual void begin();
+			virtual void reset();
+			virtual void createShadowRegisters();
+			virtual byte getNumChannels();
 			void init();
-			void reset();
-			void write(byte reg, byte data);
-			byte getRegisterOffset(byte channel, byte operatorNum);
+
+			virtual byte getChipRegister(short reg);
+			virtual byte getChannelRegister(byte baseRegister, byte channel);
+			virtual byte getOperatorRegister(byte baseRegister, byte channel, byte op);
+			virtual byte getRegister(byte reg);
+			virtual byte getRegisterOffset(byte channel, byte operatorNum);
+			virtual void setChipRegister(short reg, byte value);
+			virtual void setChannelRegister(byte baseRegister, byte channel, byte value);
+			virtual void setOperatorRegister(byte baseRegister, byte channel, byte op, byte value);
+			virtual void setRegister(byte reg, byte value);
+			virtual void write(byte reg, byte data);
 
 			byte getFrequencyBlock(float frequency);
 			short getFrequencyFNumber(byte channel, float frequency);
 			short getNoteFNumber(byte note);
 			float getFrequencyStep(byte channel);
+			void playNote(byte channel, byte octave, byte note);
+			void playDrum(byte drum, byte octave, byte note);
 
 			Instrument createInstrument();
 			#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -151,10 +172,8 @@
 			Instrument getDrumInstrument(byte drumType);
 			void setInstrument(byte channel, Instrument instrument, float volume = 1.0);
 			void setDrumInstrument(Instrument instrument, float volume = 1.0);
-			void setInstrument(byte channel, const unsigned char *instrument);
 
-			byte getRegister(byte reg);
-			bool getWaveFormSelect();
+			virtual bool getWaveFormSelect();
 			bool getTremolo(byte channel, byte operatorNum);
 			bool getVibrato(byte channel, byte operatorNum);
 			bool getMaintainSustain(byte channel, byte operatorNum);
@@ -178,38 +197,37 @@
 			byte getDrums();
 			byte getWaveForm(byte channel, byte operatorNum);
 
-			void playNote(byte channel, byte octave, byte note);
-			void playDrum(byte drum, byte octave, byte note);
-			byte setRegister(byte reg, byte value);
-			byte setWaveFormSelect(bool enable);
-			byte setTremolo(byte channel, byte operatorNum, bool enable);
-			byte setVibrato(byte channel, byte operatorNum, bool enable);
-			byte setMaintainSustain(byte channel, byte operatorNum, bool enable);
-			byte setEnvelopeScaling(byte channel, byte operatorNum, bool enable);
-			byte setMultiplier(byte channel, byte operatorNum, byte multiplier);
-			byte setScalingLevel(byte channel, byte operatorNum, byte scaling);
-			byte setVolume(byte channel, byte operatorNum, byte volume);
-			byte setAttack(byte channel, byte operatorNum, byte attack);
-			byte setDecay(byte channel, byte operatorNum, byte decay);
-			byte setSustain(byte channel, byte operatorNum, byte sustain);
-			byte setRelease(byte channel, byte operatorNum, byte release);
-			byte setFNumber(byte channel, short fNumber);
-			byte setFrequency(byte channel, float frequency);
-			byte setBlock(byte channel, byte block);
-			byte setKeyOn(byte channel, bool keyOn);
-			byte setFeedback(byte channel, byte feedback);
-			byte setSynthMode(byte channel, bool isAdditive);
-			byte setDeepTremolo(bool enable);
-			byte setDeepVibrato(bool enable);
-			byte setPercussion(bool enable);
-			byte setDrums(byte drums);
-			byte setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat);
-			byte setWaveForm(byte channel, byte operatorNum, byte waveForm);
+			virtual void setWaveFormSelect(bool enable);
+			void setTremolo(byte channel, byte operatorNum, bool enable);
+			void setVibrato(byte channel, byte operatorNum, bool enable);
+			void setMaintainSustain(byte channel, byte operatorNum, bool enable);
+			void setEnvelopeScaling(byte channel, byte operatorNum, bool enable);
+			void setMultiplier(byte channel, byte operatorNum, byte multiplier);
+			void setScalingLevel(byte channel, byte operatorNum, byte scaling);
+			void setVolume(byte channel, byte operatorNum, byte volume);
+			void setAttack(byte channel, byte operatorNum, byte attack);
+			void setDecay(byte channel, byte operatorNum, byte decay);
+			void setSustain(byte channel, byte operatorNum, byte sustain);
+			void setRelease(byte channel, byte operatorNum, byte release);
+			void setFNumber(byte channel, short fNumber);
+			void setFrequency(byte channel, float frequency);
+			void setBlock(byte channel, byte block);
+			void setKeyOn(byte channel, bool keyOn);
+			void setFeedback(byte channel, byte feedback);
+			void setSynthMode(byte channel, bool isAdditive);
+			void setDeepTremolo(bool enable);
+			void setDeepVibrato(bool enable);
+			void setPercussion(bool enable);
+			void setDrums(byte drums);
+			void setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat);
+			void setWaveForm(byte channel, byte operatorNum, byte waveForm);
 
-		private:
+		protected:
 			byte pinReset   = PIN_RESET;
 			byte pinAddress = PIN_ADDR;
 			byte pinLatch   = PIN_LATCH;
+
+			byte *oplRegisters;
 
 			const float fIntervals[8] = {
 				0.048, 0.095, 0.190, 0.379, 0.759, 1.517, 3.034, 6.069
@@ -230,30 +248,12 @@
 				{ 0x10, 0xFF, 0x12, 0xFF, 0x11 },
 				{ 0x13, 0x14, 0xFF, 0x15, 0xFF }
 			};
-			const byte drumOffsets[6] = {
-				0x10, 0x13, 0x14, 0x12, 0x15, 0x11
-			};
 			const byte drumChannels[5] = {
 				6, 7, 8, 8, 7
 			};
 			const byte drumBits[5] = {
 				DRUM_BITS_BASS, DRUM_BITS_SNARE, DRUM_BITS_TOM, DRUM_BITS_CYMBAL, DRUM_BITS_HI_HAT
 			};
-			const byte instrumentBaseRegs[6] = {
-				0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0
-			};
-			byte oplRegisters[256];
-
-			const byte ZERO = 0;
-			const byte ONE = 1;
-			const byte CHANNEL_MAX = 8;
-			const byte OCTAVE_MAX = 7;
-			const byte NOTE_MAX = 11;
-			const byte DRUM_SOUND_MAX = 5;
-			const short F_NUM_MIN = 0;
-			const short F_NUM_MAX = 1023;
-			const float VOLUME_MIN = 0.0;
-			const float VOLUME_MAX = 1.0;
 	};
 #endif
 
