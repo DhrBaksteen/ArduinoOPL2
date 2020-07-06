@@ -125,8 +125,7 @@ void OPL3Duo::setChannelRegister(byte baseRegister, byte channel, byte value) {
  */
 byte OPL3Duo::getOperatorRegister(byte baseRegister, byte channel, byte op) {
 	byte bank = (channel / CHANNELS_PER_BANK) & 0x03;
-	byte registerOffset = registerOffsets[op][channel % CHANNELS_PER_BANK];
-	byte reg = baseRegister + (channel % CHANNELS_PER_BANK) + registerOffset;
+	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, op);
 	return oplRegisters[bank * 256 + reg];
 }
 
@@ -141,8 +140,7 @@ byte OPL3Duo::getOperatorRegister(byte baseRegister, byte channel, byte op) {
  */
 void OPL3Duo::setOperatorRegister(byte baseRegister, byte channel, byte op, byte value) {
 	byte bank = (channel / CHANNELS_PER_BANK) & 0x03;
-	byte registerOffset = registerOffsets[op][channel % CHANNELS_PER_BANK];
-	byte reg = baseRegister + (channel % CHANNELS_PER_BANK) + registerOffset;
+	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, op);
 	write(bank, reg, value);
 }
 

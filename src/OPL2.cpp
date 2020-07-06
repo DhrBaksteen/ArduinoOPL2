@@ -383,7 +383,7 @@ Instrument OPL2::createInstrument() {
 		instrument.operators[op].decay = data[op * 6 + 3] & 0x0F;
 		instrument.operators[op].sustain = (data[op * 6 + 4] & 0xF0) >> 4;
 		instrument.operators[op].release = data[op * 6 + 4] & 0x0F;
-		instrument.operators[op].waveForm = data[op * 6 + 5] & 0x03;
+		instrument.operators[op].waveForm = data[op * 6 + 5] & 0x07;
 	}
 
 	instrument.transpose = 0;
@@ -487,7 +487,7 @@ void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
 			((instrument.operators[op].sustain & 0x0F) << 4) +
 			(instrument.operators[op].release & 0x0F));
 		setOperatorRegister(0xE0, channel, op,
-			(instrument.operators[op].waveForm & 0x03));
+			(instrument.operators[op].waveForm & 0x07));
 	}
 
 	byte value = getChannelRegister(0xC0, channel) & 0xF0;

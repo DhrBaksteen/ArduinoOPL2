@@ -37,7 +37,6 @@ class OPL3: public OPL2 {
 		virtual bool getWaveFormSelect();
 		virtual void setWaveFormSelect(bool enable = false);
 
-		byte get4OPControlChannel(byte channel4OP);
 		bool isOPL3Enabled();
 		bool isPannedLeft (byte channel);
 		bool isPannedRight(byte channel);
@@ -45,12 +44,13 @@ class OPL3: public OPL2 {
 		void setPanning(byte channel, bool left, bool right);
 		bool is4OPChannelEnabled(byte channel4OP);
 		void enable4OPChannel(byte channel4OP, bool enable);
+		byte get4OPControlChannel(byte channel4OP, byte index2OP = 0);
 
 	protected:
 		byte pinBank = 6;
 
-		const byte channelPairs[2][6] = {
-			{ 0, 1, 2, 9, 10, 11},
-			{ 3, 4, 5, 12, 13, 14}
+		byte channelPairs[6][2] = {
+			{ 0,  3 }, {  1,  4 }, {  2,  5 },
+			{ 9, 12 }, { 10, 13 }, { 11, 14 }
 		};
 };

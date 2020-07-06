@@ -41,7 +41,7 @@ void OPL3::reset() {
 	digitalWrite(pinReset, HIGH);
 
 	for(byte bank = 0; bank < 2; bank ++) {
-		for(byte reg = 0; reg < 256; reg ++) {
+		for(short reg = 0; reg < 256; reg ++) {
 			write(bank, reg, 0x00);
 		}
 	}
@@ -118,8 +118,7 @@ void OPL3::setChannelRegister(byte baseRegister, byte channel, byte value) {
  */
 byte OPL3::getOperatorRegister(byte baseRegister, byte channel, byte op) {
 	byte bank = channel > 8 ? 1 : 0;
-	byte registerOffset = registerOffsets[op][channel % CHANNELS_PER_BANK];
-	byte reg = baseRegister + (channel % CHANNELS_PER_BANK) + registerOffset;
+	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, op);
 	return oplRegisters[bank * 256 + reg];
 }
 
@@ -134,8 +133,7 @@ byte OPL3::getOperatorRegister(byte baseRegister, byte channel, byte op) {
  */
 void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte op, byte value) {
 	byte bank = channel > 8 ? 1 : 0;
-	byte registerOffset = registerOffsets[op][channel % CHANNELS_PER_BANK];
-	byte reg = baseRegister + (channel % CHANNELS_PER_BANK) + registerOffset;
+	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, op);
 	write(bank, reg, value);
 }
 
@@ -159,6 +157,7 @@ void OPL3::write(byte bank, byte reg, byte value) {
 	#endif
 	digitalWrite(pinLatch, LOW);
 	delayMicroseconds(8);
+
 	digitalWrite(pinLatch, HIGH);
 	delayMicroseconds(8);
 
@@ -235,8 +234,8 @@ Instrument4OP OPL3::getInstrument4OP(byte channel4OP) {
 	channel4OP = channel4OP % NUM_4OP_CHANNELS;
 
 	Instrument4OP instrument;
-	instrument.subInstrument[0] = getInstrument(channelPairs[0][channel4OP]);
-	instrument.subInstrument[1] = getInstrument(channelPairs[1][channel4OP]);
+	instrument.subInstrument[0] = getInstrument(channelPairs[channel4OP][0]);
+	instrument.subInstrument[1] = getInstrument(channelPairs[channel4OP][1]);
 
 	return instrument;
 }
@@ -251,9 +250,8 @@ Instrument4OP OPL3::getInstrument4OP(byte channel4OP) {
  */
 void OPL3::setInstrument4OP(byte channel4OP, Instrument4OP instrument, float volume) {
 	channel4OP = channel4OP % NUM_4OP_CHANNELS;
-
-	setInstrument(channelPairs[0][channel4OP], instrument.subInstrument[0], volume);
-	setInstrument(channelPairs[1][channel4OP], instrument.subInstrument[1], volume);
+	setInstrument(channelPairs[channel4OP][0], instrument.subInstrument[0], volume);
+	setInstrument(channelPairs[channel4OP][1], instrument.subInstrument[1], volume);
 }
 
 
@@ -284,13 +282,14 @@ bool OPL3::isOPL3Enabled() {
 
 
 /**
- * Get the channel that is associated with the given 4 operator channel.
+ * Get the 2-OP channel that is associated with the given 4 operator channel.
  *
  * @param channel4OP - The 4 operator channel [0, 5] for wich we want to get the associated OPL channel.
+ * @param index2OP - Then 2 operator channel index [0, 1], defaults to 0.
  * @return The OPL3 channel number that controls the 4 operator channel.
  */
-byte OPL3::get4OPControlChannel(byte channel4OP) {
-	return channelPairs[0][channel4OP % CORE_NUM_ANALOG];
+byte OPL3::get4OPControlChannel(byte channel4OP, byte index2OP) {
+	return channelPairs[channel4OP % NUM_4OP_CHANNELS][index2OP % 2];
 }
 
 
