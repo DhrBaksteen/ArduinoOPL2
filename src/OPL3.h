@@ -15,14 +15,10 @@ class OPL3: public OPL2 {
 		virtual void begin();
 		virtual void reset();
 		virtual void createShadowRegisters();
-		virtual byte getNumChannels();
 
-		virtual byte getChipRegister(short reg);
-		virtual byte getChannelRegister(byte baseRegister, byte channel);
-		virtual byte getOperatorRegister(byte baseRegister, byte channel, byte op);
-		virtual void setChipRegister(short reg, byte value);
 		virtual void setChannelRegister(byte baseRegister, byte channel, byte value);
-		virtual void setOperatorRegister(byte baseRegister, byte channel, byte op, byte value);
+		virtual void setOperatorRegister(byte baseRegister, byte channel, byte operatorNum, byte value);
+		virtual byte getChipRegisterOffset(short reg);
 		virtual void write(byte bank, byte reg, byte value);
 
 		Instrument4OP createInstrument4OP();
@@ -37,10 +33,10 @@ class OPL3: public OPL2 {
 		virtual bool getWaveFormSelect();
 		virtual void setWaveFormSelect(bool enable = false);
 
-		bool isOPL3Enabled();
+		virtual bool isOPL3Enabled();
+		virtual void setOPL3Enabled(bool enable);
 		bool isPannedLeft (byte channel);
 		bool isPannedRight(byte channel);
-		void enableOPL3(bool enable);
 		void setPanning(byte channel, bool left, bool right);
 		bool is4OPChannelEnabled(byte channel4OP);
 		void enable4OPChannel(byte channel4OP, bool enable);
@@ -48,6 +44,8 @@ class OPL3: public OPL2 {
 
 	protected:
 		byte pinBank = 6;
+
+		byte numChannels = 18;
 
 		byte channelPairs[6][2] = {
 			{ 0,  3 }, {  1,  4 }, {  2,  5 },

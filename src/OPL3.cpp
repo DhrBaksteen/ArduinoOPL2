@@ -25,72 +25,70 @@ void OPL3::begin() {
 
 
 /**
- Create 2 banks of shadow registers to hold the values writtent to the OPL3 chip for later access.
+ * Create shadow registers to hold the values written to the OPL2 chip for later access. Only those registers that are
+ * are valid on the YMF262 are created to be as memory friendly as possible for platforms with limited RAM such as the
+ * Arduino Uno / Nano.
  */
 void OPL3::createShadowRegisters() {
-	oplRegisters = new byte[2 * 256];
+	chipRegisters = new byte[5];					// 	 5
+	channelRegisters = new byte[3 * numChannels];	//  54
+	operatorRegisters = new byte[10 * numChannels];	// 180
 }
 
 
 /**
- * Hard reset the OPL3 chip. This should be done before sending any register data to the chip.
+ * Hard reset the YMF262 chip and initialize all registers to 0x00. This should be called before sending any data to the
+ * chip.
  */
 void OPL3::reset() {
 	digitalWrite(pinReset, LOW);
 	delay(1);
 	digitalWrite(pinReset, HIGH);
 
-	for(byte bank = 0; bank < 2; bank ++) {
-		for(short reg = 0; reg < 256; reg ++) {
-			write(bank, reg, 0x00);
-		}
+	// Initialize chip registers.
+	setChipRegister(0x00, 0x00);
+	setChipRegister(0x08, 0x00);
+	setChipRegister(0xBD, 0x00);
+	setChipRegister(0x104, 0x00);
+	setChipRegister(0x105, 0x00);
+
+	// Initialize all channel and operator registers.
+    for (byte i = 0; i < numChannels; i ++) {
+    	setChannelRegister(0xA0, i, 0x00);
+    	setChannelRegister(0xB0, i, 0x00);
+    	setChannelRegister(0xC0, i, 0x00);
+
+    	for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
+    		setOperatorRegister(0x20, i, j, 0x00);
+    		setOperatorRegister(0x40, i, j, 0x00);
+    		setOperatorRegister(0x60, i, j, 0x00);
+    		setOperatorRegister(0x80, i, j, 0x00);
+    		setOperatorRegister(0xE0, i, j, 0x00);
+    	}
+    }
+}
+
+
+/**
+ * Get the internal register offset for a chip wide register.
+ *
+ * @param reg - The 9-bit register for which we wnat to know the internal offset.
+ * @return The offset to the internal shadow register or 0 if an illegal chip register was requested.
+ */
+byte OPL3::getChipRegisterOffset(short reg) {
+	switch (reg & 0xFF) {
+		case 0x04:
+			return 1;
+		case 0x05:
+			return 2;
+		case 0x08:
+			return 3;
+		case 0xBD:
+			return 4;
+		case 0x01:
+		default:
+			return 0;
 	}
-}
-
-
-/**
- * Return the number of channels for the OPL3.
- */
-byte OPL3::getNumChannels() {
-	return NUM_OPL3_CHANNELS;
-}
-
-
-/**
- * Get the current value of a chip wide register from the shadow registers.
- *
- * @param reg - The 9-bit address of the register.
- * @return The value of the register from shadow registers.
- */
-byte OPL3::getChipRegister(short reg) {
-	return oplRegisters[reg & 0x01FF];
-}
-
-
-/**
- * Write a given value to a chip wide register.
- *
- * @param reg - The 9-bit register to write to.
- * @param value - The value to write to the register.
- */
-void OPL3::setChipRegister(short reg, byte value) {
-	byte bank = reg > 0xFF ? 1 : 0;
-	reg = reg & 0xFF;
-	write(bank, reg, value);
-}
-
-
-/**
- * Get the value of a channel register.
- *
- * @param baseAddress - The base address of the register.
- * @param channel - The channel for which to get the register value.
- * @return The current value of the from the shadow register.
- */
-byte OPL3::getChannelRegister(byte baseRegister, byte channel) {
-	byte bank = channel > 8 ? 1 : 0;
-	byte reg = baseRegister + (channel % CHANNELS_PER_BANK);
-	return oplRegisters[bank * 256 + reg];
 }
 
 
@@ -102,24 +100,11 @@ byte OPL3::getChannelRegister(byte baseRegister, byte channel) {
  * @param value - The value to write to the register.
  */
 void OPL3::setChannelRegister(byte baseRegister, byte channel, byte value) {
-	byte bank = channel > 8 ? 1 : 0;
+	channelRegisters[getChannelRegisterOffset(baseRegister, channel)] = value;
+
+	byte bank = (channel >> 8) & 0x01;
 	byte reg = baseRegister + (channel % CHANNELS_PER_BANK);
 	write(bank, reg, value);
-}
-
-
-/**
- * Get the current value of an operator register of a channel from the shadow registers.
- *
- * @param baseRegister - The base address of the register.
- * @param channel - The channel of the operatpr [0, 17].
- * @param op - The operator [0, 1].
- * @return The operator register value from shadow registers.
- */
-byte OPL3::getOperatorRegister(byte baseRegister, byte channel, byte op) {
-	byte bank = channel > 8 ? 1 : 0;
-	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, op);
-	return oplRegisters[bank * 256 + reg];
 }
 
 
@@ -128,12 +113,14 @@ byte OPL3::getOperatorRegister(byte baseRegister, byte channel, byte op) {
  *
  * @param baseRegister - The base address of the register.
  * @param channel - The channel of the operator [0, 17]
- * @param op - The operator to change [0, 1].
+ * @param operatorNum - The operator to change [0, 1].
  * @param value - The value to write to the operator's register.
  */
-void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte op, byte value) {
-	byte bank = channel > 8 ? 1 : 0;
-	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, op);
+void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte operatorNum, byte value) {
+	operatorRegisters[getOperatorRegisterOffset(baseRegister, channel, operatorNum)] = value;
+
+	byte bank = (channel >> 8) & 0x01;
+	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, operatorNum);
 	write(bank, reg, value);
 }
 
@@ -146,8 +133,6 @@ void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte op, byte va
  * @param value - The value to write to the register.
  */
 void OPL3::write(byte bank, byte reg, byte value) {
-	oplRegisters[bank * 256 + reg] = value;
-
 	digitalWrite(pinAddress, LOW);
 	digitalWrite(pinBank, bank & 0x01 ? HIGH : LOW);
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -171,6 +156,8 @@ void OPL3::write(byte bank, byte reg, byte value) {
 	delayMicroseconds(2);
 	digitalWrite(pinLatch, HIGH);
 	delayMicroseconds(46);
+
+	delay(1);
 }
 
 
@@ -261,11 +248,11 @@ void OPL3::setInstrument4OP(byte channel4OP, Instrument4OP instrument, float vol
  *
  * @param enable - When set to true enables OPL3 mode.
  */
-void OPL3::enableOPL3(bool enable) {
-	setChipRegister(0x0105, enable ? 0x01 : 0x00);
+void OPL3::setOPL3Enabled(bool enable) {
+	setChipRegister(0x105, enable ? 0x01 : 0x00);
 
 	// For ease of use enable both the left and the right speaker on all channels when going into OPL3 mode.
-	for (byte i = 0; i < getNumChannels(); i ++) {
+	for (byte i = 0; i < numChannels; i ++) {
 		setPanning(i, enable, enable);
 	}
 }
@@ -277,7 +264,7 @@ void OPL3::enableOPL3(bool enable) {
  * @return True if OPL3 mode is enabled.
  */
 bool OPL3::isOPL3Enabled() {
-	return oplRegisters[0x0105] & 0x01;
+	return getChipRegister(0x105) & 0x01;
 }
 
 
@@ -301,7 +288,7 @@ byte OPL3::get4OPControlChannel(byte channel4OP, byte index2OP) {
  * @param right - When true the right speaker will output audio.
  */
 void OPL3::setPanning(byte channel, bool left, bool right) {
-	channel = channel % getNumChannels();
+	channel = channel % numChannels;
 
 	byte value = getChannelRegister(0xC0, channel) & 0xCF;
 	value += left ? 0x10 : 0x00;
@@ -317,7 +304,7 @@ void OPL3::setPanning(byte channel, bool left, bool right) {
  * @return True if audio output on the left speaker is enabled.
  */
 bool OPL3::isPannedLeft (byte channel) {
-	return getChannelRegister(0xC0, channel % getNumChannels()) & 0x10;
+	return getChannelRegister(0xC0, channel % numChannels) & 0x10;
 }
 
 
@@ -327,7 +314,7 @@ bool OPL3::isPannedLeft (byte channel) {
  * @return True if audio output on the right speaker is enabled.
  */
 bool OPL3::isPannedRight(byte channel) {
-	return getChannelRegister(0xC0, channel % getNumChannels()) & 0x20;
+	return getChannelRegister(0xC0, channel % numChannels) & 0x20;
 }
 
 

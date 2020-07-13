@@ -38,7 +38,6 @@
 	#endif
 
 	// Generic OPL2 definitions.
-	#define NUM_OPL2_CHANNELS 9
 	#define CHANNELS_PER_BANK 9
 
 	// Operator definitions.
@@ -147,12 +146,13 @@
 			virtual byte getChipRegister(short reg);
 			virtual byte getChannelRegister(byte baseRegister, byte channel);
 			virtual byte getOperatorRegister(byte baseRegister, byte channel, byte op);
-			virtual byte getRegister(byte reg);
 			virtual byte getRegisterOffset(byte channel, byte operatorNum);
 			virtual void setChipRegister(short reg, byte value);
 			virtual void setChannelRegister(byte baseRegister, byte channel, byte value);
 			virtual void setOperatorRegister(byte baseRegister, byte channel, byte op, byte value);
-			virtual void setRegister(byte reg, byte value);
+			virtual byte getChipRegisterOffset(short reg);
+			virtual byte getChannelRegisterOffset(byte baseRegister, byte channel);
+			virtual byte getOperatorRegisterOffset(byte baseRegister, byte channel, byte operatorNum);
 			virtual void write(byte reg, byte data);
 
 			byte getFrequencyBlock(float frequency);
@@ -227,7 +227,11 @@
 			byte pinAddress = PIN_ADDR;
 			byte pinLatch   = PIN_LATCH;
 
-			byte *oplRegisters;
+			byte *chipRegisters;
+			byte *channelRegisters;
+			byte *operatorRegisters;
+
+			byte numChannels = 9;
 
 			const float fIntervals[8] = {
 				0.048, 0.095, 0.190, 0.379, 0.759, 1.517, 3.034, 6.069

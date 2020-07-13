@@ -105,24 +105,46 @@ void OPL2::init() {
 
 
 /**
- * Create shadow registers to hold the values writtent to the OPL2 chip for later access.
+ * Create shadow registers to hold the values written to the OPL2 chip for later access. Only those registers that are
+ * are valid on the YM3812 are created to be as memory friendly as possible for platforms with limited RAM such as the
+ * Arduino Uno / Nano.
  */
 void OPL2::createShadowRegisters() {
-	oplRegisters = new byte[256];
+	chipRegisters = new byte[3];					// 	3
+	channelRegisters = new byte[3 * numChannels];	// 27
+	operatorRegisters = new byte[10 * numChannels];	// 90
 }
 
 
 /**
- * Hard reset the OPL2 chip. This should be done before sending any register data to the chip.
+ * Hard reset the OPL2 chip and initialize all registers to 0x00. This should be called before sending any data to the
+ * chip.
  */
 void OPL2::reset() {
+	// Hard reset the OPL2.
 	digitalWrite(pinReset, LOW);
 	delay(1);
 	digitalWrite(pinReset, HIGH);
 
-	for(int i = 0; i < 256; i ++) {
-		write(i, 0x00);
-	}
+	// Initialize chip registers.
+	setChipRegister(0x00, 0x00);
+	setChipRegister(0x08, 0x00);
+	setChipRegister(0xBD, 0x00);
+
+	// Initialize all channel and operator registers.
+    for (byte i = 0; i < numChannels; i ++) {
+    	setChannelRegister(0xA0, i, 0x00);
+    	setChannelRegister(0xB0, i, 0x00);
+    	setChannelRegister(0xC0, i, 0x00);
+
+    	for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
+    		setOperatorRegister(0x20, i, j, 0x00);
+    		setOperatorRegister(0x40, i, j, 0x00);
+    		setOperatorRegister(0x60, i, j, 0x00);
+    		setOperatorRegister(0x80, i, j, 0x00);
+    		setOperatorRegister(0xE0, i, j, 0x00);
+    	}
+    }
 }
 
 
@@ -133,7 +155,7 @@ void OPL2::reset() {
  * @return The value of the register from shadow registers.
  */
 byte OPL2::getChipRegister(short reg) {
-	return oplRegisters[reg & 0xFF];
+	return chipRegisters[getChipRegisterOffset(reg)];
 }
 
 
@@ -144,7 +166,27 @@ byte OPL2::getChipRegister(short reg) {
  * @param value - The value to write to the register.
  */
 void OPL2::setChipRegister(short reg, byte value) {
+	chipRegisters[getChipRegisterOffset(reg)] = value;
 	write(reg & 0xFF, value);
+}
+
+
+/**
+ * Get the internal register offset for a chip wide register.
+ *
+ * @param reg - The 9-bit register for which we want to know the internal offset.
+ * @return The offset to the internal shadow register or 0 if an illegal chip register was requested.
+ */
+byte OPL2::getChipRegisterOffset(short reg) {
+	switch (reg & 0xFF) {
+		case 0x08:
+			return 1;
+		case 0xBD:
+			return 2;
+		case 0x01:
+		default:
+			return 0;
+	}
 }
 
 
@@ -156,8 +198,7 @@ void OPL2::setChipRegister(short reg, byte value) {
  * @return The current value of the from the shadow register.
  */
 byte OPL2::getChannelRegister(byte baseRegister, byte channel) {
-	byte reg = baseRegister + (channel % CHANNELS_PER_BANK);
-	return oplRegisters[reg];
+	return channelRegisters[getChannelRegisterOffset(baseRegister, channel)];
 }
 
 
@@ -169,8 +210,32 @@ byte OPL2::getChannelRegister(byte baseRegister, byte channel) {
  * @param value - The value to write to the register.
  */
 void OPL2::setChannelRegister(byte baseRegister, byte channel, byte value) {
+	channelRegisters[getChannelRegisterOffset(baseRegister, channel)] = value;
 	byte reg = baseRegister + (channel % CHANNELS_PER_BANK);
 	write(reg, value);
+}
+
+
+/**
+ * Get the internal offset of a channel register.
+ *
+ * @param baseRegister - The base register where we want to know the offset of.
+ * @param channel - The channel [0, numChannels] for which we want to know the offset.
+ * @return The internal offset of the channel register or 0 if the baseRegister is invalid.
+ */
+byte OPL2::getChannelRegisterOffset(byte baseRegister, byte channel) {
+	channel = channel % numChannels;
+	byte offset = channel * 3;
+
+	switch (baseRegister) {
+		case 0xB0:
+			return offset + 1;
+		case 0xC0:
+			return offset + 2;
+		case 0xA0:
+		default:
+			return offset;
+	}
 }
 
 
@@ -178,13 +243,12 @@ void OPL2::setChannelRegister(byte baseRegister, byte channel, byte value) {
  * Get the current value of an operator register of a channel from the shadow registers.
  *
  * @param baseRegister - The base address of the register.
- * @param channel - The channel of the operatpr [0, 8].
- * @param operatorNum - The operator [0, 1].
+ * @param channel - The channel of the operatpr [0, 17].
+ * @param op - The operator [0, 1].
  * @return The operator register value from shadow registers.
  */
 byte OPL2::getOperatorRegister(byte baseRegister, byte channel, byte operatorNum) {
-	byte reg = baseRegister + getRegisterOffset(channel, operatorNum);
-	return oplRegisters[reg];
+	return operatorRegisters[getOperatorRegisterOffset(baseRegister, channel, operatorNum)];
 }
 
 
@@ -197,8 +261,38 @@ byte OPL2::getOperatorRegister(byte baseRegister, byte channel, byte operatorNum
  * @param value - The value to write to the operator's register.
  */
 void OPL2::setOperatorRegister(byte baseRegister, byte channel, byte operatorNum, byte value) {
+	operatorRegisters[getOperatorRegisterOffset(baseRegister, channel, operatorNum)] = value;
 	byte reg = baseRegister + getRegisterOffset(channel, operatorNum);
 	write(reg, value);
+}
+
+
+/**
+ * Get the internal offset of an operator register.
+ *
+ * @param baseRegister - The base register where we want to know the offset of.
+ * @param channel - The channel [0, numChannels] to get the offset to.
+ * @param operatorNum - The operator [0, 1] to get the offset to.
+ * @return The internal offset of the operator register or 0 if the baseRegister is invalid.
+ */
+byte OPL2::getOperatorRegisterOffset(byte baseRegister, byte channel, byte operatorNum) {
+	channel = channel % numChannels;
+	operatorNum = operatorNum & 0x01;
+	byte offset = (channel * 10) + (operatorNum * 5);
+
+	switch (baseRegister) {
+		case 0x40:
+			return offset + 1;
+		case 0x60:
+			return offset + 2;
+		case 0x80:
+			return offset + 3;
+		case 0xE0:
+			return offset + 4;
+		case 0x20:
+		default:
+			return offset;
+	}
 }
 
 
@@ -215,37 +309,12 @@ byte OPL2::getRegisterOffset(byte channel, byte operatorNum) {
 
 
 /**
- * Get the value of an OPL2 register from the internal shadow registers.
- *
- * @param reg - The register to query.
- * @return The value stored in the register.
- */
-byte OPL2::getRegister(byte reg) {
-	return oplRegisters[reg];
-}
-
-
-/**
- * Write a given value to an OPL2 register. This function is synonimous to OPL2.write.
- *
- * @param reg - The register to change.
- * @param value - The value to write to the register.
- */
-void OPL2::setRegister(byte reg, byte value) {
-	write(reg, value);
-}
-
-
-/**
- * Write the given value to an OPL2 register. This updates the library's internal shadow register and writes the value
- * to the OPL2.
+ * Write the given value to an OPL2 register. This does not update the internal shadow register!
  *
  * @param reg - The register to change.
  * @param value - The value to write to the register.
  */
 void OPL2::write(byte reg, byte value) {
-	oplRegisters[reg] = value;
-
 	// Write OPL2 address.
 	digitalWrite(pinAddress, LOW);
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -269,6 +338,8 @@ void OPL2::write(byte reg, byte value) {
 	delayMicroseconds(4);
 	digitalWrite(pinLatch, HIGH);
 	delayMicroseconds(92);
+
+	delay(1);
 }
 
 
@@ -276,7 +347,7 @@ void OPL2::write(byte reg, byte value) {
  * Return the number of channels for this OPL2.
  */
 byte OPL2::getNumChannels() {
-	return NUM_OPL2_CHANNELS;
+	return numChannels;
 }
 
 
@@ -464,7 +535,7 @@ Instrument OPL2::getDrumInstrument(byte drumType) {
  * operators.
  */
 void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
-	channel = channel % getNumChannels();
+	channel = channel % numChannels;
 	volume = max((float)0.0, min(volume, (float)1.0));
 
 	setWaveFormSelect(true);
