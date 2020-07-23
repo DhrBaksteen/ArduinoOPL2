@@ -25,12 +25,12 @@ void OPL3::begin() {
 
 
 /**
- * Create shadow registers to hold the values written to the OPL2 chip for later access. Only those registers that are
+ * Create shadow registers to hold the values written to the OPL3 chip for later access. Only those registers that are
  * are valid on the YMF262 are created to be as memory friendly as possible for platforms with limited RAM such as the
- * Arduino Uno / Nano.
+ * Arduino Uno / Nano. Registers consume 239 bytes.
  */
 void OPL3::createShadowRegisters() {
-	chipRegisters = new byte[5];					// 	 5
+	chipRegisters = new byte[5];					//   5
 	channelRegisters = new byte[3 * numChannels];	//  54
 	operatorRegisters = new byte[10 * numChannels];	// 180
 }
@@ -53,7 +53,7 @@ void OPL3::reset() {
 	setChipRegister(0x105, 0x00);
 
 	// Initialize all channel and operator registers.
-    for (byte i = 0; i < numChannels; i ++) {
+    for (byte i = 0; i < getNumChannels(); i ++) {
     	setChannelRegister(0xA0, i, 0x00);
     	setChannelRegister(0xB0, i, 0x00);
     	setChannelRegister(0xC0, i, 0x00);
@@ -134,7 +134,7 @@ void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte operatorNum
  */
 void OPL3::write(byte bank, byte reg, byte value) {
 	digitalWrite(pinAddress, LOW);
-	digitalWrite(pinBank, bank & 0x01 ? HIGH : LOW);
+	digitalWrite(pinBank, (bank & 0x01) ? HIGH : LOW);
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.transfer(reg);
 	#else
@@ -158,6 +158,38 @@ void OPL3::write(byte bank, byte reg, byte value) {
 	delayMicroseconds(46);
 
 	delay(1);
+}
+
+
+/**
+ * Get the number of 2OP channels for this implementation.
+ *
+ * @return The number of 2OP channels.
+ */
+byte OPL3::getNumChannels() {
+	return numChannels;
+}
+
+
+/**
+ * Get the number of 4OP channels for this implementation.
+ *
+ * @return The number of 4OP channels.
+ */
+byte OPL3::getNum4OPChannels() {
+	return num4OPChannels;
+}
+
+
+/**
+ * Get the 2-OP channel that is associated with the given 4 operator channel.
+ *
+ * @param channel4OP - The 4 operator channel [0, 5] for wich we want to get the associated OPL channel.
+ * @param index2OP - Then 2 operator channel index [0, 1], defaults to 0 for control channel.
+ * @return The OPL3 channel number that controls the 4 operator channel.
+ */
+byte OPL3::get4OPControlChannel(byte channel4OP, byte index2OP) {
+	return channelPairs[channel4OP % getNum4OPChannels()][index2OP % 2];
 }
 
 
@@ -218,11 +250,11 @@ Instrument4OP OPL3::createInstrument4OP() {
  * @return The Instrument4OP containing the current 4-OP channel operator settings.
  */
 Instrument4OP OPL3::getInstrument4OP(byte channel4OP) {
-	channel4OP = channel4OP % NUM_4OP_CHANNELS;
+	channel4OP = channel4OP % getNum4OPChannels();
 
 	Instrument4OP instrument;
-	instrument.subInstrument[0] = getInstrument(channelPairs[channel4OP][0]);
-	instrument.subInstrument[1] = getInstrument(channelPairs[channel4OP][1]);
+	instrument.subInstrument[0] = getInstrument(get4OPControlChannel(channel4OP, 0));
+	instrument.subInstrument[1] = getInstrument(get4OPControlChannel(channel4OP, 1));
 
 	return instrument;
 }
@@ -236,9 +268,9 @@ Instrument4OP OPL3::getInstrument4OP(byte channel4OP) {
  * @param volume - Optional volume [0.0, 1.0] that will be assigned to the operators. If omitted volume is set to 1.0.
  */
 void OPL3::setInstrument4OP(byte channel4OP, Instrument4OP instrument, float volume) {
-	channel4OP = channel4OP % NUM_4OP_CHANNELS;
-	setInstrument(channelPairs[channel4OP][0], instrument.subInstrument[0], volume);
-	setInstrument(channelPairs[channel4OP][1], instrument.subInstrument[1], volume);
+	channel4OP = channel4OP % getNum4OPChannels();
+	setInstrument(get4OPControlChannel(channel4OP, 0), instrument.subInstrument[0], volume);
+	setInstrument(get4OPControlChannel(channel4OP, 1), instrument.subInstrument[1], volume);
 }
 
 
@@ -252,7 +284,7 @@ void OPL3::setOPL3Enabled(bool enable) {
 	setChipRegister(0x105, enable ? 0x01 : 0x00);
 
 	// For ease of use enable both the left and the right speaker on all channels when going into OPL3 mode.
-	for (byte i = 0; i < numChannels; i ++) {
+	for (byte i = 0; i < getNumChannels(); i ++) {
 		setPanning(i, enable, enable);
 	}
 }
@@ -269,18 +301,6 @@ bool OPL3::isOPL3Enabled() {
 
 
 /**
- * Get the 2-OP channel that is associated with the given 4 operator channel.
- *
- * @param channel4OP - The 4 operator channel [0, 5] for wich we want to get the associated OPL channel.
- * @param index2OP - Then 2 operator channel index [0, 1], defaults to 0.
- * @return The OPL3 channel number that controls the 4 operator channel.
- */
-byte OPL3::get4OPControlChannel(byte channel4OP, byte index2OP) {
-	return channelPairs[channel4OP % NUM_4OP_CHANNELS][index2OP % 2];
-}
-
-
-/**
  * Set the panning of the givven channel.
  *
  * @param channel - The channel for which to set panning [0, 17].
@@ -288,8 +308,6 @@ byte OPL3::get4OPControlChannel(byte channel4OP, byte index2OP) {
  * @param right - When true the right speaker will output audio.
  */
 void OPL3::setPanning(byte channel, bool left, bool right) {
-	channel = channel % numChannels;
-
 	byte value = getChannelRegister(0xC0, channel) & 0xCF;
 	value += left ? 0x10 : 0x00;
 	value += right ? 0x20 : 0x00;
@@ -304,7 +322,7 @@ void OPL3::setPanning(byte channel, bool left, bool right) {
  * @return True if audio output on the left speaker is enabled.
  */
 bool OPL3::isPannedLeft (byte channel) {
-	return getChannelRegister(0xC0, channel % numChannels) & 0x10;
+	return getChannelRegister(0xC0, channel) & 0x10;
 }
 
 
@@ -314,7 +332,7 @@ bool OPL3::isPannedLeft (byte channel) {
  * @return True if audio output on the right speaker is enabled.
  */
 bool OPL3::isPannedRight(byte channel) {
-	return getChannelRegister(0xC0, channel % numChannels) & 0x20;
+	return getChannelRegister(0xC0, channel) & 0x20;
 }
 
 
@@ -345,7 +363,7 @@ void OPL3::setWaveFormSelect(bool enable) {
  * @return True if the given 4-OP channel is in 4-operator mode.
  */
 bool OPL3::is4OPChannelEnabled(byte channel4OP) {
-	byte channelMask = 0x01 << (channel4OP % NUM_4OP_CHANNELS);
+	byte channelMask = 0x01 << (channel4OP % getNum4OPChannels());
 	return getChipRegister(0x0104) & channelMask;
 }
 
@@ -357,7 +375,7 @@ bool OPL3::is4OPChannelEnabled(byte channel4OP) {
  * @param enable - Enables or disable 4 operator mode.
  */
 void OPL3::enable4OPChannel(byte channel4OP, bool enable) {
-	byte channelMask = 0x01 << (channel4OP % NUM_4OP_CHANNELS);
+	byte channelMask = 0x01 << (channel4OP % getNum4OPChannels());
 	byte value = getChipRegister(0x0104) & ~channelMask;
 	setChipRegister(0x0104, value + (enable ? channelMask : 0));
 }

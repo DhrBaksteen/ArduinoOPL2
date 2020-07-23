@@ -107,10 +107,10 @@ void OPL2::init() {
 /**
  * Create shadow registers to hold the values written to the OPL2 chip for later access. Only those registers that are
  * are valid on the YM3812 are created to be as memory friendly as possible for platforms with limited RAM such as the
- * Arduino Uno / Nano.
+ * Arduino Uno / Nano. Registers consume 120 bytes.
  */
 void OPL2::createShadowRegisters() {
-	chipRegisters = new byte[3];					// 	3
+	chipRegisters = new byte[3];					//  3
 	channelRegisters = new byte[3 * numChannels];	// 27
 	operatorRegisters = new byte[10 * numChannels];	// 90
 }
@@ -132,7 +132,7 @@ void OPL2::reset() {
 	setChipRegister(0xBD, 0x00);
 
 	// Initialize all channel and operator registers.
-    for (byte i = 0; i < numChannels; i ++) {
+    for (byte i = 0; i < getNumChannels(); i ++) {
     	setChannelRegister(0xA0, i, 0x00);
     	setChannelRegister(0xB0, i, 0x00);
     	setChannelRegister(0xC0, i, 0x00);
@@ -224,7 +224,7 @@ void OPL2::setChannelRegister(byte baseRegister, byte channel, byte value) {
  * @return The internal offset of the channel register or 0 if the baseRegister is invalid.
  */
 byte OPL2::getChannelRegisterOffset(byte baseRegister, byte channel) {
-	channel = channel % numChannels;
+	channel = channel % getNumChannels();
 	byte offset = channel * 3;
 
 	switch (baseRegister) {
@@ -275,10 +275,10 @@ void OPL2::setOperatorRegister(byte baseRegister, byte channel, byte operatorNum
  * @param operatorNum - The operator [0, 1] to get the offset to.
  * @return The internal offset of the operator register or 0 if the baseRegister is invalid.
  */
-byte OPL2::getOperatorRegisterOffset(byte baseRegister, byte channel, byte operatorNum) {
-	channel = channel % numChannels;
+short OPL2::getOperatorRegisterOffset(byte baseRegister, byte channel, byte operatorNum) {
+	channel = channel % getNumChannels();
 	operatorNum = operatorNum & 0x01;
-	byte offset = (channel * 10) + (operatorNum * 5);
+	short offset = (channel * 10) + (operatorNum * 5);
 
 	switch (baseRegister) {
 		case 0x40:
@@ -535,7 +535,6 @@ Instrument OPL2::getDrumInstrument(byte drumType) {
  * operators.
  */
 void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
-	channel = channel % numChannels;
 	volume = max((float)0.0, min(volume, (float)1.0));
 
 	setWaveFormSelect(true);
@@ -739,7 +738,7 @@ byte OPL2::getMultiplier(byte channel, byte operatorNum) {
  * Set frequency multiplier for the given channel. Note that a multiplier of 0 will apply a 0.5 multiplication.
  */
 void OPL2::setMultiplier(byte channel, byte operatorNum, byte multiplier) {
-	byte value = getOperatorRegister(0x20, channel, operatorNum) & 0x0F;
+	byte value = getOperatorRegister(0x20, channel, operatorNum) & 0xF0;
 	setOperatorRegister(0x20, channel, operatorNum, value + (multiplier & 0x0F));
 }
 
@@ -761,7 +760,7 @@ byte OPL2::getScalingLevel(byte channel, byte operatorNum) {
  */
 void OPL2::setScalingLevel(byte channel, byte operatorNum, byte scaling) {
 	byte value = getOperatorRegister(0x40, channel, operatorNum) & 0x3F;
-	setOperatorRegister(0x40, channel, operatorNum, value + ((scaling & 0x03) << 5));
+	setOperatorRegister(0x40, channel, operatorNum, value + ((scaling & 0x03) << 6));
 }
 
 

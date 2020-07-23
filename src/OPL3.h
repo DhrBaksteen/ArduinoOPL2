@@ -1,8 +1,7 @@
 #include "OPL2.h"
 
-#define NUM_OPL3_CHANNELS 18
-#define NUM_4OP_CHANNELS   6
 
+#define CHANNELS_PER_BANK 9
 
 struct Instrument4OP {
 	Instrument subInstrument[2];		// Definition of the 2 sub instruments for each channel.
@@ -20,6 +19,10 @@ class OPL3: public OPL2 {
 		virtual void setOperatorRegister(byte baseRegister, byte channel, byte operatorNum, byte value);
 		virtual byte getChipRegisterOffset(short reg);
 		virtual void write(byte bank, byte reg, byte value);
+
+		virtual byte getNumChannels();
+		virtual byte getNum4OPChannels();
+		virtual byte get4OPControlChannel(byte channel4OP, byte index2OP = 0);
 
 		Instrument4OP createInstrument4OP();
 		#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -40,12 +43,13 @@ class OPL3: public OPL2 {
 		void setPanning(byte channel, bool left, bool right);
 		bool is4OPChannelEnabled(byte channel4OP);
 		void enable4OPChannel(byte channel4OP, bool enable);
-		byte get4OPControlChannel(byte channel4OP, byte index2OP = 0);
+
 
 	protected:
 		byte pinBank = 6;
 
 		byte numChannels = 18;
+		byte num4OPChannels = 6;
 
 		byte channelPairs[6][2] = {
 			{ 0,  3 }, {  1,  4 }, {  2,  5 },

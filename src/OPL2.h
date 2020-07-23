@@ -140,7 +140,6 @@
 			virtual void begin();
 			virtual void reset();
 			virtual void createShadowRegisters();
-			virtual byte getNumChannels();
 			void init();
 
 			virtual byte getChipRegister(short reg);
@@ -152,8 +151,10 @@
 			virtual void setOperatorRegister(byte baseRegister, byte channel, byte op, byte value);
 			virtual byte getChipRegisterOffset(short reg);
 			virtual byte getChannelRegisterOffset(byte baseRegister, byte channel);
-			virtual byte getOperatorRegisterOffset(byte baseRegister, byte channel, byte operatorNum);
+			virtual short getOperatorRegisterOffset(byte baseRegister, byte channel, byte operatorNum);
 			virtual void write(byte reg, byte data);
+
+			virtual byte getNumChannels();
 
 			byte getFrequencyBlock(float frequency);
 			short getFrequencyFNumber(byte channel, float frequency);
@@ -227,9 +228,9 @@
 			byte pinAddress = PIN_ADDR;
 			byte pinLatch   = PIN_LATCH;
 
-			byte *chipRegisters;
-			byte *channelRegisters;
-			byte *operatorRegisters;
+			byte* chipRegisters;
+			byte* channelRegisters;
+			byte* operatorRegisters;
 
 			byte numChannels = 9;
 

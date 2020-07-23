@@ -1,8 +1,5 @@
 #include "OPL3.h"
 
-#define NUM_OPL3DUO_CHANNELS 36
-
-
 class OPL3Duo: public OPL3 {
 	public:
 		OPL3Duo();
@@ -16,6 +13,10 @@ class OPL3Duo: public OPL3 {
 		virtual void setOperatorRegister(byte baseRegister, byte channel, byte op, byte value);
 		virtual void write(byte bank, byte reg, byte value);
 
+		virtual byte getNumChannels();
+		virtual byte getNum4OPChannels();
+		virtual byte get4OPControlChannel(byte channel4OP, byte index2OP = 0);
+
 		virtual bool isOPL3Enabled();
 		virtual bool isOPL3Enabled(byte synthUnit);
 		virtual void setOPL3Enabled(bool enable);
@@ -24,6 +25,7 @@ class OPL3Duo: public OPL3 {
 		byte pinUnit = 5;
 
 		byte numChannels = 36;
+		byte num4OPChannels = 12;
 
 		byte channelPairs[12][2] = {
 			{  0,  3 }, {  1,  4 }, {  2,  5 },

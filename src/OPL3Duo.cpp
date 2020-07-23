@@ -1,5 +1,6 @@
 // TODO: Rename getters that return booleans to is....
 // TODO: Make the get/setSynthMode simpler to understand...
+// TODO: Rename channelsPairs to channelPairs4OP
 
 #include "OPL3Duo.h"
 
@@ -29,11 +30,12 @@ void OPL3Duo::begin() {
 
 
 /**
- * Create shadow registers to hold the values written to the OPL3 chips for later access. Don't be greedy on memory,
- * only claim the 478 bytes of memory of valid registers for the two OPL3s to be as Arduino friendly as we can be.
+ * Create shadow registers to hold the values written to the OPL3 chips for later access. Only those registers that are
+ * are valid on the YMF262 are created to be as memory friendly as possible for platforms with limited RAM such as the
+ * Arduino Uno / Nano. Registers consume 478 bytes.
  */
 void OPL3Duo::createShadowRegisters() {
-	chipRegisters = new byte[5 * 2];					// 	10
+	chipRegisters = new byte[5 * 2];					//  10
 	channelRegisters = new byte[3 * numChannels];		// 108
 	operatorRegisters = new byte[10 * numChannels];		// 360
 }
@@ -62,7 +64,7 @@ void OPL3Duo::reset() {
     }
 
     // Initialize all channel and operator registers.
-    for (byte i = 0; i < numChannels; i ++) {
+    for (byte i = 0; i < getNumChannels(); i ++) {
     	setChannelRegister(0xA0, i, 0x00);
     	setChannelRegister(0xB0, i, 0x00);
     	setChannelRegister(0xC0, i, 0x00);
@@ -150,8 +152,40 @@ void OPL3Duo::setOperatorRegister(byte baseRegister, byte channel, byte operator
  * @param value - The value to write to the register.
  */
 void OPL3Duo::write(byte bank, byte reg, byte value) {
-    digitalWrite(pinUnit, bank & 0x02);
+    digitalWrite(pinUnit, (bank & 0x02) ? HIGH : LOW);
     OPL3::write(bank, reg, value);
+}
+
+
+/**
+ * Get the number of 2OP channels for this implementation.
+ *
+ * @return The number of 2OP channels.
+ */
+byte OPL3Duo::getNumChannels() {
+	return numChannels;
+}
+
+
+/**
+ * Get the number of 4OP channels for this implementation.
+ *
+ * @return The number of 4OP channels.
+ */
+byte OPL3Duo::getNum4OPChannels() {
+	return num4OPChannels;
+}
+
+
+/**
+ * Get the 2-OP channel that is associated with the given 4 operator channel.
+ *
+ * @param channel4OP - The 4 operator channel [0, 11] for wich we want to get the associated OPL channel.
+ * @param index2OP - Then 2 operator channel index [0, 1], defaults to 0 for control channel.
+ * @return The OPL3 channel number that controls the 4 operator channel.
+ */
+byte OPL3Duo::get4OPControlChannel(byte channel4OP, byte index2OP) {
+	return channelPairs[channel4OP % getNum4OPChannels()][index2OP % 2];
 }
 
 
@@ -188,7 +222,7 @@ void OPL3Duo::setOPL3Enabled(bool enable) {
 	setChipRegister(1, 0x105, enable ? 0x01 : 0x00);
 
 	// For ease of use enable both the left and the right speaker on all channels when going into OPL3 mode.
-	for (byte i = 0; i < numChannels; i ++) {
+	for (byte i = 0; i < getNumChannels(); i ++) {
 		setPanning(i, enable, enable);
 	}
 }
@@ -207,8 +241,8 @@ void OPL3Duo::setOPL3Enabled(byte synthUnit, bool enable) {
 	setChipRegister(synthUnit, 0x105, enable ? 0x01 : 0x00);
 
 	// For ease of use enable both the left and the right speaker on all channels when going into OPL3 mode.
-	byte firstChannel = synthUnit == 0 ? 0 : numChannels / 2;
-	byte lastChannel  = synthUnit == 0 ? numChannels / 2 : numChannels;
+	byte firstChannel = synthUnit == 0 ? 0 : getNumChannels() / 2;
+	byte lastChannel  = synthUnit == 0 ? getNumChannels() / 2 : getNumChannels();
 	for (byte i = firstChannel; i < lastChannel; i ++) {
 		setPanning(i, enable, enable);
 	}
