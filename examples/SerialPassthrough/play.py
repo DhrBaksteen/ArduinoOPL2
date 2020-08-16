@@ -65,6 +65,7 @@ def handle_arguments():
         print('(Ctrl-C to stop)')
         device = opl.ArduinoOpl(portname)
         player.play(device, f, **player_opts)
+        device.close()
       except (KeyboardInterrupt, SystemExit):
         device.close()
       except exc.InvalidDeviceError as e:

@@ -7,9 +7,10 @@ from time import sleep
 class ArduinoOpl:
 
   def __init__(self, portname, baudrate=115200, debug=False):
-    self.port = serial.Serial(portname, baudrate, timeout=None)
+    self.port = serial.Serial(portname, baudrate)
     self.debug = debug
     self.status = 'Initializing'
+    sleep(1)
     self.reset()
     self.status = 'Initialized'
 
@@ -42,4 +43,3 @@ class ArduinoOpl:
     self.status = 'Closing'
     self.reset()
     self.port.close()
-    print("")
