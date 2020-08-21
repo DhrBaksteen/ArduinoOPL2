@@ -333,8 +333,8 @@ Instrument OPL2::getDrumInstrument(byte drumType) {
 		}
 	}
 
-	instrument.feedback = 0x00;
-	instrument.isAdditiveSynth = false;
+	instrument.feedback = getFeedback(channel);
+	instrument.isAdditiveSynth = getSynthMode(channel);
 	instrument.type = drumType;
 
 	return instrument;
