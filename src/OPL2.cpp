@@ -333,8 +333,8 @@ Instrument OPL2::getDrumInstrument(byte drumType) {
 		}
 	}
 
-	instrument.feedback = 0x00;
-	instrument.isAdditiveSynth = false;
+	instrument.feedback = getFeedback(channel);
+	instrument.isAdditiveSynth = getSynthMode(channel);
 	instrument.type = drumType;
 
 	return instrument;
@@ -394,26 +394,28 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 
 		if (registerOffset != 0xFF) {
 			write(0x20 + registerOffset,
-				(instrument.operators[0].hasTremolo ? 0x80 : 0x00) +
-				(instrument.operators[0].hasVibrato ? 0x40 : 0x00) +
-				(instrument.operators[0].hasSustain ? 0x20 : 0x00) +
-				(instrument.operators[0].hasEnvelopeScaling ? 0x10 : 0x00) +
-				(instrument.operators[0].frequencyMultiplier & 0x0F));
+				(instrument.operators[op].hasTremolo ? 0x80 : 0x00) +
+				(instrument.operators[op].hasVibrato ? 0x40 : 0x00) +
+				(instrument.operators[op].hasSustain ? 0x20 : 0x00) +
+				(instrument.operators[op].hasEnvelopeScaling ? 0x10 : 0x00) +
+				(instrument.operators[op].frequencyMultiplier & 0x0F));
 			write(0x40 + registerOffset,
-				((instrument.operators[0].keyScaleLevel & 0x03) << 6) +
+				((instrument.operators[op].keyScaleLevel & 0x03) << 6) +
 				(outputLevel & 0x3F));
 			write(0x60 + registerOffset,
-				((instrument.operators[0].attack & 0x0F) << 4) +
-				(instrument.operators[0].decay & 0x0F));
+				((instrument.operators[op].attack & 0x0F) << 4) +
+				(instrument.operators[op].decay & 0x0F));
 			write(0x80 + registerOffset,
-				((instrument.operators[0].sustain & 0x0F) << 4) +
-				(instrument.operators[0].release & 0x0F));
+				((instrument.operators[op].sustain & 0x0F) << 4) +
+				(instrument.operators[op].release & 0x0F));
 			write(0xE0 + registerOffset,
-				(instrument.operators[0].waveForm & 0x03));
+				(instrument.operators[op].waveForm & 0x03));
 		}
 	}
 
-	write(0xC0 + drumChannels[instrument.type - INSTRUMENT_TYPE_BASS], 0x00);
+	write(0xC0 + drumChannels[instrument.type - INSTRUMENT_TYPE_BASS],
+		((instrument.feedback & 0x07) << 1) +
+		(instrument.isAdditiveSynth ? 0x01 : 0x00));
 }
 
 
