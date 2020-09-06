@@ -593,8 +593,7 @@ void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
  * proper output levels for the operator(s).
  */
 void OPL2::setDrumInstrument(Instrument instrument, float volume) {
-	volume = max((float)0.0, min(volume, (float)1.0));
-	byte channel = drumChannels[instrument.type - INSTRUMENT_TYPE_BASS];
+	volume = max(VOLUME_MIN, min(volume, VOLUME_MAX));
 
 	setWaveFormSelect(true);
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
@@ -602,27 +601,29 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 		byte registerOffset = drumRegisterOffsets[op][instrument.type - INSTRUMENT_TYPE_BASS];
 
 		if (registerOffset != 0xFF) {
-			setOperatorRegister(0x20, channel, op,
-				(instrument.operators[0].hasTremolo ? 0x80 : 0x00) +
-				(instrument.operators[0].hasVibrato ? 0x40 : 0x00) +
-				(instrument.operators[0].hasSustain ? 0x20 : 0x00) +
-				(instrument.operators[0].hasEnvelopeScaling ? 0x10 : 0x00) +
-				(instrument.operators[0].frequencyMultiplier & 0x0F));
-			setOperatorRegister(0x40, channel, op,
-				((instrument.operators[0].keyScaleLevel & 0x03) << 6) +
+			write(0x20 + registerOffset,
+				(instrument.operators[op].hasTremolo ? 0x80 : 0x00) +
+				(instrument.operators[op].hasVibrato ? 0x40 : 0x00) +
+				(instrument.operators[op].hasSustain ? 0x20 : 0x00) +
+				(instrument.operators[op].hasEnvelopeScaling ? 0x10 : 0x00) +
+				(instrument.operators[op].frequencyMultiplier & 0x0F));
+			write(0x40 + registerOffset,
+				((instrument.operators[op].keyScaleLevel & 0x03) << 6) +
 				(outputLevel & 0x3F));
-			setOperatorRegister(0x60, channel, op,
-				((instrument.operators[0].attack & 0x0F) << 4) +
-				(instrument.operators[0].decay & 0x0F));
-			setOperatorRegister(0x80, channel, op,
-				((instrument.operators[0].sustain & 0x0F) << 4) +
-				(instrument.operators[0].release & 0x0F));
-			setOperatorRegister(0xE0, channel, op,
-				(instrument.operators[0].waveForm & 0x03));
+			write(0x60 + registerOffset,
+				((instrument.operators[op].attack & 0x0F) << 4) +
+				(instrument.operators[op].decay & 0x0F));
+			write(0x80 + registerOffset,
+				((instrument.operators[op].sustain & 0x0F) << 4) +
+				(instrument.operators[op].release & 0x0F));
+			write(0xE0 + registerOffset,
+				(instrument.operators[op].waveForm & 0x03));
 		}
 	}
 
-	setChannelRegister(0xC0, channel, getChannelRegister(0xC0, channel) & 0xF0);
+	write(0xC0 + drumChannels[instrument.type - INSTRUMENT_TYPE_BASS],
+		((instrument.feedback & 0x07) << 1) +
+		(instrument.isAdditiveSynth ? 0x01 : 0x00));
 }
 
 
