@@ -12,6 +12,7 @@ class OPL3: public OPL2 {
 	public:
 		OPL3();
 		virtual void begin();
+		virtual void begin(byte a1, byte a0, byte latch, byte reset);
 		virtual void reset();
 		virtual void createShadowRegisters();
 
@@ -38,11 +39,12 @@ class OPL3: public OPL2 {
 
 		virtual bool isOPL3Enabled();
 		virtual void setOPL3Enabled(bool enable);
+		virtual bool is4OPChannelEnabled(byte channel4OP);
+		virtual void set4OPChannelEnabled(byte channel4OP, bool enable);
+
 		bool isPannedLeft (byte channel);
 		bool isPannedRight(byte channel);
 		void setPanning(byte channel, bool left, bool right);
-		bool is4OPChannelEnabled(byte channel4OP);
-		void enable4OPChannel(byte channel4OP, bool enable);
 
 
 	protected:

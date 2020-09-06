@@ -19,8 +19,23 @@ OPL3::OPL3() : OPL2() {
 void OPL3::begin() {
 	pinMode(pinBank, OUTPUT);
 	digitalWrite(pinBank, LOW);
-
 	OPL2::begin();
+}
+
+
+/**
+ * Initialize the OPL3 library with custom pins.
+ *
+ * @param a1 - Pin number to use for A1.
+ * @param a0 - Pin number to use for A0.
+ * @param latch - Pin number to use for LATCH.
+ * @param reset - Pin number to use for RESET.
+ */
+void OPL3::begin(byte a1, byte a0, byte latch, byte reset) {
+	pinBank = a1;
+	pinMode(pinBank, OUTPUT);
+	digitalWrite(pinBank, LOW);
+	OPL2::begin(a0, latch, reset);
 }
 
 
@@ -53,19 +68,19 @@ void OPL3::reset() {
 	setChipRegister(0x105, 0x00);
 
 	// Initialize all channel and operator registers.
-    for (byte i = 0; i < getNumChannels(); i ++) {
-    	setChannelRegister(0xA0, i, 0x00);
-    	setChannelRegister(0xB0, i, 0x00);
-    	setChannelRegister(0xC0, i, 0x00);
+	for (byte i = 0; i < getNumChannels(); i ++) {
+		setChannelRegister(0xA0, i, 0x00);
+		setChannelRegister(0xB0, i, 0x00);
+		setChannelRegister(0xC0, i, 0x00);
 
-    	for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
-    		setOperatorRegister(0x20, i, j, 0x00);
-    		setOperatorRegister(0x40, i, j, 0x00);
-    		setOperatorRegister(0x60, i, j, 0x00);
-    		setOperatorRegister(0x80, i, j, 0x00);
-    		setOperatorRegister(0xE0, i, j, 0x00);
-    	}
-    }
+		for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
+			setOperatorRegister(0x20, i, j, 0x00);
+			setOperatorRegister(0x40, i, j, 0x00);
+			setOperatorRegister(0x60, i, j, 0x00);
+			setOperatorRegister(0x80, i, j, 0x00);
+			setOperatorRegister(0xE0, i, j, 0x00);
+		}
+	}
 }
 
 
@@ -153,11 +168,9 @@ void OPL3::write(byte bank, byte reg, byte value) {
 		wiringPiSPIDataRW(SPI_CHANNEL, &value, 1);
 	#endif
 	digitalWrite(pinLatch, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(8);
 	digitalWrite(pinLatch, HIGH);
-	delayMicroseconds(46);
-
-	delay(1);
+	delayMicroseconds(8);
 }
 
 
@@ -360,6 +373,7 @@ void OPL3::setWaveFormSelect(bool enable) {
 /**
  * Is the given 4-OP channel enabled?
  *
+ * @param channel4OP -The 4-OP cahnnel [0, 5] for which we want to know if 4-operator mode is enabled.
  * @return True if the given 4-OP channel is in 4-operator mode.
  */
 bool OPL3::is4OPChannelEnabled(byte channel4OP) {
@@ -371,11 +385,23 @@ bool OPL3::is4OPChannelEnabled(byte channel4OP) {
 /**
  * Enable or disable 4-operator mode on the given 4-OP channel.
  *
- * @param channel4OP - The 4-OP channel [0, 5] for which to enable or disbale 4=operator mode.
+ * @param channel4OP - The 4-OP channel [0, 5] for which to enable or disbale 4-operator mode.
  * @param enable - Enables or disable 4 operator mode.
  */
-void OPL3::enable4OPChannel(byte channel4OP, bool enable) {
+void OPL3::set4OPChannelEnabled(byte channel4OP, bool enable) {
 	byte channelMask = 0x01 << (channel4OP % getNum4OPChannels());
 	byte value = getChipRegister(0x0104) & ~channelMask;
 	setChipRegister(0x0104, value + (enable ? channelMask : 0));
+}
+
+
+/**
+ * Enables or disables all 4-OP channels.
+ *
+ * @param enable - Enables 4-OP channels when true.
+ */
+void OPL3::setAll4OPChannelsEnabled(bool enable) {
+	for (byte i = 0; i < getNum4OPChannels(); i ++) {
+		set4OPChannelEnabled(i, enable);
+	}
 }

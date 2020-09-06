@@ -63,7 +63,12 @@ OPL2::OPL2() {
 
 
 /**
- * Instantiate the OPL2 library with custom pin setup.
+ * Instantiate the OPL2 library with custom pin setup. This constructor is left for legacy support. Preferably custom
+ * pins are specifies when calling begin().
+ *
+ * @param reset - Pin number to use for RESET.
+ * @param address - Pin number to use for A0.
+ * @param latch - Pin number to use for LATCH.
  */
 OPL2::OPL2(byte reset, byte address, byte latch) {
 	pinReset   = reset;
@@ -78,6 +83,7 @@ OPL2::OPL2(byte reset, byte address, byte latch) {
 void OPL2::begin() {
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.begin();
+		SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
 	#else
 		wiringPiSetup();
 		wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
@@ -93,6 +99,21 @@ void OPL2::begin() {
 
 	createShadowRegisters();
 	reset();
+}
+
+
+/**
+ * Initialize the OPL2 library with custom pins.
+ *
+ * @param a0 - Pin number to use for A0.
+ * @param latch - Pin number to use for LATCH.
+ * @param reset - Pin number to use for RESET.
+ */
+void OPL2::begin(byte a0, byte latch, byte reset) {
+	pinAddress = a0;
+	pinLatch   = latch;
+	pinReset   = reset;
+	begin();
 }
 
 
@@ -132,19 +153,19 @@ void OPL2::reset() {
 	setChipRegister(0xBD, 0x00);
 
 	// Initialize all channel and operator registers.
-    for (byte i = 0; i < getNumChannels(); i ++) {
-    	setChannelRegister(0xA0, i, 0x00);
-    	setChannelRegister(0xB0, i, 0x00);
-    	setChannelRegister(0xC0, i, 0x00);
+	for (byte i = 0; i < getNumChannels(); i ++) {
+		setChannelRegister(0xA0, i, 0x00);
+		setChannelRegister(0xB0, i, 0x00);
+		setChannelRegister(0xC0, i, 0x00);
 
-    	for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
-    		setOperatorRegister(0x20, i, j, 0x00);
-    		setOperatorRegister(0x40, i, j, 0x00);
-    		setOperatorRegister(0x60, i, j, 0x00);
-    		setOperatorRegister(0x80, i, j, 0x00);
-    		setOperatorRegister(0xE0, i, j, 0x00);
-    	}
-    }
+		for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
+			setOperatorRegister(0x20, i, j, 0x00);
+			setOperatorRegister(0x40, i, j, 0x00);
+			setOperatorRegister(0x60, i, j, 0x00);
+			setOperatorRegister(0x80, i, j, 0x00);
+			setOperatorRegister(0xE0, i, j, 0x00);
+		}
+	}
 }
 
 
@@ -338,8 +359,6 @@ void OPL2::write(byte reg, byte value) {
 	delayMicroseconds(4);
 	digitalWrite(pinLatch, HIGH);
 	delayMicroseconds(92);
-
-	delay(1);
 }
 
 

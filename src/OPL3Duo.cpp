@@ -19,10 +19,27 @@ OPL3Duo::OPL3Duo() : OPL3() {
 
 
 /**
+ * Initialize the OPL3 library with custom pins.
+ *
+ * @param a2 - Pin number to use for A2.
+ * @param a1 - Pin number to use for A1.
+ * @param a0 - Pin number to use for A0.
+ * @param latch - Pin number to use for LATCH.
+ * @param reset - Pin number to use for RESET.
+ */
+void OPL3Duo::begin(byte a2, byte a1, byte a0, byte latch, byte reset) {
+	pinUnit = a2;
+	pinMode(pinUnit, OUTPUT);
+	digitalWrite(pinUnit, LOW);
+	OPL3::begin(a1, a0, latch, reset);
+}
+
+
+/**
  * Initialize the OPL3 library and reset the chips.
  */
 void OPL3Duo::begin() {
-    pinMode(pinUnit, OUTPUT);
+	pinMode(pinUnit, OUTPUT);
 	digitalWrite(pinUnit, LOW);
 
 	OPL3::begin();
@@ -47,38 +64,38 @@ void OPL3Duo::createShadowRegisters() {
  */
 void OPL3Duo::reset() {
 	// Hard reset both OPL3 chips.
-    for (byte unit = 0; unit < 2; unit ++) {
-        digitalWrite(pinUnit, unit == 1);
-        digitalWrite(pinReset, LOW);
-        delay(1);
-        digitalWrite(pinReset, HIGH);
-    }
+	for (byte unit = 0; unit < 2; unit ++) {
+		digitalWrite(pinUnit, unit == 1);
+		digitalWrite(pinReset, LOW);
+		delay(1);
+		digitalWrite(pinReset, HIGH);
+	}
 
-    // Initialize chip registers on both synth units.
-    for (byte i = 0; i < 2; i ++) {
-    	setChipRegister(i, 0x01, 0x00);
-    	setChipRegister(i, 0x04, 0x00);
-    	setChipRegister(i, 0x05, 0x00);
-    	setChipRegister(i, 0x08, 0x00);
-    	setChipRegister(i, 0xBD, 0x00);
-    }
+	// Initialize chip registers on both synth units.
+	for (byte i = 0; i < 2; i ++) {
+		setChipRegister(i, 0x01, 0x00);
+		setChipRegister(i, 0x04, 0x00);
+		setChipRegister(i, 0x05, 0x00);
+		setChipRegister(i, 0x08, 0x00);
+		setChipRegister(i, 0xBD, 0x00);
+	}
 
-    // Initialize all channel and operator registers.
-    for (byte i = 0; i < getNumChannels(); i ++) {
-    	setChannelRegister(0xA0, i, 0x00);
-    	setChannelRegister(0xB0, i, 0x00);
-    	setChannelRegister(0xC0, i, 0x00);
+	// Initialize all channel and operator registers.
+	for (byte i = 0; i < getNumChannels(); i ++) {
+		setChannelRegister(0xA0, i, 0x00);
+		setChannelRegister(0xB0, i, 0x00);
+		setChannelRegister(0xC0, i, 0x00);
 
-    	for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
-    		setOperatorRegister(0x20, i, j, 0x00);
-    		setOperatorRegister(0x40, i, j, 0x00);
-    		setOperatorRegister(0x60, i, j, 0x00);
-    		setOperatorRegister(0x80, i, j, 0x00);
-    		setOperatorRegister(0xE0, i, j, 0x00);
-    	}
-    }
+		for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
+			setOperatorRegister(0x20, i, j, 0x00);
+			setOperatorRegister(0x40, i, j, 0x00);
+			setOperatorRegister(0x60, i, j, 0x00);
+			setOperatorRegister(0x80, i, j, 0x00);
+			setOperatorRegister(0xE0, i, j, 0x00);
+		}
+	}
 
-    digitalWrite(pinUnit, LOW);
+	digitalWrite(pinUnit, LOW);
 }
 
 
@@ -152,8 +169,8 @@ void OPL3Duo::setOperatorRegister(byte baseRegister, byte channel, byte operator
  * @param value - The value to write to the register.
  */
 void OPL3Duo::write(byte bank, byte reg, byte value) {
-    digitalWrite(pinUnit, (bank & 0x02) ? HIGH : LOW);
-    OPL3::write(bank, reg, value);
+	digitalWrite(pinUnit, (bank & 0x02) ? HIGH : LOW);
+	OPL3::write(bank, reg, value);
 }
 
 
@@ -246,4 +263,33 @@ void OPL3Duo::setOPL3Enabled(byte synthUnit, bool enable) {
 	for (byte i = firstChannel; i < lastChannel; i ++) {
 		setPanning(i, enable, enable);
 	}
+}
+
+
+/**
+ * Is the given 4-OP channel enabled?
+ *
+ * @param channel4OP -The 4-OP cahnnel [0, 11] for which we want to know if 4-operator mode is enabled.
+ * @return True if the given 4-OP channel is in 4-operator mode.
+ */
+bool OPL3Duo::is4OPChannelEnabled(byte channel4OP) {
+	channel4OP = channel4OP % getNum4OPChannels();
+	byte synthUnit = channel4OP >= NUM_4OP_CHANNELS_PER_UNIT ? 1 : 0;
+	byte channelMask = 0x01 << (channel4OP % NUM_4OP_CHANNELS_PER_UNIT);
+	return getChipRegister(synthUnit, 0x0104) & channelMask;
+}
+
+
+/**
+ * Enable or disable 4-operator mode on the given 4-OP channel.
+ *
+ * @param channel4OP - The 4-OP channel [0, 11] for which to enable or disbale 4-operator mode.
+ * @param enable - Enables or disable 4 operator mode.
+ */
+void OPL3Duo::set4OPChannelEnabled(byte channel4OP, bool enable) {
+	channel4OP = channel4OP % getNum4OPChannels();
+	byte synthUnit = channel4OP >= NUM_4OP_CHANNELS_PER_UNIT ? 1 : 0;
+	byte channelMask = 0x01 << (channel4OP % NUM_4OP_CHANNELS_PER_UNIT);
+	byte value = getChipRegister(synthUnit, 0x0104) & ~channelMask;
+	setChipRegister(synthUnit, 0x0104, value + (enable ? channelMask : 0));
 }

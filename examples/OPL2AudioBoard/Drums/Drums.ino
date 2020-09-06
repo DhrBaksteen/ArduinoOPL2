@@ -28,47 +28,47 @@ int i = 0;
 
 
 void setup() {
-  opl2.init();
+	opl2.init();
 
-  // Set percussion mode and load instruments.
-  Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM1);
-  Instrument snare = opl2.loadInstrument(INSTRUMENT_RKSNARE1);
-  Instrument tom = opl2.loadInstrument(INSTRUMENT_TOM2);
-  Instrument cymbal = opl2.loadInstrument(INSTRUMENT_CYMBAL1);
-  Instrument hihat = opl2.loadInstrument(INSTRUMENT_HIHAT2);
+	// Set percussion mode and load instruments.
+	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM1);
+	Instrument snare = opl2.loadInstrument(INSTRUMENT_RKSNARE1);
+	Instrument tom = opl2.loadInstrument(INSTRUMENT_TOM2);
+	Instrument cymbal = opl2.loadInstrument(INSTRUMENT_CYMBAL1);
+	Instrument hihat = opl2.loadInstrument(INSTRUMENT_HIHAT2);
 
-  opl2.setPercussion(true);
-  opl2.setDrumInstrument(bass);
-  opl2.setDrumInstrument(snare);
-  opl2.setDrumInstrument(tom);
-  opl2.setDrumInstrument(cymbal);
-  opl2.setDrumInstrument(hihat);
+	opl2.setPercussion(true);
+	opl2.setDrumInstrument(bass);
+	opl2.setDrumInstrument(snare);
+	opl2.setDrumInstrument(tom);
+	opl2.setDrumInstrument(cymbal);
+	opl2.setDrumInstrument(hihat);
 
-  // Set octave and frequency for bass drum.
-  opl2.setBlock(6, 4);
-  opl2.setFNumber(6, opl2.getNoteFNumber(NOTE_C));
+	// Set octave and frequency for bass drum.
+	opl2.setBlock(6, 4);
+	opl2.setFNumber(6, opl2.getNoteFNumber(NOTE_C));
 
-  // Set octave and frequency for snare drum and hi-hat.
-  opl2.setBlock(7, 3);
-  opl2.setFNumber(7, opl2.getNoteFNumber(NOTE_C));
-  // Set low volume on hi-hat
-  opl2.setVolume(7, OPERATOR1, 16);
+	// Set octave and frequency for snare drum and hi-hat.
+	opl2.setBlock(7, 3);
+	opl2.setFNumber(7, opl2.getNoteFNumber(NOTE_C));
+	// Set low volume on hi-hat
+	opl2.setVolume(7, OPERATOR1, 16);
 
-  // Set octave and frequency for tom tom and cymbal.
-  opl2.setBlock(8, 3);
-  opl2.setFNumber(8, opl2.getNoteFNumber(NOTE_A));
+	// Set octave and frequency for tom tom and cymbal.
+	opl2.setBlock(8, 3);
+	opl2.setFNumber(8, opl2.getNoteFNumber(NOTE_A));
 }
 
 
 void loop() {
-  bool bass   = i % 4 == 0;           // Bass drum every 1st tick
-  bool snare  = i % 4 == 2;           // Snare drum every 3rd tick
-  bool tom    = false;                // No tom tom
-  bool cymbal = i % 32 == 0;          // Cymbal every 32nd tick
-  bool hiHat  = true;                 // Hi-hat every tick
+	bool bass   = i % 4 == 0;           // Bass drum every 1st tick
+	bool snare  = i % 4 == 2;           // Snare drum every 3rd tick
+	bool tom    = i % 8 > 3;            // Tom tom
+	bool cymbal = i % 32 == 0;          // Cymbal every 32nd tick
+	bool hiHat  = true;                 // Hi-hat every tick
 
-  opl2.setDrums(bass, snare, tom, cymbal, hiHat);
+	opl2.setDrums(bass, snare, tom, cymbal, hiHat);
 
-  i ++;
-  delay(200);
+	i ++;
+	delay(200);
 }

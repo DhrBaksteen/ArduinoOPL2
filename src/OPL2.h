@@ -138,6 +138,7 @@
 			OPL2();
 			OPL2(byte reset, byte address, byte latch);
 			virtual void begin();
+			virtual void begin(byte a0, byte latch, byte reset);
 			virtual void reset();
 			virtual void createShadowRegisters();
 			void init();

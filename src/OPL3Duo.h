@@ -1,10 +1,13 @@
 #include "OPL3.h"
 
+#define NUM_4OP_CHANNELS_PER_UNIT 6
+
 class OPL3Duo: public OPL3 {
 	public:
 		OPL3Duo();
 		virtual void begin();
-        virtual void reset();
+		virtual void begin(byte a2, byte a1, byte a0, byte latch, byte reset);
+		virtual void reset();
 		virtual void createShadowRegisters();
 
 		virtual byte getChipRegister(byte synthUnit, short reg);
@@ -21,6 +24,8 @@ class OPL3Duo: public OPL3 {
 		virtual bool isOPL3Enabled(byte synthUnit);
 		virtual void setOPL3Enabled(bool enable);
 		virtual void setOPL3Enabled(byte synthUnit, bool enable);
+		virtual bool is4OPChannelEnabled(byte channel4OP);
+		virtual void set4OPChannelEnabled(byte channel4OP, bool enable);
 	protected:
 		byte pinUnit = 5;
 
