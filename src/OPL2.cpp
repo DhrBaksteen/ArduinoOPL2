@@ -493,7 +493,7 @@ Instrument OPL2::getInstrument(byte channel) {
 
 	instrument.transpose = 0;
 	instrument.feedback = getFeedback(channel);
-	instrument.isAdditiveSynth = getSynthMode(channel);
+	instrument.isAdditiveSynth = getSynthMode(channel) == SYNTH_MODE_AM;
 	instrument.type = INSTRUMENT_TYPE_MELODIC;
 
 	return instrument;
@@ -526,8 +526,8 @@ Instrument OPL2::getDrumInstrument(byte drumType) {
 	}
 
 	instrument.transpose = 0;
-	instrument.feedback = 0x00;
-	instrument.isAdditiveSynth = false;
+	instrument.feedback = getFeedback(channel);
+	instrument.isAdditiveSynth = getSynthMode(channel) == SYNTH_MODE_AM;
 	instrument.type = drumType;
 
 	return instrument;
@@ -588,26 +588,30 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 
 		if (registerOffset != 0xFF) {
 			setOperatorRegister(0x20, channel, op,
-				(instrument.operators[0].hasTremolo ? 0x80 : 0x00) +
-				(instrument.operators[0].hasVibrato ? 0x40 : 0x00) +
-				(instrument.operators[0].hasSustain ? 0x20 : 0x00) +
-				(instrument.operators[0].hasEnvelopeScaling ? 0x10 : 0x00) +
-				(instrument.operators[0].frequencyMultiplier & 0x0F));
+				(instrument.operators[op].hasTremolo ? 0x80 : 0x00) +
+				(instrument.operators[op].hasVibrato ? 0x40 : 0x00) +
+				(instrument.operators[op].hasSustain ? 0x20 : 0x00) +
+				(instrument.operators[op].hasEnvelopeScaling ? 0x10 : 0x00) +
+				(instrument.operators[op].frequencyMultiplier & 0x0F));
 			setOperatorRegister(0x40, channel, op,
-				((instrument.operators[0].keyScaleLevel & 0x03) << 6) +
+				((instrument.operators[op].keyScaleLevel & 0x03) << 6) +
 				(outputLevel & 0x3F));
 			setOperatorRegister(0x60, channel, op,
-				((instrument.operators[0].attack & 0x0F) << 4) +
-				(instrument.operators[0].decay & 0x0F));
+				((instrument.operators[op].attack & 0x0F) << 4) +
+				(instrument.operators[op].decay & 0x0F));
 			setOperatorRegister(0x80, channel, op,
-				((instrument.operators[0].sustain & 0x0F) << 4) +
-				(instrument.operators[0].release & 0x0F));
+				((instrument.operators[op].sustain & 0x0F) << 4) +
+				(instrument.operators[op].release & 0x0F));
 			setOperatorRegister(0xE0, channel, op,
-				(instrument.operators[0].waveForm & 0x03));
+				(instrument.operators[op].waveForm & 0x03));
 		}
 	}
 
-	setChannelRegister(0xC0, channel, getChannelRegister(0xC0, channel) & 0xF0);
+	byte value = getChannelRegister(0xC0, channel) & 0xF0;
+	setChannelRegister(0xC0, channel,
+		value +
+		((instrument.feedback & 0x07) << 1) +
+		(instrument.isAdditiveSynth ? 0x01 : 0x00));
 }
 
 
