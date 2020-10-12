@@ -47,8 +47,8 @@
 	#define CARRIER   1
 
 	// Synthesis type definitions.
-	#define FREQ_MODULATION false
-	#define ADDITIVE_SYNTH  true
+	#define SYNTH_MODE_FM 0
+	#define SYNTH_MODE_AM 1
 
 	// Drum sounds.
 	#define DRUM_BASS   0
@@ -138,7 +138,6 @@
 			OPL2();
 			OPL2(byte reset, byte address, byte latch);
 			virtual void begin();
-			virtual void begin(byte a0, byte latch, byte reset);
 			virtual void reset();
 			virtual void createShadowRegisters();
 			void init();
@@ -183,6 +182,7 @@
 			byte getMultiplier(byte channel, byte operatorNum);
 			byte getScalingLevel(byte channel, byte operatorNum);
 			byte getVolume(byte channel, byte operatorNum);
+			byte getChannelVolume(byte channel);
 			byte getAttack(byte channel, byte operatorNum);
 			byte getDecay(byte channel, byte operatorNum);
 			byte getSustain(byte channel, byte operatorNum);
@@ -190,9 +190,10 @@
 			short getFNumber(byte channel);
 			float getFrequency(byte channel);
 			byte getBlock(byte channel);
+			bool getNoteSelect();
 			bool getKeyOn(byte channel);
 			byte getFeedback(byte channel);
-			bool getSynthMode(byte channel);
+			byte getSynthMode(byte channel);
 			bool getDeepTremolo();
 			bool getDeepVibrato();
 			bool getPercussion();
@@ -207,6 +208,7 @@
 			void setMultiplier(byte channel, byte operatorNum, byte multiplier);
 			void setScalingLevel(byte channel, byte operatorNum, byte scaling);
 			void setVolume(byte channel, byte operatorNum, byte volume);
+			void setChannelVolume(byte channel, byte volume);
 			void setAttack(byte channel, byte operatorNum, byte attack);
 			void setDecay(byte channel, byte operatorNum, byte decay);
 			void setSustain(byte channel, byte operatorNum, byte sustain);
@@ -214,9 +216,10 @@
 			void setFNumber(byte channel, short fNumber);
 			void setFrequency(byte channel, float frequency);
 			void setBlock(byte channel, byte block);
+			void setNoteSelect(bool enable);
 			void setKeyOn(byte channel, bool keyOn);
 			void setFeedback(byte channel, byte feedback);
-			void setSynthMode(byte channel, bool isAdditive);
+			void setSynthMode(byte channel, byte synthMode);
 			void setDeepTremolo(bool enable);
 			void setDeepVibrato(bool enable);
 			void setPercussion(bool enable);

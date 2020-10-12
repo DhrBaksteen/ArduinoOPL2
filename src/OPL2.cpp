@@ -103,21 +103,6 @@ void OPL2::begin() {
 
 
 /**
- * Initialize the OPL2 library with custom pins.
- *
- * @param a0 - Pin number to use for A0.
- * @param latch - Pin number to use for LATCH.
- * @param reset - Pin number to use for RESET.
- */
-void OPL2::begin(byte a0, byte latch, byte reset) {
-	pinAddress = a0;
-	pinLatch   = latch;
-	pinReset   = reset;
-	begin();
-}
-
-
-/**
  * Initialize the YM3812. This function is deprecated and should be replaced with OPL2.begin().
  */
 void OPL2::init() {
@@ -149,7 +134,7 @@ void OPL2::reset() {
 
 	// Initialize chip registers.
 	setChipRegister(0x00, 0x00);
-	setChipRegister(0x08, 0x00);
+	setChipRegister(0x08, 0x40);
 	setChipRegister(0xBD, 0x00);
 
 	// Initialize all channel and operator registers.
@@ -160,7 +145,7 @@ void OPL2::reset() {
 
 		for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
 			setOperatorRegister(0x20, i, j, 0x00);
-			setOperatorRegister(0x40, i, j, 0x00);
+			setOperatorRegister(0x40, i, j, 0x3F);
 			setOperatorRegister(0x60, i, j, 0x00);
 			setOperatorRegister(0x80, i, j, 0x00);
 			setOperatorRegister(0xE0, i, j, 0x00);
@@ -593,7 +578,7 @@ void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
  * proper output levels for the operator(s).
  */
 void OPL2::setDrumInstrument(Instrument instrument, float volume) {
-	volume = max((float)0.0, min(volume, (float)1.0));		volume = max(VOLUME_MIN, min(volume, VOLUME_MAX));
+	volume = max((float)0.0, min(volume, (float)1.0));
 	byte channel = drumChannels[instrument.type - INSTRUMENT_TYPE_BASS];
 
 	setWaveFormSelect(true);
@@ -603,28 +588,26 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 
 		if (registerOffset != 0xFF) {
 			setOperatorRegister(0x20, channel, op,
-				(instrument.operators[op].hasTremolo ? 0x80 : 0x00) +
-				(instrument.operators[op].hasVibrato ? 0x40 : 0x00) +
-				(instrument.operators[op].hasSustain ? 0x20 : 0x00) +
-				(instrument.operators[op].hasEnvelopeScaling ? 0x10 : 0x00) +
-				(instrument.operators[op].frequencyMultiplier & 0x0F));
+				(instrument.operators[0].hasTremolo ? 0x80 : 0x00) +
+				(instrument.operators[0].hasVibrato ? 0x40 : 0x00) +
+				(instrument.operators[0].hasSustain ? 0x20 : 0x00) +
+				(instrument.operators[0].hasEnvelopeScaling ? 0x10 : 0x00) +
+				(instrument.operators[0].frequencyMultiplier & 0x0F));
 			setOperatorRegister(0x40, channel, op,
-				((instrument.operators[op].keyScaleLevel & 0x03) << 6) +
+				((instrument.operators[0].keyScaleLevel & 0x03) << 6) +
 				(outputLevel & 0x3F));
 			setOperatorRegister(0x60, channel, op,
-				((instrument.operators[op].attack & 0x0F) << 4) +
-				(instrument.operators[op].decay & 0x0F));
+				((instrument.operators[0].attack & 0x0F) << 4) +
+				(instrument.operators[0].decay & 0x0F));
 			setOperatorRegister(0x80, channel, op,
-				((instrument.operators[op].sustain & 0x0F) << 4) +
-				(instrument.operators[op].release & 0x0F));
+				((instrument.operators[0].sustain & 0x0F) << 4) +
+				(instrument.operators[0].release & 0x0F));
 			setOperatorRegister(0xE0, channel, op,
-				(instrument.operators[op].waveForm & 0x03));
+				(instrument.operators[0].waveForm & 0x03));
 		}
 	}
 
-	setChannelRegister(0xC0, channel,
-		((instrument.feedback & 0x07) << 1) +
-		(instrument.isAdditiveSynth ? 0x01 : 0x00));
+	setChannelRegister(0xC0, channel, getChannelRegister(0xC0, channel) & 0xF0);
 }
 
 
@@ -786,7 +769,7 @@ void OPL2::setScalingLevel(byte channel, byte operatorNum, byte scaling) {
 
 
 /**
- * Get the volume of the given channel. 0x00 is laudest, 0x3F is softest.
+ * Get the volume of the given channel operator. 0x00 is laudest, 0x3F is softest.
  */
 byte OPL2::getVolume(byte channel, byte operatorNum) {
 	return getOperatorRegister(0x40, channel, operatorNum) & 0x3F;
@@ -794,12 +777,32 @@ byte OPL2::getVolume(byte channel, byte operatorNum) {
 
 
 /**
- * Set the volume of the channel.
+ * Set the volume of the channel operator.
  * Note that the scale is inverted! 0x00 for loudest, 0x3F for softest.
  */
 void OPL2::setVolume(byte channel, byte operatorNum, byte volume) {
 	byte value = getOperatorRegister(0x40, channel, operatorNum) & 0xC0;
 	setOperatorRegister(0x40, channel, operatorNum, value + (volume & 0x3F));
+}
+
+
+/**
+ * Get the volume of the given channel.
+ */
+byte OPL2::getChannelVolume(byte channel) {
+	return getVolume(channel, OPERATOR2);
+}
+
+
+/**
+ * Set the volume for the given channel. Depending on the current synthesis mode this will affect both operators (AM) or
+ * only operator 2 (FM).
+ */
+void OPL2::setChannelVolume(byte channel, byte volume) {
+	if (getSynthMode(channel)) {
+		setVolume(channel, OPERATOR1, volume);
+	}
+	setVolume(channel, OPERATOR2, volume);
 }
 
 
@@ -939,6 +942,25 @@ void OPL2::setBlock(byte channel, byte block) {
 
 
 /**
+ * Get the octave split bit.
+ */
+bool OPL2::getNoteSelect() {
+	return getChipRegister(0x08) & 0x40;
+}
+
+
+/**
+ * Set the octave split bit. This sets how the chip interprets F-numbers to determine where an octave is split. For note
+ * F-numbers used by the OPL2 library this bit should be set.
+ *
+ * @param enable - Sets the note select bit when true, otherwise reset it.
+ */
+void OPL2::setNoteSelect(bool enable) {
+	setChipRegister(0x08, enable ? 0x40 : 0x00);
+}
+
+
+/**
  * Is the voice of the given channel currently enabled?
  */
 bool OPL2::getKeyOn(byte channel) {
@@ -975,18 +997,17 @@ void OPL2::setFeedback(byte channel, byte feedback) {
 /**
  * Get the synth model that is used for the given channel.
  */
-bool OPL2::getSynthMode(byte channel) {
+byte OPL2::getSynthMode(byte channel) {
 	return getChannelRegister(0xC0, channel) & 0x01;
 }
 
 
 /**
- * Set decay algorithm. When false operator 1 modulates operator 2 (operator 2 is the only one to produce sounde). If
- * set to true both operator 1 and operator 2 will produce sound.
+ * Set the synthesizer mode of the given channel.
  */
-void OPL2::setSynthMode(byte channel, bool isAdditiveSynth) {
+void OPL2::setSynthMode(byte channel, byte synthMode) {
 	byte value = getChannelRegister(0xC0, channel) & 0xFE;
-	setChannelRegister(0xC0, channel, value + (isAdditiveSynth ? 0x01 : 0x00));
+	setChannelRegister(0xC0, channel, value + (synthMode & 0x01));
 }
 
 

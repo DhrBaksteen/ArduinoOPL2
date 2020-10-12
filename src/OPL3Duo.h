@@ -1,12 +1,15 @@
 #include "OPL3.h"
 
+#ifndef OPL3DUO_LIB_H_
+	#define OPL3DUO_LIB_H_
+
 #define NUM_4OP_CHANNELS_PER_UNIT 6
 
 class OPL3Duo: public OPL3 {
 	public:
 		OPL3Duo();
+			OPL3Duo(byte a2, byte a1, byte a0, byte latch, byte reset);
 		virtual void begin();
-		virtual void begin(byte a2, byte a1, byte a0, byte latch, byte reset);
 		virtual void reset();
 		virtual void createShadowRegisters();
 
@@ -27,7 +30,7 @@ class OPL3Duo: public OPL3 {
 		virtual bool is4OPChannelEnabled(byte channel4OP);
 		virtual void set4OPChannelEnabled(byte channel4OP, bool enable);
 	protected:
-		byte pinUnit = 5;
+			byte pinUnit = 6;
 
 		byte numChannels = 36;
 		byte num4OPChannels = 12;
@@ -39,3 +42,4 @@ class OPL3Duo: public OPL3 {
 			{ 27, 30 }, { 28, 31 }, { 29, 32 }
 		};
 };
+#endif

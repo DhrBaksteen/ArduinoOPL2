@@ -1,7 +1,16 @@
 #include "OPL2.h"
 
+#ifndef OPL3_LIB_H_
+	#define OPL3_LIB_H_
+
 
 #define CHANNELS_PER_BANK 9
+
+#define SYNTH_MODE_FM_FM 0
+#define SYNTH_MODE_FM_AM 1
+#define SYNTH_MODE_AM_FM 2
+#define SYNTH_MODE_AM_AM 3
+
 
 struct Instrument4OP {
 	Instrument subInstrument[2];		// Definition of the 2 sub instruments for each channel.
@@ -11,8 +20,8 @@ struct Instrument4OP {
 class OPL3: public OPL2 {
 	public:
 		OPL3();
+			OPL3(byte a1, byte a0, byte latch, byte reset);
 		virtual void begin();
-		virtual void begin(byte a1, byte a0, byte latch, byte reset);
 		virtual void reset();
 		virtual void createShadowRegisters();
 
@@ -41,14 +50,19 @@ class OPL3: public OPL2 {
 		virtual void setOPL3Enabled(bool enable);
 		virtual bool is4OPChannelEnabled(byte channel4OP);
 		virtual void set4OPChannelEnabled(byte channel4OP, bool enable);
+			void setAll4OPChannelsEnabled(bool enable);
 
 		bool isPannedLeft (byte channel);
 		bool isPannedRight(byte channel);
 		void setPanning(byte channel, bool left, bool right);
+		byte get4OPSynthMode(byte channel4OP);
+		void set4OPSynthMode(byte channel4OP, byte synthMode);
+		byte get4OPChannelVolume(byte channel4OP);
+		void set4OPChannelVolume(byte channel4OP, byte volume);
 
 
 	protected:
-		byte pinBank = 6;
+			byte pinBank = 7;
 
 		byte numChannels = 18;
 		byte num4OPChannels = 6;
@@ -58,3 +72,4 @@ class OPL3: public OPL2 {
 			{ 9, 12 }, { 10, 13 }, { 11, 14 }
 		};
 };
+#endif

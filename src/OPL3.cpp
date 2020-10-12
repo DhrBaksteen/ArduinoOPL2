@@ -9,7 +9,28 @@
 #endif
 
 
-OPL3::OPL3() : OPL2() {
+/**
+ * Create a new OPL3 instance with default pins.
+ *
+ * A1 = D7
+ * A0 = D8
+ * /IC = D9
+ * /WR = D10
+ */
+OPL3::OPL3() : OPL2(9, 8, 10) {
+}
+
+
+/**
+ * Create an OPL3 instance with custom pins.
+ *
+ * @param a1 - Pin number to use for A1.
+ * @param a0 - Pin number to use for A0.
+ * @param latch - Pin number to use for LATCH.
+ * @param reset - Pin number to use for RESET.
+ */
+OPL3::OPL3(byte a1, byte a0, byte latch, byte reset) : OPL2(reset, a0, latch) {
+	pinBank = a1;
 }
 
 
@@ -20,22 +41,6 @@ void OPL3::begin() {
 	pinMode(pinBank, OUTPUT);
 	digitalWrite(pinBank, LOW);
 	OPL2::begin();
-}
-
-
-/**
- * Initialize the OPL3 library with custom pins.
- *
- * @param a1 - Pin number to use for A1.
- * @param a0 - Pin number to use for A0.
- * @param latch - Pin number to use for LATCH.
- * @param reset - Pin number to use for RESET.
- */
-void OPL3::begin(byte a1, byte a0, byte latch, byte reset) {
-	pinBank = a1;
-	pinMode(pinBank, OUTPUT);
-	digitalWrite(pinBank, LOW);
-	OPL2::begin(a0, latch, reset);
 }
 
 
@@ -62,7 +67,7 @@ void OPL3::reset() {
 
 	// Initialize chip registers.
 	setChipRegister(0x00, 0x00);
-	setChipRegister(0x08, 0x00);
+	setChipRegister(0x08, 0x40);
 	setChipRegister(0xBD, 0x00);
 	setChipRegister(0x104, 0x00);
 	setChipRegister(0x105, 0x00);
@@ -75,7 +80,7 @@ void OPL3::reset() {
 
 		for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
 			setOperatorRegister(0x20, i, j, 0x00);
-			setOperatorRegister(0x40, i, j, 0x00);
+			setOperatorRegister(0x40, i, j, 0x3F);
 			setOperatorRegister(0x60, i, j, 0x00);
 			setOperatorRegister(0x80, i, j, 0x00);
 			setOperatorRegister(0xE0, i, j, 0x00);
@@ -404,4 +409,70 @@ void OPL3::setAll4OPChannelsEnabled(bool enable) {
 	for (byte i = 0; i < getNum4OPChannels(); i ++) {
 		set4OPChannelEnabled(i, enable);
 	}
+}
+
+
+/**
+ * Get the synthesizer mode of the given 4-OP channel.
+ *
+ * @param channel4OP - The 4-OP channel [0, 5] for which to get the synthesis mode.
+ * @return The synthesis mode of the 4-OP channel.
+ */
+byte OPL3::get4OPSynthMode(byte channel4OP) {
+	channel4OP = channel4OP % getNum4OPChannels();
+	byte synthMode = getSynthMode(get4OPControlChannel(channel4OP, 0)) ? 0x02 : 0x00;
+	synthMode += getSynthMode(get4OPControlChannel(channel4OP, 1)) ? 0x01 : 0x00;
+	return synthMode;
+}
+
+
+/**
+ * Set synthesizer mode for the given 4-OP channel.
+ *
+ * @param channel4OP - The 4-OP channel [0, 5] for which to set synth mode.
+ * @param synthMode - Synthesis mode to set.
+ */
+void OPL3::set4OPSynthMode(byte channel4OP, byte synthMode) {
+	channel4OP = channel4OP % getNum4OPChannels();
+	setSynthMode(get4OPControlChannel(channel4OP, 0), synthMode & 0x02 >> 1);
+	setSynthMode(get4OPControlChannel(channel4OP, 1), synthMode & 0x01);
+}
+
+
+/**
+ * Get the volume of a 4-OP channel. Assume that the volume was set according to the current synth mode.
+ *
+ * @return The volume [0, 63] of the 4-OP channel.
+ */
+byte OPL3::get4OPChannelVolume(byte channel4OP) {
+	channel4OP = channel4OP % getNum4OPChannels();
+	return getVolume(get4OPControlChannel(channel4OP, 1), OPERATOR2);
+}
+
+
+/**
+ * Set the volume of a 4-OP channel. Depending of the synth mode of the 4-OP channel the output level of different
+ * operators will be set.
+ *
+ * @param channel4OP - The 4-OP channel [0, 5] for which to set the volume.
+ * @param volume - The output level [0, 63] to set where 0 is loudest and 63 is softest.
+ */
+void OPL3::set4OPChannelVolume(byte channel4OP, byte volume) {
+	channel4OP = channel4OP % getNum4OPChannels();
+	switch (get4OPSynthMode(channel4OP)) {
+		case SYNTH_MODE_AM_FM:
+			setVolume(get4OPControlChannel(channel4OP, 0), OPERATOR1, volume);
+			break;
+		case SYNTH_MODE_FM_AM:
+			setVolume(get4OPControlChannel(channel4OP, 0), OPERATOR2, volume);
+			break;
+		case SYNTH_MODE_AM_AM:
+			setVolume(get4OPControlChannel(channel4OP, 0), OPERATOR1, volume);
+			setVolume(get4OPControlChannel(channel4OP, 1), OPERATOR1, volume);
+			break;
+		default:
+			break;
+	}
+
+	setVolume(get4OPControlChannel(channel4OP, 1), OPERATOR2, volume);
 }

@@ -14,12 +14,21 @@
 #endif
 
 
+/**
+ * Create a new OPL3Duo instance with default pins.
+ *
+ * A2 = D6
+ * A1 = D7
+ * A0 = D8
+ * /IC = D9
+ * /WR = D10
+ */
 OPL3Duo::OPL3Duo() : OPL3() {
 }
 
 
 /**
- * Initialize the OPL3 library with custom pins.
+ * Create a new OPL3Duo instance with custom pins.
  *
  * @param a2 - Pin number to use for A2.
  * @param a1 - Pin number to use for A1.
@@ -27,21 +36,17 @@ OPL3Duo::OPL3Duo() : OPL3() {
  * @param latch - Pin number to use for LATCH.
  * @param reset - Pin number to use for RESET.
  */
-void OPL3Duo::begin(byte a2, byte a1, byte a0, byte latch, byte reset) {
+OPL3Duo::OPL3Duo(byte a2, byte a1, byte a0, byte latch, byte reset) : OPL3(a1, a0, latch, reset) {
 	pinUnit = a2;
-	pinMode(pinUnit, OUTPUT);
-	digitalWrite(pinUnit, LOW);
-	OPL3::begin(a1, a0, latch, reset);
 }
 
 
 /**
- * Initialize the OPL3 library and reset the chips.
+ * Initialize the OPL3Duo and reset the chips.
  */
 void OPL3Duo::begin() {
 	pinMode(pinUnit, OUTPUT);
 	digitalWrite(pinUnit, LOW);
-
 	OPL3::begin();
 }
 
@@ -76,7 +81,7 @@ void OPL3Duo::reset() {
 		setChipRegister(i, 0x01, 0x00);
 		setChipRegister(i, 0x04, 0x00);
 		setChipRegister(i, 0x05, 0x00);
-		setChipRegister(i, 0x08, 0x00);
+		setChipRegister(i, 0x08, 0x40);
 		setChipRegister(i, 0xBD, 0x00);
 	}
 
@@ -88,7 +93,7 @@ void OPL3Duo::reset() {
 
 		for (byte j = OPERATOR1; j <= OPERATOR2; j ++) {
 			setOperatorRegister(0x20, i, j, 0x00);
-			setOperatorRegister(0x40, i, j, 0x00);
+			setOperatorRegister(0x40, i, j, 0x3F);
 			setOperatorRegister(0x60, i, j, 0x00);
 			setOperatorRegister(0x80, i, j, 0x00);
 			setOperatorRegister(0xE0, i, j, 0x00);
