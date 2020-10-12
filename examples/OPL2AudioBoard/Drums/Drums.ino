@@ -28,10 +28,10 @@ int i = 0;
 
 
 void setup() {
-	opl2.init();
+	opl2.begin();
 
 	// Set percussion mode and load instruments.
-	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM1);
+	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM2);
 	Instrument snare = opl2.loadInstrument(INSTRUMENT_RKSNARE1);
 	Instrument tom = opl2.loadInstrument(INSTRUMENT_TOM2);
 	Instrument cymbal = opl2.loadInstrument(INSTRUMENT_CYMBAL1);

@@ -26,7 +26,7 @@ float t = 0.0;
 
 
 void setup() {
-  opl2.init();
+  opl2.begin();
 
   // Setup channel 0 carrier.
   opl2.setMaintainSustain(0, CARRIER, true);

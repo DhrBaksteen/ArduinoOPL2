@@ -35,7 +35,7 @@ float imfSpeed;
 long songLength = 0;
 
 void setup() {
-  opl2.init();
+  opl2.begin();
   SD.begin(7);
 
   imfSpeed = 560.0;

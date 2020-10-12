@@ -41,7 +41,7 @@ byte registerMap[256];
 
 
 void setup() {
-  opl2.init();
+  opl2.begin();
   SD.begin(7);
 
   loadDroSong("phemopop.dro");

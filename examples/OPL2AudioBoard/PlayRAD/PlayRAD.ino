@@ -301,7 +301,7 @@ void nextOrder(byte startLine = 0) {
  * Initialize the OPL2 board and load the first line of the first order.
  */
 void initPlayer() {
-  opl2.init();
+  opl2.begin();
   opl2.setWaveFormSelect(true);
   opl2.setPercussion(false);
   speed = initialSpeed;

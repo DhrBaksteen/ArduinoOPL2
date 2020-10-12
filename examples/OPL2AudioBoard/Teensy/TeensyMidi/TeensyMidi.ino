@@ -279,7 +279,7 @@ void onControlChange(byte midiChannel, byte control, byte value) {
  * Handle full system reset.
  */
 void onSystemReset() {
-	opl2.init();
+	opl2.begin();
 
 	// Default channel volume to 80%
 	float defaultVolume = log(127.0 * 0.8) / log(127.0);

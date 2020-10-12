@@ -34,7 +34,7 @@ OPL2 opl2;
 
 void setup() {
   Serial.begin(115200);
-  opl2.init();
+  opl2.begin();
 }
 
 void loop() {

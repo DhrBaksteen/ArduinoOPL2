@@ -72,7 +72,7 @@ void setup() {
     music[i] = channel;
   }
 
-  opl2.init();
+  opl2.begin();
 
   // Setup channels 0, 1 and 2.
   Instrument piano = opl2.loadInstrument(INSTRUMENT_PIANO1);

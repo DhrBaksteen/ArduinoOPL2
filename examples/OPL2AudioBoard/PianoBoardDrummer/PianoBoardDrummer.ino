@@ -36,10 +36,10 @@ byte drums[8] = {DRUM_BASS, NO_DRUM, DRUM_SNARE, NO_DRUM, DRUM_TOM, DRUM_HI_HAT,
 
 
 void setup() {
-	opl2.init();
+	opl2.begin();
 
 	// Load drum instruments and set percusive mode.
-	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM1);
+	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM2);
 	Instrument snare = opl2.loadInstrument(INSTRUMENT_RKSNARE1);
 	Instrument tom = opl2.loadInstrument(INSTRUMENT_TOM2);
 	Instrument cymbal = opl2.loadInstrument(INSTRUMENT_CYMBAL1);

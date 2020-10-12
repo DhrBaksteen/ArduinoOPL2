@@ -98,7 +98,7 @@ void error(enum playbackStatus errorcode) {
 
 void setup() {
   Serial.begin(9600);
-  opl2.init();
+  opl2.begin();
   if (!SD.begin(7)) {
     error(PLAYBACK_ERROR_SD_INIT_FAILURE);
     return;

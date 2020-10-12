@@ -36,7 +36,7 @@ int keyChannel[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 
 void setup() {
-	opl2.init();
+	opl2.begin();
 
 	// Load an instrument and assign it to all OPL2 channels.
 	Instrument piano = opl2.loadInstrument(INSTRUMENT_CRYSTAL);

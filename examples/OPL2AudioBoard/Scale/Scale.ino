@@ -24,7 +24,7 @@
 OPL2 opl2;
 
 void setup() {
-    opl2.init();
+    opl2.begin();
 
     Instrument piano = opl2.loadInstrument(INSTRUMENT_PIANO1);      // Load a piano instrument.
     opl2.setInstrument(0, piano);                                   // Assign the instrument to OPL2 channel 0.

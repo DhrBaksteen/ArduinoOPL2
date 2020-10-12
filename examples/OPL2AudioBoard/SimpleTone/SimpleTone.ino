@@ -25,7 +25,7 @@ OPL2 opl2;
 
 
 void setup() {
-  opl2.init();
+  opl2.begin();
 
   // Setup channels 0, 1 and 2 to produce a bell sound.
   for (byte i = 0; i < 3; i ++) {
