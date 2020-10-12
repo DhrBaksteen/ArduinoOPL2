@@ -1,9 +1,13 @@
 /**
- * This example demonstrates the use of 4-operator instruments and how to play notes on a 4-op channel.
+ * This is a demonstration sketch for the OPL3 Duo! This example demonstrates the use of 4-operator instruments and how
+ * to play notes on a 4-op channel. It will play random ontes across all 12 4-operator channels.
+ *
+ * Code by Maarten Janssen, 2020-07-23
+ * WWW.CHEERFUL.NL
+ * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
 
-#include <SPI.h>
 #include <OPL3Duo.h>
 #include <midi_instruments_4op.h>
 
@@ -22,9 +26,9 @@ void setup() {
 	// Load a 4-OP piano instrument.
 	instrument = opl3Duo.loadInstrument4OP(INSTRUMENT_XYLO);
 
-	// Enable all 4-OP channels and assign the same instrument to each.
+	// Enable all 4-OP channels and assign the same instrument to each channel.
+	opl3Duo.setAll4OPChannelsEnabled(true);
 	for (int i = 0; i < opl3Duo.getNum4OPChannels(); i ++) {
-		opl3Duo.enable4OPChannel(i, true);
 		opl3Duo.setInstrument4OP(i, instrument);
 	}
 }

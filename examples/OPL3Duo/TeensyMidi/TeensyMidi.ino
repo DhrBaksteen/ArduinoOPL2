@@ -1,17 +1,11 @@
 /**
- * This example can be used together with a Teensy 2.0 or later to use the OPL2 Audio Board as a MIDI device. To
- * configure the Teensy as a MIDI device set USB Type to MIDI in the IDE using Tools > USB Type > MIDI. Once connected
- * the board should appear in the device list as 'OPL2 AUdio Board MIDI'. You can now use test the board with, for
- * example, MIDI-OX, your favorite music creation software or DosBox!
+ * This example can be used together with a Teensy 2.0 or later to use the OPL3Duo as a MIDI device. To configure the
+ * Teensy as a MIDI device set USB Type to MIDI in the IDE using Tools > USB Type > MIDI. Once connected the board
+ * should appear in the device list as 'OPL3Duo MIDI'. You can now use test the board with, for example, MIDI-OX, your
+ * favorite music creation software or DosBox!
  *
- * OPL2 board is connected as follows:
- *   Pin  8 - Reset
- *   Pin  9 - A0
- *   Pin 10 - Latch
- *   Pin 11 - Data
- *   Pin 13 - Shift
- *
- * Code by Maarten Janssen (maarten@cheerful.nl) 2018-07-02
+ * Code by Maarten Janssen, 2020-06-20
+ * WWW.CHEERFUL.NL
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
@@ -49,9 +43,6 @@ void setup() {
 	usbMIDI.setHandlePitchChange(onPitchChange);
 	usbMIDI.setHandleSystemReset(onSystemReset);
 	onSystemReset();
-
-	Serial.begin(9600);
-	delay(2000);
 }
 
 
@@ -406,9 +397,7 @@ void onSystemReset() {
 	opl3.setDeepVibrato(true);
 	opl3.setDeepTremolo(true);
 	opl3.setOPL3Enabled(true);
-	for (byte i = 0; i < opl3.getNum4OPChannels(); i ++) {
-		opl3.set4OPChannelEnabled(i, true);
-	}
+	opl3.setAll4OPChannelsEnabled(true);
 
 	// Default channel volume to 80%
 	float defaultVolume = log(127.0 * 0.8) / log(127.0);

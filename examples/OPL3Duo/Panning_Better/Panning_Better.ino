@@ -1,14 +1,19 @@
 /**
+ * This is a demonstration sketch for the OPL3 Duo! it shows a more elegant panning technique.
+ *
  * Though the OPL3 can produce stereo sound, it's panning capabilities are only limited. You can eather play the sound
  * of a channel on the left speaker only, the right speaker only or on both. Gradual panning between the left and right
  * speaker is not possible. This demonstration shows how gradual panning can still be achieved using two channels.
  * Channel 0 will output to the left speaker and channel 1 will output to the right speaker. By inverting the volume of
  * channel 0 on channel 1 we can achieve 63 steps of panning as this demo will show with a ping sound that drifts
  * between the left and the right speaker.
+ *
+ * Code by Maarten Janssen, 2020-08-23
+ * WWW.CHEERFUL.NL
+ * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  */
 
 
-#include <SPI.h>
 #include <OPL3Duo.h>
 
 
@@ -28,7 +33,7 @@ void setup() {
 			opl3Duo.setDecay(i, j, 5);
 			opl3Duo.setSustain(i, j, 3);
 			opl3Duo.setRelease(i, j, 4);
-			opl3Duo.setMaintainSustain(i, j, false);
+			opl3Duo.setMaintainSustain(i, j, true);
 			opl3Duo.setEnvelopeScaling(i, j, true);
 			opl3Duo.setMultiplier(i, j, 1);
 			opl3Duo.setScalingLevel(i, j, 1);
@@ -40,26 +45,20 @@ void setup() {
 	// Set panning for channels 0 (left) and 1 (right).
 	opl3Duo.setPanning(0, true, false);
 	opl3Duo.setPanning(1, false, true);
-}
 
-
-void loop() {
-	// Restart the tone every 300 cycles.
-	if (t % 300 == 0) {
+	// Start playing the tone on both channels.
 	opl3Duo.playNote(0, 5, NOTE_A);
 	opl3Duo.playNote(1, 5, NOTE_A);
 	}
 
+
+void loop() {
 	// Define channel volume as a sine wave so it will gradually increase and decrease.
-	byte volume = (sin((float)t / 10) * 31) + 31;
+	byte volume = (sin((float)t / 50) * 31) + 31;
 
-	// Apply volume to operators of channel 0.
-	opl3Duo.setVolume(0, 0, volume);
-	opl3Duo.setVolume(0, 1, volume);
-
-	// Apply inverse of volume to operators of channel 1.
-	opl3Duo.setVolume(1, 0, 63 - volume);
-	opl3Duo.setVolume(1, 1, 63 - volume);
+	// Apply volume to both channels.
+	opl3Duo.setChannelVolume(0, volume);
+	opl3Duo.setChannelVolume(1, 63 - volume);
 
 	delay(10);
 	t ++;
