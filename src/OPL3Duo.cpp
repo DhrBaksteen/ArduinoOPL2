@@ -1,6 +1,29 @@
-// TODO: Rename getters that return booleans to is....
-// TODO: Make the get/setSynthMode simpler to understand...
-// TODO: Rename channelsPairs to channelPairs4OP
+/**
+ * ________ __________.____    ________      _____            .___.__         .____    ._____.
+ * \_____  \\______   \    |   \_____  \    /  _  \  __ __  __| _/|__| ____   |    |   |__\_ |__
+ *  /   |   \|     ___/    |    /  ____/   /  /_\  \|  |  \/ __ | |  |/  _ \  |    |   |  || __ \
+ * /    |    \    |   |    |___/       \  /    |    \  |  / /_/ | |  (  <_> ) |    |___|  || \_\ \
+ * \_______  /____|   |_______ \_______ \ \____|__  /____/\____ | |__|\____/  |_______ \__||___  /
+ *         \/                 \/       \/         \/           \/                     \/       \/
+ *   ___________         __                       .__                         _____
+ *   \_   _____/__  ____/  |_  ____   ____   _____|__| ____   ____   ______ _/ ____\___________
+ *    |    __)_\  \/  /\   __\/ __ \ /    \ /  ___/  |/  _ \ /    \ /  ___/ \   __\/  _ \_  __ \
+ *    |        \>    <  |  | \  ___/|   |  \\___ \|  (  <_> )   |  \\___ \   |  | (  <_> )  | \/
+ *   /_______  /__/\_ \ |__|  \___  >___|  /____  >__|\____/|___|  /____  >  |__|  \____/|__|
+ *           \/      \/           \/     \/     \/               \/     \/
+ *                ________ __________.____     ________   ________              ._.
+ *                \_____  \\______   \    |    \_____  \  \______ \  __ __  ____| |
+ *                 /   |   \|     ___/    |      _(__  <   |    |  \|  |  \/  _ \ |
+ *                /    |    \    |   |    |___  /       \  |    `   \  |  (  <_> )|
+ *                \_______  /____|   |_______ \/______  / /_______  /____/ \____/__
+ *                        \/                 \/       \/          \/             \/
+ *
+ * Extensions to the OPL2 Audio Library for Arduino and compatibles to support the OPL3 Duo! board.
+ * This file contains the extensions required for dual YMF262.
+ * Code by Maarten janssen (maarten@cheerful.nl) 2020-10-12
+ * WWW.CHEERFUL.NL
+ */
+
 
 #include "OPL3Duo.h"
 
@@ -207,7 +230,7 @@ byte OPL3Duo::getNum4OPChannels() {
  * @return The OPL3 channel number that controls the 4 operator channel.
  */
 byte OPL3Duo::get4OPControlChannel(byte channel4OP, byte index2OP) {
-	return channelPairs[channel4OP % getNum4OPChannels()][index2OP % 2];
+	return channelPairs4OP[channel4OP % getNum4OPChannels()][index2OP % 2];
 }
 
 

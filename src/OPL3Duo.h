@@ -35,7 +35,7 @@ class OPL3Duo: public OPL3 {
 		byte numChannels = 36;
 		byte num4OPChannels = 12;
 
-		byte channelPairs[12][2] = {
+			byte channelPairs4OP[12][2] = {
 			{  0,  3 }, {  1,  4 }, {  2,  5 },
 			{  9, 12 }, { 10, 13 }, { 11, 14 },
 			{ 18, 21 }, { 19, 22 }, { 20, 23 },

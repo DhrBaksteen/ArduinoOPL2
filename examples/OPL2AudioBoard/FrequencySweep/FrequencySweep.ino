@@ -26,23 +26,24 @@ float t = 0.0;
 
 
 void setup() {
-  opl2.begin();
+	opl2.begin();
 
-  // Setup channel 0 carrier.
-  opl2.setMaintainSustain(0, CARRIER, true);
-  opl2.setMultiplier(0, CARRIER, 0x04);
-  opl2.setAttack    (0, CARRIER, 0x0A);
-  opl2.setSustain   (0, CARRIER, 0x04);
+	// Setup channel 0 carrier.
+	opl2.setMaintainSustain(0, CARRIER, true);
+	opl2.setMultiplier(0, CARRIER, 0x01);
+	opl2.setAttack    (0, CARRIER, 0x0A);
+	opl2.setSustain   (0, CARRIER, 0x04);
+	opl2.setVolume    (0, CARRIER, 0x00);
 
-  // Start tone.
-  opl2.setKeyOn(0, true);
+	// Start tone.
+	opl2.setKeyOn(0, true);
 }
 
 
 void loop() {
-  float freq = sin(t) * 250 + 500;
-  opl2.setFrequency(0, freq);
+	float freq = sin(t) * 250 + 500;
+	opl2.setFrequency(0, freq);
 
-  t += .01;
-  delay(10);
+	t += .01;
+	delay(10);
 }

@@ -26,20 +26,13 @@ void setup() {
 	opl3Duo.begin();
 	opl3Duo.setOPL3Enabled(true);
 
-	// Define a simple ping sound for channels 0 and 1.
+	// Define a simple continuous sound for channels 0 and 1.
 	for (byte i = 0; i < 2; i++) {
-		for (byte j = 0; j < 2; j ++) {
-			opl3Duo.setAttack(i, j, 5);
-			opl3Duo.setDecay(i, j, 5);
-			opl3Duo.setSustain(i, j, 3);
-			opl3Duo.setRelease(i, j, 4);
-			opl3Duo.setMaintainSustain(i, j, true);
-			opl3Duo.setEnvelopeScaling(i, j, true);
-			opl3Duo.setMultiplier(i, j, 1);
-			opl3Duo.setScalingLevel(i, j, 1);
-			opl3Duo.setVolume(i, j, 0);
-		}
-		opl3Duo.setSynthMode(i, true);
+		opl3Duo.setAttack(i, CARRIER, 8);
+		opl3Duo.setSustain(i, CARRIER, 4);
+		opl3Duo.setMaintainSustain(i, CARRIER, true);
+		opl3Duo.setMultiplier(i, CARRIER, 1);
+		opl3Duo.setVolume(i, CARRIER, 0);
 	}
 
 	// Set panning for channels 0 (left) and 1 (right).
@@ -49,7 +42,7 @@ void setup() {
 	// Start playing the tone on both channels.
 	opl3Duo.playNote(0, 5, NOTE_A);
 	opl3Duo.playNote(1, 5, NOTE_A);
-	}
+}
 
 
 void loop() {

@@ -67,7 +67,7 @@ class OPL3: public OPL2 {
 		byte numChannels = 18;
 		byte num4OPChannels = 6;
 
-		byte channelPairs[6][2] = {
+			byte channelPairs4OP[6][2] = {
 			{ 0,  3 }, {  1,  4 }, {  2,  5 },
 			{ 9, 12 }, { 10, 13 }, { 11, 14 }
 		};
