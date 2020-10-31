@@ -38,6 +38,7 @@
 	#endif
 
 	// Generic OPL2 definitions.
+	#define OPL2_NUM_CHANNELS 9
 	#define CHANNELS_PER_BANK 9
 
 	// Operator definitions.
@@ -236,7 +237,7 @@
 			byte* channelRegisters;
 			byte* operatorRegisters;
 
-			byte numChannels = 9;
+			byte numChannels = OPL2_NUM_CHANNELS;
 
 			const float fIntervals[8] = {
 				0.048, 0.095, 0.190, 0.379, 0.759, 1.517, 3.034, 6.069

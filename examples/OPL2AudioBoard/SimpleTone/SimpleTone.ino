@@ -25,26 +25,27 @@ OPL2 opl2;
 
 
 void setup() {
-  opl2.begin();
+	opl2.begin();
 
-  // Setup channels 0, 1 and 2 to produce a bell sound.
-  for (byte i = 0; i < 3; i ++) {
-    opl2.setTremolo   (i, CARRIER, true);
-    opl2.setVibrato   (i, CARRIER, true);
-    opl2.setMultiplier(i, CARRIER, 0x04);
-    opl2.setAttack    (i, CARRIER, 0x0A);
-    opl2.setDecay     (i, CARRIER, 0x04);
-    opl2.setSustain   (i, CARRIER, 0x0F);
-    opl2.setRelease   (i, CARRIER, 0x0F);
-  }
+	// Setup channels 0, 1 and 2 to produce a bell sound.
+	for (byte i = 0; i < 3; i ++) {
+		opl2.setTremolo   (i, CARRIER, true);
+		opl2.setVibrato   (i, CARRIER, true);
+		opl2.setMultiplier(i, CARRIER, 0x04);
+		opl2.setAttack    (i, CARRIER, 0x0A);
+		opl2.setDecay     (i, CARRIER, 0x04);
+		opl2.setSustain   (i, CARRIER, 0x0F);
+		opl2.setRelease   (i, CARRIER, 0x0F);
+		opl2.setVolume    (i, CARRIER, 0x00);
+	}
 
-  // Play notes C-3 through B-4 on alternating channels.
-  for (byte i = 0; i < 24; i ++) {
-    byte octave = 3 + (i / 12);
-    byte note = i % 12;
-    opl2.playNote(i % 3, octave, note);
-    delay(300);
-  }
+	// Play notes C-3 through B-4 on alternating channels.
+	for (byte i = 0; i < 24; i ++) {
+		byte octave = 3 + (i / 12);
+		byte note = i % 12;
+		opl2.playNote(i % 3, octave, note);
+		delay(300);
+	}
 }
 
 

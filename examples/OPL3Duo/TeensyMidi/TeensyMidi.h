@@ -13,7 +13,6 @@
 
 
 struct MidiChannel {
-    unsigned char *instrumentDataPtr;   // Pointer to current instrument data.
     Instrument4OP instrument;           // Current instrument.
     byte program;                       // Program number currenly associated witht this MIDI channel.
     float volume;                       // Channel volume.

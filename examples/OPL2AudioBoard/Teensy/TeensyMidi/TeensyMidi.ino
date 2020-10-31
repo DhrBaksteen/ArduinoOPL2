@@ -39,7 +39,6 @@ struct Opl2Channel {
 // Midi channel properties.
 struct MidiChannel {
 	Instrument instrument;
-	unsigned char *instrumentDataPtr;
 	byte program;
 	float volume;
 };
@@ -142,25 +141,17 @@ void onNoteOn(byte midiChannel, byte note, byte velocity) {
 		return;
 	}
 
-	// Fetch pointer to the instrument.
-	unsigned char *instrumentDataPtr = NULL;
-	if (midiChannel != MIDI_DRUM_CHANNEL) {
-		instrumentDataPtr = midiInstruments[midiChannelMap[midiChannel].program];
-	} else if (note >= DRUM_NOTE_BASE && note < DRUM_NOTE_BASE + NUM_MIDI_DRUMS) {
-		instrumentDataPtr = midiDrums[note - DRUM_NOTE_BASE];
-	}
-
-	if (instrumentDataPtr != NULL) {
-		// Load new instrument if needed.
-		if (instrumentDataPtr != midiChannelMap[midiChannel].instrumentDataPtr) {
-			midiChannelMap[midiChannel].instrument = opl2.loadInstrument(instrumentDataPtr);
-		}
-
 		// Register channel mapping.
 		byte opl2Channel = getFreeChannel(midiChannel);
 		opl2ChannelMap[opl2Channel].midiChannel  = midiChannel;
 		opl2ChannelMap[opl2Channel].midiNote     = note;
 		opl2ChannelMap[opl2Channel].noteVelocity = log(min((float)velocity, 127.0)) / log(127.0);
+
+	// For notes on drum channel the note determines the instrument to load.
+	if (midiChannel == MIDI_DRUM_CHANNEL && note >= DRUM_NOTE_BASE && note < DRUM_NOTE_BASE + NUM_MIDI_DRUMS) {
+		const unsigned char *instrumentDataPtr = midiDrums[note - DRUM_NOTE_BASE];
+		midiChannelMap[MIDI_DRUM_CHANNEL].instrument = opl2.loadInstrument(instrumentDataPtr);
+	}
 
 		// Calculate octave and note number.
 		byte opl2Octave = 4;
@@ -175,7 +166,6 @@ void onNoteOn(byte midiChannel, byte note, byte velocity) {
 		opl2.setInstrument(opl2Channel, midiChannelMap[midiChannel].instrument, opl2ChannelMap[opl2Channel].noteVelocity);
 		opl2.playNote(opl2Channel, opl2Octave, opl2Note);
 	}
-}
 
 
 /**
@@ -211,10 +201,19 @@ void onNoteOff(byte midiChannel, byte note, byte velocity) {
 
 
 /**
- * Handle instrument change on the given MIDI channel.
+ * Handle instrument change on the given MIDI channel and load the instrument if the MIDI channel is not the drum
+ * channel where the note determines the instrument.
  */
 void onProgramChange(byte midiChannel, byte program) {
-	midiChannelMap[midiChannel % 16].program = min(program, 127);
+	midiChannel = midiChannel % 16;
+	program = min(program, 127);
+	midiChannelMap[midiChannel].program = program;
+
+	// Fetch pointer to the instrument and load.
+	if (midiChannel != MIDI_DRUM_CHANNEL) {
+		const unsigned char *instrumentDataPtr = midiInstruments[program];
+		midiChannelMap[midiChannel].instrument = opl2.loadInstrument(instrumentDataPtr);
+	}
 }
 
 
@@ -283,15 +282,11 @@ void onSystemReset() {
 
 	// Default channel volume to 80%
 	float defaultVolume = log(127.0 * 0.8) / log(127.0);
-	unsigned char *defaultInstrumentPtr = midiInstruments[0];
-	Instrument defaultInstrument = opl2.loadInstrument(defaultInstrumentPtr);
 
 	// Reset default MIDI player parameters.
 	for (byte i = 0; i < MIDI_NUM_CHANNELS; i ++) {
-		midiChannelMap[i].program = 0;
+		onProgramChange(i, 0);
 		midiChannelMap[i].volume = defaultVolume;
-		midiChannelMap[i].instrumentDataPtr = defaultInstrumentPtr;
-		midiChannelMap[i].instrument = defaultInstrument;
 	}
 
 	// Silence all channels and set default instrument.

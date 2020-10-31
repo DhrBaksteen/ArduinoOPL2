@@ -24,7 +24,6 @@
 
 
 OPL3Duo opl3;
-// USBMIDI usbMIDI;			<-- PlatrormIO specific!!
 
 MidiChannel midiChannels[NUM_MIDI_CHANNELS];
 OPLChannel melodicChannels[NUM_MELODIC_CHANNELS];
@@ -294,11 +293,10 @@ void onProgramChange(byte midiChannel, byte program) {
 
 	if (midiChannel != MIDI_DRUM_CHANNEL) {
 		program = program % 128;
-		unsigned char *instrumentDataPtr = midiInstruments[program];
+		const unsigned char *instrumentDataPtr = midiInstruments[program];
 		Instrument4OP instrument = opl3.loadInstrument4OP(instrumentDataPtr);
  
 		midiChannels[midiChannel].program = program;
-		midiChannels[midiChannel].instrumentDataPtr = instrumentDataPtr;
 		midiChannels[midiChannel].instrument = instrument;
 	}
 }
@@ -401,14 +399,10 @@ void onSystemReset() {
 
 	// Default channel volume to 80%
 	float defaultVolume = log(127.0 * 0.8) / log(127.0);
-	unsigned char *defaultInstrumentPtr = midiInstruments[0];
-	Instrument4OP defaultInstrument = opl3.loadInstrument4OP(defaultInstrumentPtr);
 
 	// Reset default MIDI player parameters.
 	for (byte i = 0; i < NUM_MIDI_CHANNELS; i ++) {
-		midiChannels[i].instrumentDataPtr = defaultInstrumentPtr;
-		midiChannels[i].instrument = defaultInstrument;
-		midiChannels[i].program = 0;
+		onProgramChange(i, 0);
 		midiChannels[i].volume = defaultVolume;
 	}
 
