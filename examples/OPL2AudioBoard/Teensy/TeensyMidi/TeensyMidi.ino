@@ -141,11 +141,11 @@ void onNoteOn(byte midiChannel, byte note, byte velocity) {
 		return;
 	}
 
-		// Register channel mapping.
-		byte opl2Channel = getFreeChannel(midiChannel);
-		opl2ChannelMap[opl2Channel].midiChannel  = midiChannel;
-		opl2ChannelMap[opl2Channel].midiNote     = note;
-		opl2ChannelMap[opl2Channel].noteVelocity = log(min((float)velocity, 127.0)) / log(127.0);
+	// Register channel mapping.
+	byte opl2Channel = getFreeChannel(midiChannel);
+	opl2ChannelMap[opl2Channel].midiChannel  = midiChannel;
+	opl2ChannelMap[opl2Channel].midiNote     = note;
+	opl2ChannelMap[opl2Channel].noteVelocity = log(min((float)velocity, 127.0)) / log(127.0);
 
 	// For notes on drum channel the note determines the instrument to load.
 	if (midiChannel == MIDI_DRUM_CHANNEL && note >= DRUM_NOTE_BASE && note < DRUM_NOTE_BASE + NUM_MIDI_DRUMS) {
@@ -153,19 +153,19 @@ void onNoteOn(byte midiChannel, byte note, byte velocity) {
 		midiChannelMap[MIDI_DRUM_CHANNEL].instrument = opl2.loadInstrument(instrumentDataPtr);
 	}
 
-		// Calculate octave and note number.
-		byte opl2Octave = 4;
-		byte opl2Note = NOTE_C;
-		if (midiChannel != MIDI_DRUM_CHANNEL) {
-			note = max(24, min(note, 119));
-			opl2Octave = 1 + (note - 24) / 12;
-			opl2Note   = note % 12;
-		}
-
-		// Set instrument registers and play note.
-		opl2.setInstrument(opl2Channel, midiChannelMap[midiChannel].instrument, opl2ChannelMap[opl2Channel].noteVelocity);
-		opl2.playNote(opl2Channel, opl2Octave, opl2Note);
+	// Calculate octave and note number.
+	byte opl2Octave = 4;
+	byte opl2Note = NOTE_C;
+	if (midiChannel != MIDI_DRUM_CHANNEL) {
+		note = max(24, min(note, 119));
+		opl2Octave = 1 + (note - 24) / 12;
+		opl2Note   = note % 12;
 	}
+
+	// Set instrument registers and play note.
+	opl2.setInstrument(opl2Channel, midiChannelMap[midiChannel].instrument, opl2ChannelMap[opl2Channel].noteVelocity);
+	opl2.playNote(opl2Channel, opl2Octave, opl2Note);
+}
 
 
 /**
