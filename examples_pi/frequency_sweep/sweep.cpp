@@ -15,6 +15,7 @@
 
 
 #include <OPL2.h>
+#include <math.h>
 #include <wiringPi.h>
 
 
@@ -25,21 +26,19 @@ int main(int argc, char **argv) {
 
 	// Setup channel 0 carrier.
 	opl2.setMaintainSustain(0, CARRIER, true);
-	opl2.setMultiplier(0, CARRIER, 0x04);
+	opl2.setMultiplier(0, CARRIER, 0x01);
 	opl2.setAttack    (0, CARRIER, 0x0A);
 	opl2.setSustain   (0, CARRIER, 0x04);
+	opl2.setVolume    (0, CARRIER, 0x00);
 
 	// Start tone.
+	float t = 0.0;
 	opl2.setKeyOn(0, true);
 	while (true) {
-		for (int f = 250; f < 750; f += 10) {
-			opl2.setFrequency(0, f);
-			delay(10);
-		}
+		float freq = sin(t) * 250 + 500;
+		opl2.setFrequency(0, freq);
 
-		for (int f = 750; f > 250; f -= 10) {
-			opl2.setFrequency(0, f);
-			delay(10);
-		}
+		t += .01;
+		delay(10);
 	}
 }

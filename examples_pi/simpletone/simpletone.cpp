@@ -34,10 +34,11 @@ int main(int argc, char **argv) {
 		opl2.setDecay     (i, CARRIER, 0x04);
 		opl2.setSustain   (i, CARRIER, 0x0F);
 		opl2.setRelease   (i, CARRIER, 0x0F);
+		opl2.setVolume    (i, CARRIER, 0x00);
 	}
 
 	// Play notes on alternating channels.
-	for (byte i = 0; i < 13; i ++) {
+	for (byte i = 0; i < 24; i ++) {
 		byte octave = 3 + (i / 12);
 		byte note = i % 12;
 		opl2.playNote(i % 3, octave, note);
