@@ -20,7 +20,7 @@
 #include <SPI.h>
 #include <OPL3Duo.h>
 
-//#define NUKEYKTPROTO
+#define NUKEYKTPROTO 0
 
 OPL3Duo opl3Duo;
 
