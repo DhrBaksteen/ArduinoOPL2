@@ -53,7 +53,7 @@ void loop() {
 			byte bank = (x1>>2);
 			byte reg = ((x1<<6)&0x0c0)|((x2>>1)&0x3f);
 			byte data = ((x2<<7)&0x80)|(x3&0x7f);
-			opl3.write(bank, reg, data);
+			opl3Duo.write(bank, reg, data);
 		}
 	}
 #endif
