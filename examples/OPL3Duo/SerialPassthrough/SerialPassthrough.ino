@@ -20,6 +20,8 @@
 #include <SPI.h>
 #include <OPL3Duo.h>
 
+#define NUKEYKTPROTO 0
+
 OPL3Duo opl3Duo;
 
 void setup() {
@@ -28,6 +30,7 @@ void setup() {
 }
 
 void loop() {
+#ifndef NUKEYKTPROTO
 	while (Serial.available() > 2) {
 		byte bank = Serial.read() & 0x03;
 		byte reg = Serial.read();
@@ -35,4 +38,24 @@ void loop() {
 
 		opl3Duo.write(bank, reg, val);
 	}
+#else
+	// If NUKEYKTPROTO is defined then Nuke.YKT's protocol is used. 
+	// It provides a basic packet validation to avoid syncronisation issues. 
+	// Also it's implemented and ready to use with Wohlstand's OPL3BankEditor.
+	
+	if(Serial.available()) {
+		int x1 = Serial.read();
+		if(x1&0x80) { // Check if first byte of the transferred packet is valid
+			while(!Serial.available());
+				byte x2= Serial.read();
+			while(!Serial.available());
+				byte x3 = Serial.read();
+			byte bank = (x1>>2);
+			byte reg = ((x1<<6)&0x0c0)|((x2>>1)&0x3f);
+			byte data = ((x2<<7)&0x80)|(x3&0x7f);
+			opl3Duo.write(bank, reg, data);
+		}
+	}
+#endif
+
 }
