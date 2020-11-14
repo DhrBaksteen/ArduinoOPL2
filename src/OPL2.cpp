@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
  *                    \/           \/             \/                \/
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v2.0.0
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v2.0.2
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  * WWW.CHEERFUL.NL
  *

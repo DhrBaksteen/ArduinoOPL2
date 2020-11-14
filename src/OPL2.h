@@ -157,6 +157,8 @@
 
 			virtual byte getNumChannels();
 
+			float getFrequency(byte channel);
+			void setFrequency(byte channel, float frequency);
 			byte getFrequencyBlock(float frequency);
 			short getFrequencyFNumber(byte channel, float frequency);
 			short getNoteFNumber(byte note);
@@ -189,7 +191,6 @@
 			byte getSustain(byte channel, byte operatorNum);
 			byte getRelease(byte channel, byte operatorNum);
 			short getFNumber(byte channel);
-			float getFrequency(byte channel);
 			byte getBlock(byte channel);
 			bool getNoteSelect();
 			bool getKeyOn(byte channel);
@@ -215,7 +216,6 @@
 			void setSustain(byte channel, byte operatorNum, byte sustain);
 			void setRelease(byte channel, byte operatorNum, byte release);
 			void setFNumber(byte channel, short fNumber);
-			void setFrequency(byte channel, float frequency);
 			void setBlock(byte channel, byte block);
 			void setNoteSelect(bool enable);
 			void setKeyOn(byte channel, bool keyOn);
