@@ -16,7 +16,7 @@
  *            \____|__  /__|  \____ |____/|__|___|  /\____/  \_____\ \  |____|   |__|
  *                    \/           \/             \/                \/
  *
- * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v2.0.2
+ * YM3812 OPL2 Audio Library for Arduino, Raspberry Pi and Orange Pi v2.0.3
  * Code by Maarten Janssen (maarten@cheerful.nl) 2016-12-18
  * WWW.CHEERFUL.NL
  *
@@ -36,7 +36,7 @@
  * IMPORTANT: Make sure you set the correct BOARD_TYPE in OPL2.h. Default is set to Arduino.
  *
  *
- * Last updated 2020-10-31
+ * Last updated 2020-11-23
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
  * Details about the YM3812 and YMF262 chips can be found at http://www.shikadi.net/moddingwiki/OPL_chip
  *
