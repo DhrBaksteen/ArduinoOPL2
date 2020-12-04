@@ -44,7 +44,7 @@
  * /IC = D9
  * /WR = D10
  */
-OPL3::OPL3() : OPL2(9, 8, 10) {
+OPL3::OPL3() : OPL2(PIN_RESET, PIN_ADDR, PIN_LATCH) {
 }
 
 

@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
 		music[i] = channel;
 	}
 
-	opl2.init();
+	opl2.begin();
 
 	// Setup channels 0, 1 and 2 instruments.
 	Instrument piano = opl2.loadInstrument(INSTRUMENT_PIANO1);

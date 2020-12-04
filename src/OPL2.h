@@ -28,9 +28,9 @@
 		#define PIN_ADDR   9
 		#define PIN_RESET  8
 	#else
-		#define PIN_LATCH 1				// GPIO header pin 12
+		#define PIN_LATCH 3				// GPIO header pin 15
 		#define PIN_ADDR  4				// GPIO header pin 16
-		#define PIN_RESET 5				// GPIO header pin 18
+		#define PIN_RESET 2				// GPIO header pin 13
 
 		// SPI setup for WiringPi.
 		#define SPI_SPEED   8000000

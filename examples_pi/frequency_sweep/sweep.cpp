@@ -22,7 +22,7 @@
 OPL2 opl2;
 
 int main(int argc, char **argv) {
-	opl2.init();
+	opl2.begin();
 
 	// Setup channel 0 carrier.
 	opl2.setMaintainSustain(0, CARRIER, true);
