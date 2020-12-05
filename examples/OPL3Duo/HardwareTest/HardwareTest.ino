@@ -18,7 +18,7 @@ Instrument testInstrument2;
 
 
 void setup() {
-  delay(1000);
+	delay(1000);
 	Serial.begin(9600);
 	opl3Duo.begin();
 	testInstrument = opl3Duo.loadInstrument(INSTRUMENT_SYN1);

@@ -12,6 +12,12 @@
 	#define SYNTH_MODE_AM_FM 2
 	#define SYNTH_MODE_AM_AM 3
 
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+		#define PIN_BANK 7
+	#else
+		#define PIN_BANK 5				// GPIO header pin 18
+	#endif
+
 
 	struct Instrument4OP {
 		Instrument subInstrument[2];		// Definition of the 2 sub instruments for each channel.
@@ -63,7 +69,7 @@
 
 
 		protected:
-			byte pinBank = 7;
+			byte pinBank = PIN_BANK;
 
 			byte numChannels = OPL3_NUM_2OP_CHANNELS;
 			byte num4OPChannels = OPL3_NUM_4OP_CHANNELS;

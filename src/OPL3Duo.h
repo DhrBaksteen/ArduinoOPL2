@@ -7,6 +7,12 @@
 	#define OPL3DUO_NUM_2OP_CHANNELS 36
 	#define OPL3DUO_NUM_4OP_CHANNELS 12
 
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+		#define PIN_UNIT 6
+	#else
+		#define PIN_UNIT 6				// GPIO header pin 22
+	#endif
+
 	class OPL3Duo: public OPL3 {
 		public:
 			OPL3Duo();
@@ -32,7 +38,7 @@
 			virtual bool is4OPChannelEnabled(byte channel4OP);
 			virtual void set4OPChannelEnabled(byte channel4OP, bool enable);
 		protected:
-			byte pinUnit = 6;
+			byte pinUnit = PIN_UNIT;
 
 			byte numChannels = OPL3DUO_NUM_2OP_CHANNELS;
 			byte num4OPChannels = OPL3DUO_NUM_4OP_CHANNELS;

@@ -27,10 +27,10 @@ int i = 0;
 
 
 int main(int argc, char **argv) {
-	opl2.init();
+	opl2.begin();
 
 	// Set percussion mode and load instruments.
-	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM1);
+	Instrument bass = opl2.loadInstrument(INSTRUMENT_BDRUM2);
 	Instrument snare = opl2.loadInstrument(INSTRUMENT_RKSNARE1);
 	Instrument tom = opl2.loadInstrument(INSTRUMENT_TOM2);
 	Instrument cymbal = opl2.loadInstrument(INSTRUMENT_CYMBAL1);
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 	while (true) {
 		bool bass   = i % 4 == 0;           // Bass drum every 1st tick
 		bool snare  = i % 4 == 2;           // Snare drum every 3rd tick
-		bool tom    = false;                // No tom tom
+		bool tom    = i % 8 > 3;            // Tom tom
 		bool cymbal = i % 32 == 0;          // Cymbal every 32nd tick
 		bool hiHat  = true;                 // Hi-hat every tick
 

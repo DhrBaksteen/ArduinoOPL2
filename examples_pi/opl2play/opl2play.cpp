@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	opl2.init();
+	opl2.begin();
 
 	for (int i = 1; i < argc; i ++) {
 		if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--repeat") == 0) {
