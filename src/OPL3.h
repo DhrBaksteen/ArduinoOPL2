@@ -13,7 +13,12 @@
 	#define SYNTH_MODE_AM_AM 3
 
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
-		#define PIN_BANK 7
+		#undef PIN_ADDR					// Undefine A0 and /IC pins from OPL2 and redefine for OPL3 Duo.
+		#undef PIN_RESET
+
+		#define PIN_BANK  7
+		#define PIN_ADDR  8
+		#define PIN_RESET 9
 	#else
 		#define PIN_BANK 5				// GPIO header pin 18
 	#endif
