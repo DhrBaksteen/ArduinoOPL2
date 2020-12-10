@@ -176,7 +176,7 @@ void stopNote() {
 	for (byte i = 0; i < NUM_OPL2_CHANNELS; i ++) {
 		if (oplNotes[i] == note) {
 			oplNotes[i] = NO_NOTE;
-			opl2.setKeyOn(1, false);
+			opl2.setKeyOn(i, false);
 		}
 	}
 }
