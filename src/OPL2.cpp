@@ -607,7 +607,7 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
 				((instrument.operators[op].sustain & 0x0F) << 4) +
 				(instrument.operators[op].release & 0x0F));
 			setOperatorRegister(0xE0, channel, op,
-				(instrument.operators[op].waveForm & 0x03));
+				(instrument.operators[op].waveForm & 0x07));
 		}
 	}
 
@@ -1108,7 +1108,7 @@ void OPL2::setDrums(bool bass, bool snare, bool tom, bool cymbal, bool hihat) {
  * Get the wave form currently set for the given channel.
  */
 byte OPL2::getWaveForm(byte channel, byte operatorNum) {
-	return getOperatorRegister(0xE0, channel, operatorNum) & 0x03;
+	return getOperatorRegister(0xE0, channel, operatorNum) & 0x07;
 }
 
 
@@ -1116,6 +1116,6 @@ byte OPL2::getWaveForm(byte channel, byte operatorNum) {
  * Select the wave form to use.
  */
 void OPL2::setWaveForm(byte channel, byte operatorNum, byte waveForm) {
-	byte value = getOperatorRegister(0xE0, channel, operatorNum) & 0xFC;
-	setOperatorRegister(0xE0, channel, operatorNum, value + (waveForm & 0x03));
+	byte value = getOperatorRegister(0xE0, channel, operatorNum) & 0xF8;
+	setOperatorRegister(0xE0, channel, operatorNum, value + (waveForm & 0x07));
 }
