@@ -140,6 +140,20 @@ byte OPL3::getChipRegisterOffset(short reg) {
 
 
 /**
+ * Write a given value to a chip wide register.
+ *
+ * @param reg - The 9-bit register to write to.
+ * @param value - The value to write to the register.
+ */
+void OPL3::setChipRegister(short baseRegister, byte value) {
+	chipRegisters[getChipRegisterOffset(baseRegister)] = value;
+
+	byte bank = (baseRegister >> 8) & 0x01;
+	write(bank, baseRegister & 0xFF, value);
+}
+
+
+/**
  * Write a given value to a channel based register.
  *
  * @param baseRegister - The base address of the register.
@@ -149,7 +163,7 @@ byte OPL3::getChipRegisterOffset(short reg) {
 void OPL3::setChannelRegister(byte baseRegister, byte channel, byte value) {
 	channelRegisters[getChannelRegisterOffset(baseRegister, channel)] = value;
 
-	byte bank = (channel >> 8) & 0x01;
+	byte bank = (channel / CHANNELS_PER_BANK) & 0x01;
 	byte reg = baseRegister + (channel % CHANNELS_PER_BANK);
 	write(bank, reg, value);
 }
@@ -166,7 +180,7 @@ void OPL3::setChannelRegister(byte baseRegister, byte channel, byte value) {
 void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte operatorNum, byte value) {
 	operatorRegisters[getOperatorRegisterOffset(baseRegister, channel, operatorNum)] = value;
 
-	byte bank = (channel >> 8) & 0x01;
+	byte bank = (channel / CHANNELS_PER_BANK) & 0x01;
 	byte reg = baseRegister + getRegisterOffset(channel % CHANNELS_PER_BANK, operatorNum);
 	write(bank, reg, value);
 }

@@ -37,6 +37,7 @@
 			virtual void reset();
 			virtual void createShadowRegisters();
 
+			virtual void setChipRegister(short baseRegister, byte value);
 			virtual void setChannelRegister(byte baseRegister, byte channel, byte value);
 			virtual void setOperatorRegister(byte baseRegister, byte channel, byte operatorNum, byte value);
 			virtual byte getChipRegisterOffset(short reg);
