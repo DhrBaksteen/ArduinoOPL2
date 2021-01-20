@@ -21,7 +21,7 @@
 
 	// !!! IMPORTANT !!!
 	// In order to correctly compile the library for your platform be sure to set the correct BOARD_TYPE below.
-	#define BOARD_TYPE OPL2_BOARD_TYPE_ARDUINO
+	#define BOARD_TYPE OPL2_BOARD_TYPE_RASPBERRY_PI
 
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#define PIN_LATCH 10
@@ -102,9 +102,8 @@
 		#include <Arduino.h>
 	#else
 		#include <stdint.h>
+		#include <algorithm>
 		typedef uint8_t byte;
-		#define min(a, b) ((a) < (b) ? (a) : (b))
-		#define max(a, b) ((a) > (b) ? (a) : (b))
 		#define PROGMEM 
 	#endif
 
@@ -229,6 +228,9 @@
 			void setWaveForm(byte channel, byte operatorNum, byte waveForm);
 
 		protected:
+			template <typename T>
+			T clampValue(T value, T min, T max);
+
 			byte pinReset   = PIN_RESET;
 			byte pinAddress = PIN_ADDR;
 			byte pinLatch   = PIN_LATCH;

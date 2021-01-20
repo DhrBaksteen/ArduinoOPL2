@@ -1,5 +1,6 @@
 #include "TuneParser.h"
 #include <wiringPi.h>
+#include <algorithm>
 
 
 /**
@@ -206,7 +207,7 @@ Tune TuneParser::playBackground(const char* voice0, const char* voice1, const ch
 Tune TuneParser::createTune(const char* voices[6], int numVoices) {
 	Tune tune;
 
-	tune.numVoices = min(numVoices, 6);
+	tune.numVoices = std::min(numVoices, 6);
 	for (byte i = 0; i < tune.numVoices; i ++) {
 		tune.voice[i].pattern = voices[i];
 	}
@@ -440,13 +441,13 @@ void TuneParser::parseNote(Voice& voice) {
 		voice.position ++;
 		note = notes[1][noteIndex];
 		if (note == NOTE_B) {
-			octave = max(octave - 1, 0);
+			octave = std::max(octave - 1, 0);
 		}
 	} else if (sharpFlat == TUNE_CMD_NOTE_SHARP || sharpFlat == TUNE_CMD_NOTE_SHARP2) {
 		voice.position ++;
 		note = notes[2][noteIndex];
 		if (note == NOTE_C) {
-			octave = min(octave + 1, 7);
+			octave = std::min(octave + 1, 7);
 		}
 	}
 
@@ -531,7 +532,7 @@ byte TuneParser::parseNoteLength(Voice voice) {
  * @param nMax - Maximum value of the number.
  * @return The number at the current command position in the voice or TP_NAN.
  */
-byte TuneParser::parseNumber(Voice voice, byte nMin, byte nMax) {
+byte TuneParser::parseNumber(Voice voice, int nMin, int nMax) {
 	char nextDigit = voice.pattern[voice.position + 1];
 	if (nextDigit < '0' || nextDigit > '9') {
 		return TP_NAN;
@@ -545,5 +546,5 @@ byte TuneParser::parseNumber(Voice voice, byte nMin, byte nMax) {
 		nextDigit = voice.pattern[voice.position + 1];
 	}
 
-	return (byte)max(nMin, min(number, nMax));
+	return (byte)std::max(nMin, std::min(number, nMax));
 }
