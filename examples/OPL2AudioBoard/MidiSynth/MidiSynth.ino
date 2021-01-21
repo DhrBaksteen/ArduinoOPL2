@@ -31,6 +31,9 @@
 #define NUM_OPL2_CHANNELS 9
 #define NO_NOTE 255
 
+const byte MIN_NOTE = 24;
+const byte MAX_NOTE = 119;
+
 byte midiCommand = 0x00;
 byte midiChannel = 0;
 byte midiData[2] = { 0x00, 0x00 };
@@ -156,7 +159,7 @@ void playNote() {
 	oplNotes[oplChannel] = note;
 
 	// Adjust note to valid range and extract octave.
-	note = max(24, min(note, 119));
+	note = max(MIN_NOTE, min(note, MAX_NOTE));
 	byte octave = 1 + (note - 24) / 12;
 	note = note % 12;
 	opl2.playNote(oplChannel, octave, note);
