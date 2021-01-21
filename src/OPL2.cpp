@@ -1123,6 +1123,11 @@ void OPL2::setWaveForm(byte channel, byte operatorNum, byte waveForm) {
 
 /**
  * Clamp the given value to be between the given minimum and maximum.
+ *
+ * @param value - The value to clamp.
+ * @param min - Minimum clamping value.
+ * @param max - Maximum clamping vlue.
+ * @return The value clamped between the given min and max.
  */
 template <typename T>
 T OPL2::clampValue(T value, T min, T max) {
