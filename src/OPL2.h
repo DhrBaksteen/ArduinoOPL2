@@ -21,7 +21,7 @@
 
 	// !!! IMPORTANT !!!
 	// In order to correctly compile the library for your platform be sure to set the correct BOARD_TYPE below.
-	#define BOARD_TYPE OPL2_BOARD_TYPE_RASPBERRY_PI
+	#define BOARD_TYPE OPL2_BOARD_TYPE_ARDUINO
 
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#define PIN_LATCH 10

@@ -529,7 +529,7 @@ byte TuneParser::parseNoteLength(Voice voice) {
  * @param nMax - Maximum value of the number.
  * @return The number at the current command position in the voice or TP_NAN.
  */
-byte TuneParser::parseNumber(Voice voice, byte nMin, byte nMax) {
+byte TuneParser::parseNumber(Voice voice, int nMin, int nMax) {
 	char nextDigit = pgm_read_byte_near(voice.pattern + voice.position + 1);
 	if (nextDigit < '0' || nextDigit > '9') {
 		return TP_NAN;
