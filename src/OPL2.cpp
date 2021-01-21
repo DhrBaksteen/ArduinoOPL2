@@ -365,7 +365,7 @@ byte OPL2::getNumChannels() {
  */
 short OPL2::getFrequencyFNumber(byte channel, float frequency) {
 	float fInterval = getFrequencyStep(channel);
-	return max((short)0, min((short)(frequency / fInterval), (short)1023));
+	return clampValue((short)(frequency / fInterval), (short)0, (short)1023);
 }
 
 
@@ -543,7 +543,7 @@ Instrument OPL2::getDrumInstrument(byte drumType) {
  * operators.
  */
 void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
-	volume = max((float)0.0, min(volume, (float)1.0));
+	volume = clampValue(volume, (float)0.0, (float)1.0);
 
 	setWaveFormSelect(true);
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
@@ -582,7 +582,7 @@ void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
  * proper output levels for the operator(s).
  */
 void OPL2::setDrumInstrument(Instrument instrument, float volume) {
-	volume = max((float)0.0, min(volume, (float)1.0));
+	volume = clampValue(volume, (float)0.0, (float)1.0);
 	byte channel = drumChannels[instrument.type - INSTRUMENT_TYPE_BASS];
 
 	setWaveFormSelect(true);
@@ -624,7 +624,7 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
  */
 void OPL2::playNote(byte channel, byte octave, byte note) {
 	setKeyOn(channel, false);
-	setBlock(channel, min(octave, (byte)NUM_OCTAVES));
+	setBlock(channel, clampValue(octave, (byte)0, (byte)NUM_OCTAVES));
 	setFNumber(channel, noteFNumbers[note % 12]);
 	setKeyOn(channel, true);
 }
@@ -642,7 +642,7 @@ void OPL2::playDrum(byte drum, byte octave, byte note) {
 
 	setDrums(drumState & ~drumBits[drum]);
 	byte drumChannel = drumChannels[drum];
-	setBlock(drumChannel, min(octave, (byte)NUM_OCTAVES));
+	setBlock(drumChannel, clampValue(octave, (byte)0, (byte)NUM_OCTAVES));
 	setFNumber(drumChannel, noteFNumbers[note % NUM_NOTES]);
 	setDrums(drumState | drumBits[drum]);
 }
@@ -1118,4 +1118,22 @@ byte OPL2::getWaveForm(byte channel, byte operatorNum) {
 void OPL2::setWaveForm(byte channel, byte operatorNum, byte waveForm) {
 	byte value = getOperatorRegister(0xE0, channel, operatorNum) & 0xF8;
 	setOperatorRegister(0xE0, channel, operatorNum, value + (waveForm & 0x07));
+}
+
+
+/**
+ * Clamp the given value to be between the given minimum and maximum.
+ *
+ * @param value - The value to clamp.
+ * @param min - Minimum clamping value.
+ * @param max - Maximum clamping vlue.
+ * @return The value clamped between the given min and max.
+ */
+template <typename T>
+T OPL2::clampValue(T value, T min, T max) {
+	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
+		return constrain(value, min, max);
+	#else
+		return std::max(min, std::min(value, max));
+	#endif
 }

@@ -102,9 +102,8 @@
 		#include <Arduino.h>
 	#else
 		#include <stdint.h>
+		#include <algorithm>
 		typedef uint8_t byte;
-		#define min(a, b) ((a) < (b) ? (a) : (b))
-		#define max(a, b) ((a) > (b) ? (a) : (b))
 		#define PROGMEM 
 	#endif
 
@@ -229,6 +228,9 @@
 			void setWaveForm(byte channel, byte operatorNum, byte waveForm);
 
 		protected:
+			template <typename T>
+			T clampValue(T value, T min, T max);
+
 			byte pinReset   = PIN_RESET;
 			byte pinAddress = PIN_ADDR;
 			byte pinLatch   = PIN_LATCH;

@@ -76,7 +76,7 @@ class TuneParser {
 		void parseNote(Voice& voice);
 		void parseRest(Voice& voice);
 		byte parseNoteLength(Voice voice);
-		byte parseNumber(Voice voice, byte nMin, byte nMax);
+		byte parseNumber(Voice voice, int nMin, int nMax);
 
 	private:
 		OPL3Duo* opl3 = NULL;
