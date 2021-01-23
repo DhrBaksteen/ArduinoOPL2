@@ -16,6 +16,9 @@ struct MidiChannel {
     Instrument4OP instrument;           // Current instrument.
     byte program;                       // Program number currenly associated witht this MIDI channel.
     float volume;                       // Channel volume.
+    float modulation;                   // Channel modulation.
+    float afterTouch;                   // Channel aftertouch.
+    unsigned long tAfterTouch;          // Aftertouch start.
 };
 
 
