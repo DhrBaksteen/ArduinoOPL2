@@ -434,7 +434,6 @@ Instrument OPL2::createInstrument() {
 	instrument.transpose = 0;
 	instrument.feedback = 0;
 	instrument.isAdditiveSynth = false;
-	instrument.type = INSTRUMENT_TYPE_MELODIC;
 
 	return instrument;
 }
@@ -450,8 +449,8 @@ Instrument OPL2::createInstrument() {
 #endif
 	Instrument instrument = createInstrument();
 
-	byte data[12];
-	for (byte i = 0; i < 12; i ++) {
+	byte data[11];
+	for (byte i = 0; i < 11; i ++) {
 		#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 			if (fromProgmem) {
 				data[i] = pgm_read_byte_near(instrumentData + i);
@@ -464,24 +463,24 @@ Instrument OPL2::createInstrument() {
 	}
 
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
-		instrument.operators[op].hasTremolo = data[op * 6 + 1] & 0x80 ? true : false;
-		instrument.operators[op].hasVibrato = data[op * 6 + 1] & 0x40 ? true : false;
-		instrument.operators[op].hasSustain = data[op * 6 + 1] & 0x20 ? true : false;
-		instrument.operators[op].hasEnvelopeScaling = data[op * 6 + 1] & 0x10 ? true : false;
-		instrument.operators[op].frequencyMultiplier = (data[op * 6 + 1] & 0x0F);
-		instrument.operators[op].keyScaleLevel = (data[op * 6 + 2] & 0xC0) >> 6;
-		instrument.operators[op].outputLevel = data[op * 6 + 2] & 0x3F;
-		instrument.operators[op].attack = (data[op * 6 + 3] & 0xF0) >> 4;
-		instrument.operators[op].decay = data[op * 6 + 3] & 0x0F;
-		instrument.operators[op].sustain = (data[op * 6 + 4] & 0xF0) >> 4;
-		instrument.operators[op].release = data[op * 6 + 4] & 0x0F;
-		instrument.operators[op].waveForm = data[op * 6 + 5] & 0x07;
+		instrument.operators[op].hasTremolo = data[op * 5 + 1] & 0x80 ? true : false;
+		instrument.operators[op].hasVibrato = data[op * 5 + 1] & 0x40 ? true : false;
+		instrument.operators[op].hasSustain = data[op * 5 + 1] & 0x20 ? true : false;
+		instrument.operators[op].hasEnvelopeScaling = data[op * 5 + 1] & 0x10 ? true : false;
+		instrument.operators[op].frequencyMultiplier = (data[op * 5 + 1] & 0x0F);
+		instrument.operators[op].keyScaleLevel = (data[op * 5 + 2] & 0xC0) >> 6;
+		instrument.operators[op].outputLevel = data[op * 5 + 2] & 0x3F;
+		instrument.operators[op].attack = (data[op * 5 + 3] & 0xF0) >> 4;
+		instrument.operators[op].decay = data[op * 5 + 3] & 0x0F;
+		instrument.operators[op].sustain = (data[op * 5 + 4] & 0xF0) >> 4;
+		instrument.operators[op].release = data[op * 5 + 4] & 0x0F;
 	}
+	instrument.operators[0].waveForm = data[10] & 0x07;
+	instrument.operators[1].waveForm = (data[10] & 0x70) >> 4;
 
-	instrument.transpose = 0;
-	instrument.feedback = (data[6] & 0x0E) >> 1;
-	instrument.isAdditiveSynth = data[6] & 0x01 ? true : false;
-	instrument.type = data[0];
+	instrument.transpose = data[0];
+	instrument.feedback = (data[5] & 0x0E) >> 1;
+	instrument.isAdditiveSynth = data[5] & 0x01 ? true : false;
 
 	return instrument;
 }
@@ -511,41 +510,6 @@ Instrument OPL2::getInstrument(byte channel) {
 	instrument.transpose = 0;
 	instrument.feedback = getFeedback(channel);
 	instrument.isAdditiveSynth = getSynthMode(channel) == SYNTH_MODE_AM;
-	instrument.type = INSTRUMENT_TYPE_MELODIC;
-
-	return instrument;
-}
-
-
-/**
- * Create a new drum instrument that can be used in percussion mode. The drumType is one of INSTRUMENT_TYPE_* other than
- * MELODIC and this determines the channel operator(s) to be loaded into the instrument object.
- */
-Instrument OPL2::getDrumInstrument(byte drumType) {
-	byte channel = drumChannels[drumType - INSTRUMENT_TYPE_BASS];
-	Instrument instrument = createInstrument();
-
-	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
-		if (drumRegisterOffsets[op][drumType - INSTRUMENT_TYPE_BASS] != 0xFF) {
-			instrument.operators[op].hasTremolo = getTremolo(channel, op);
-			instrument.operators[op].hasVibrato = getVibrato(channel, op);
-			instrument.operators[op].hasSustain = getMaintainSustain(channel, op);
-			instrument.operators[op].hasEnvelopeScaling = getEnvelopeScaling(channel, op);
-			instrument.operators[op].frequencyMultiplier = getMultiplier(channel, op);
-			instrument.operators[op].keyScaleLevel = getScalingLevel(channel, op);
-			instrument.operators[op].outputLevel = getVolume(channel, op);
-			instrument.operators[op].attack = getAttack(channel, op);
-			instrument.operators[op].decay = getDecay(channel, op);
-			instrument.operators[op].sustain = getSustain(channel, op);
-			instrument.operators[op].release = getRelease(channel, op);
-			instrument.operators[op].waveForm = getWaveForm(channel, op);
-		}
-	}
-
-	instrument.transpose = 0;
-	instrument.feedback = getFeedback(channel);
-	instrument.isAdditiveSynth = getSynthMode(channel) == SYNTH_MODE_AM;
-	instrument.type = drumType;
 
 	return instrument;
 }
@@ -590,18 +554,23 @@ void OPL2::setInstrument(byte channel, Instrument instrument, float volume) {
 
 
 /**
- * Set the given drum instrument that can be used in percussion mode. Depending on the type of drum the instrument
- * parameters will be loaded into the appropriate channel operator(s). An optional volume may be provided to set the
+ * Set the given instrument as a drum type for percussive mode. Depending on the drumType the instrument parameters will
+ * be loaded into the appropriate channel and operator(s). An optional volume may be provided to set the
  * proper output levels for the operator(s).
+ *
+ * @param instrument - The instrument to be set.
+ * @param drumType - The type of drum instrument to set the parameters of.
+ * @param volume - Optional volume parameter for the drum.
  */
-void OPL2::setDrumInstrument(Instrument instrument, float volume) {
+void OPL2::setDrumInstrument(Instrument instrument, byte drumType, float volume) {
+	drumType = clampValue(drumType, (byte)DRUM_BASS, (byte)DRUM_HI_HAT);
 	volume = clampValue(volume, (float)0.0, (float)1.0);
-	byte channel = drumChannels[instrument.type - INSTRUMENT_TYPE_BASS];
+	byte channel = drumChannels[drumType];
 
 	setWaveFormSelect(true);
 	for (byte op = OPERATOR1; op <= OPERATOR2; op ++) {
 		byte outputLevel = 63 - (byte)((63.0 - (float)instrument.operators[op].outputLevel) * volume);
-		byte registerOffset = drumRegisterOffsets[op][instrument.type - INSTRUMENT_TYPE_BASS];
+		byte registerOffset = drumRegisterOffsets[op][drumType];
 
 		if (registerOffset != 0xFF) {
 			setOperatorRegister(0x20, channel, op,

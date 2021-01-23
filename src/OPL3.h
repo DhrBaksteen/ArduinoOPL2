@@ -26,6 +26,7 @@
 
 	struct Instrument4OP {
 		Instrument subInstrument[2];		// Definition of the 2 sub instruments for each channel.
+											// Transpose of the instrument is found in transpose of sub instrument 0.
 	};
 
 
