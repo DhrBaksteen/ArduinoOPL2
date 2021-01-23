@@ -24,6 +24,7 @@ struct OPLChannel {
     byte midiChannel;                   // Midi channel associated with the event.
     byte program;                       // Program number of the instrument loaded on the OPL channel.
     byte note;                          // Note number playing on the channel (0xFF when channel is free).
+    byte transpose;                     // Transpose notes on this OPL channel for drums.
     float noteVelocity;                 // Velocity of the note on event.
 };
 

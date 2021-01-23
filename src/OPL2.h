@@ -90,14 +90,6 @@
 		#define INSTRUMENT_DATA_SRAM false
 	#endif
 
-	// Instrument type definitions.
-	#define INSTRUMENT_TYPE_MELODIC  0
-	#define INSTRUMENT_TYPE_BASS     6
-	#define INSTRUMENT_TYPE_SNARE    7
-	#define INSTRUMENT_TYPE_TOM      8
-	#define INSTRUMENT_TYPE_CYMBAL   9
-	#define INSTRUMENT_TYPE_HI_HAT  10
-
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		#include <Arduino.h>
 	#else
@@ -128,7 +120,6 @@
 		Operator operators[2];
 		byte feedback;
 		bool isAdditiveSynth;
-		byte type;
 		byte transpose;
 	};
 
@@ -172,9 +163,8 @@
 				Instrument loadInstrument(const unsigned char *instrument);
 			#endif
 			Instrument getInstrument(byte channel);
-			Instrument getDrumInstrument(byte drumType);
 			void setInstrument(byte channel, Instrument instrument, float volume = 1.0);
-			void setDrumInstrument(Instrument instrument, float volume = 1.0);
+			void setDrumInstrument(Instrument instrument, byte drumType, float volume = 1.0);
 
 			virtual bool getWaveFormSelect();
 			bool getTremolo(byte channel, byte operatorNum);

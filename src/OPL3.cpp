@@ -291,7 +291,11 @@ Instrument4OP OPL3::createInstrument4OP() {
 		Instrument4OP instrument4OP = createInstrument4OP();
 
 		instrument4OP.subInstrument[0] = loadInstrument(instrumentData, fromProgmem);
-		instrument4OP.subInstrument[1] = loadInstrument(instrumentData + 12, fromProgmem);
+		instrument4OP.subInstrument[1] = loadInstrument(instrumentData + 10, fromProgmem);
+
+		// Transpose of the 2nd sub instrument will contain waveforms of OP1 + 2 due to how the data is loaded. Since we
+		// don't need transpose on operators 3 and 4 clear it for good measure.
+		instrument4OP.subInstrument[1].transpose = 0;
 
 		return instrument4OP;
 	}
@@ -307,7 +311,11 @@ Instrument4OP OPL3::createInstrument4OP() {
 		Instrument4OP instrument4OP = createInstrument4OP();
 
 		instrument4OP.subInstrument[0] = loadInstrument(instrumentData);
-		instrument4OP.subInstrument[1] = loadInstrument(instrumentData + 12);
+		instrument4OP.subInstrument[1] = loadInstrument(instrumentData + 10);
+
+		// Transpose of the 2nd sub instrument will contain waveforms of OP1 + 2 due to how the data is loaded. Since we
+		// don't need transpose on operators 3 and 4 clear it for good measure.
+		instrument4OP.subInstrument[1].transpose = 0;
 
 		return instrument4OP;
 	}
