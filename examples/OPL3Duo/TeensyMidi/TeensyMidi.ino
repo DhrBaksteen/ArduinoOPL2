@@ -204,8 +204,9 @@ void playDrum(byte note, byte velocity) {
 		// If the program loaded on the OPL channel is differs from the MIDI channel, then first send new instrument
 		// parameters to the OPL.
 		if (drumChannels[oplChannelIndex].program != program) {
-			drumChannels[oplChannelIndex].program = program;
 			Instrument drumInstrument = opl3.loadInstrument(midiDrums[program]);
+			drumChannels[oplChannelIndex].program = program;
+			drumChannels[oplChannelIndex].transpose = drumInstrument.transpose;
 			opl3.setInstrument(
 				drumChannelsOPL[oplChannelIndex],
 				drumInstrument,
@@ -215,7 +216,11 @@ void playDrum(byte note, byte velocity) {
 			// setOplChannelVolume(oplChannelIndex, MIDI_DRUM_CHANNEL);
 		}
 
-		opl3.playNote(drumChannelsOPL[oplChannelIndex], 4, NOTE_C);
+		opl3.playNote(
+			drumChannelsOPL[oplChannelIndex],
+			drumChannels[oplChannelIndex].transpose / 12,
+			drumChannels[oplChannelIndex].transpose % 12
+		);
 	}
 }
 
