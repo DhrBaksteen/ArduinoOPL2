@@ -16,10 +16,12 @@
 #include "TeensyMidi.h"
 
 
+#define CONTROL_MODULATION      1
 #define CONTROL_VOLUME          7
 #define CONTROL_ALL_SOUND_OFF 120
 #define CONTROL_RESET_ALL     121
 #define CONTROL_ALL_NOTES_OFF 123
+#define PI2 6.28318
 
 
 
@@ -40,6 +42,7 @@ void setup() {
 	usbMIDI.setHandleProgramChange(onProgramChange);
 	usbMIDI.setHandleControlChange(onControlChange);
 	usbMIDI.setHandlePitchChange(onPitchChange);
+	usbMIDI.setHandleAfterTouch(onAfterTouch);
 	usbMIDI.setHandleSystemReset(onSystemReset);
 	onSystemReset();
 }
@@ -50,6 +53,23 @@ void setup() {
  */
 void loop() {
 	usbMIDI.read();
+
+	for (byte i = 0; i < NUM_MELODIC_CHANNELS; i ++) {
+		byte midiChannel = melodicChannels[i].midiChannel;
+		float modulation = max(
+			midiChannels[midiChannel].modulation,
+			midiChannels[midiChannel].afterTouch
+		);
+
+		if (modulation > 0.0) {
+			float tModulation  = (millis() - midiChannels[midiChannel].tAfterTouch) * (PI2 / 200);
+			byte controlChannel = opl3.get4OPControlChannel(i);
+			byte baseNote = (melodicChannels[i].note % 12) + 2;
+			float fModulation = (notePitches[baseNote + 1] - notePitches[baseNote]) * modulation;
+			float fDelta = (1.0 - ((cos(tModulation) * 0.5) + 0.5)) * fModulation;
+			opl3.setFNumber(controlChannel, notePitches[baseNote] + fDelta);
+		}
+	}
 }
 
 
@@ -315,6 +335,12 @@ void onControlChange(byte midiChannel, byte control, byte value) {
 
 	switch (control) {
 
+		// Change channel modulation.
+		case CONTROL_MODULATION: {
+			midiChannels[midiChannel].modulation = value / 127.0;
+			break;
+		}
+
 		// Change volume of a MIDI channel. If volume is changed on a melodic channel then the change is applied
 		// immediately.
 		case CONTROL_VOLUME: {
@@ -392,6 +418,14 @@ void onPitchChange(byte midiChannel, int pitch) {
 }
 
 
+void onAfterTouch(byte midiChannel, byte pressure) {
+	if (midiChannels[midiChannel].afterTouch == 0.0) {
+		midiChannels[midiChannel].tAfterTouch = millis();
+	}
+	midiChannels[midiChannel].afterTouch = pressure / 127.0;
+}
+
+
 /**
  * Handle full system reset.
  */
@@ -409,6 +443,9 @@ void onSystemReset() {
 	for (byte i = 0; i < NUM_MIDI_CHANNELS; i ++) {
 		onProgramChange(i, 0);
 		midiChannels[i].volume = defaultVolume;
+		midiChannels[i].modulation = 0.0;
+		midiChannels[i].afterTouch = 0.0;
+		midiChannels[i].tAfterTouch = 0;
 	}
 
 	// Initialize melodic channels.
