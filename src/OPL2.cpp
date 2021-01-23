@@ -86,6 +86,12 @@ OPL2::OPL2(byte reset, byte address, byte latch) : OPL2::OPL2() {
  * Initialize the YM3812.
  */
 void OPL2::begin() {
+	#ifdef OPL_SERIAL_DEBUG
+		Serial.begin(115200);
+		while(!Serial);
+		Serial.println("OPL serial debug enabled");
+	#endif
+
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
 		SPI.begin();
 		SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
@@ -325,6 +331,13 @@ byte OPL2::getRegisterOffset(byte channel, byte operatorNum) {
  * @param value - The value to write to the register.
  */
 void OPL2::write(byte reg, byte value) {
+	#ifdef OPL_SERIAL_DEBUG
+		Serial.print("reg: ");
+		Serial.print(reg, HEX);
+		Serial.print(", val: ");
+		Serial.println(value, HEX);
+	#endif
+
 	// Write OPL2 address.
 	digitalWrite(pinAddress, LOW);
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -623,7 +636,9 @@ void OPL2::setDrumInstrument(Instrument instrument, float volume) {
  * Play a note of a certain octave on the given channel.
  */
 void OPL2::playNote(byte channel, byte octave, byte note) {
-	setKeyOn(channel, false);
+	if (getKeyOn(channel)) {
+		setKeyOn(channel, false);
+	}
 	setBlock(channel, clampValue(octave, (byte)0, (byte)NUM_OCTAVES));
 	setFNumber(channel, noteFNumbers[note % 12]);
 	setKeyOn(channel, true);

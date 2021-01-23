@@ -102,11 +102,14 @@ void OPL3Duo::reset() {
 	// Initialize chip registers on both synth units.
 	for (byte i = 0; i < 2; i ++) {
 		setChipRegister(i, 0x01, 0x00);
-		setChipRegister(i, 0x04, 0x00);
-		setChipRegister(i, 0x05, 0x00);
 		setChipRegister(i, 0x08, 0x40);
 		setChipRegister(i, 0xBD, 0x00);
+		setChipRegister(i, 0x104, 0x00);
 	}
+
+	// Enable OPL3 mode for both chips so we can access all operators.
+	setChipRegister(0, 0x105, 0x01);
+	setChipRegister(1, 0x105, 0x01);
 
 	// Initialize all channel and operator registers.
 	for (byte i = 0; i < getNumChannels(); i ++) {
@@ -122,6 +125,10 @@ void OPL3Duo::reset() {
 			setOperatorRegister(0xE0, i, j, 0x00);
 		}
 	}
+
+	// Disable OPL3 mode for both chips.
+	setChipRegister(0, 0x105, 0x00);
+	setChipRegister(1, 0x105, 0x00);
 
 	digitalWrite(pinUnit, LOW);
 }
@@ -151,7 +158,7 @@ void OPL3Duo::setChipRegister(byte synthUnit, short reg, byte value) {
 	synthUnit = synthUnit & 0x01;
 	chipRegisters[(synthUnit * 5) + getChipRegisterOffset(reg)] = value;
 
-	byte bank = ((reg >> 8) & 0x01) | (synthUnit << 1);
+	byte bank = (synthUnit << 1) | ((reg >> 8) & 0x01);
 	write(bank, reg & 0xFF, value);
 }
 
@@ -320,4 +327,26 @@ void OPL3Duo::set4OPChannelEnabled(byte channel4OP, bool enable) {
 	byte channelMask = 0x01 << (channel4OP % NUM_4OP_CHANNELS_PER_UNIT);
 	byte value = getChipRegister(synthUnit, 0x0104) & ~channelMask;
 	setChipRegister(synthUnit, 0x0104, value + (enable ? channelMask : 0));
+}
+
+
+/**
+ * Enable or disable 4-op mode on all channels of both synth units.
+ *
+ * @param enable - When set to true enables 4-op mode on all channels.
+ */
+void OPL3Duo::setAll4OPChannelsEnabled(bool enable) {
+	setAll4OPChannelsEnabled(0, enable);
+	setAll4OPChannelsEnabled(1, enable);
+}
+
+
+/**
+ * Enable or disable 4-op mode on all channels of the given synth unit.
+ *
+ * @param synthUnit - Synth unit [0, 1] for which to change OPL3 mode.
+ * @param enable - When set to true enables 4-op mode on all channels.
+ */
+void OPL3Duo::setAll4OPChannelsEnabled(byte synthUnit, bool enable) {
+	setChipRegister(synthUnit, 0x0104, enable ? 0x3F : 0x00);
 }

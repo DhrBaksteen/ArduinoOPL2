@@ -92,12 +92,12 @@ void OPL3::reset() {
 	delay(1);
 	digitalWrite(pinReset, HIGH);
 
-	// Initialize chip registers.
+	// Initialize chip registers and enable OPL3 mode temporarily.
 	setChipRegister(0x00, 0x00);
 	setChipRegister(0x08, 0x40);
 	setChipRegister(0xBD, 0x00);
 	setChipRegister(0x104, 0x00);
-	setChipRegister(0x105, 0x00);
+	setChipRegister(0x105, 0x01);
 
 	// Initialize all channel and operator registers.
 	for (byte i = 0; i < getNumChannels(); i ++) {
@@ -113,6 +113,9 @@ void OPL3::reset() {
 			setOperatorRegister(0xE0, i, j, 0x00);
 		}
 	}
+
+	// Disable OPL3 mode.
+	setChipRegister(0x105, 0x00);
 }
 
 
@@ -194,6 +197,15 @@ void OPL3::setOperatorRegister(byte baseRegister, byte channel, byte operatorNum
  * @param value - The value to write to the register.
  */
 void OPL3::write(byte bank, byte reg, byte value) {
+	#ifdef OPL_SERIAL_DEBUG
+		Serial.print("bank: ");
+		Serial.print(bank);
+		Serial.print(", reg: ");
+		Serial.print(reg, HEX);
+		Serial.print(", val: ");
+		Serial.println(value, HEX);
+	#endif
+
 	digitalWrite(pinAddress, LOW);
 	digitalWrite(pinBank, (bank & 0x01) ? HIGH : LOW);
 	#if BOARD_TYPE == OPL2_BOARD_TYPE_ARDUINO
@@ -447,9 +459,7 @@ void OPL3::set4OPChannelEnabled(byte channel4OP, bool enable) {
  * @param enable - Enables 4-OP channels when true.
  */
 void OPL3::setAll4OPChannelsEnabled(bool enable) {
-	for (byte i = 0; i < getNum4OPChannels(); i ++) {
-		set4OPChannelEnabled(i, enable);
-	}
+	setChipRegister(0x0104, enable ? 0x3F : 0x00);
 }
 
 

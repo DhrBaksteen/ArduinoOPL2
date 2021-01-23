@@ -37,6 +37,8 @@
 			virtual void setOPL3Enabled(byte synthUnit, bool enable);
 			virtual bool is4OPChannelEnabled(byte channel4OP);
 			virtual void set4OPChannelEnabled(byte channel4OP, bool enable);
+			virtual void setAll4OPChannelsEnabled(bool enable);
+			void setAll4OPChannelsEnabled(byte synthUnit, bool enable);
 		protected:
 			byte pinUnit = PIN_UNIT;
 
