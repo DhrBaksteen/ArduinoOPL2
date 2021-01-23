@@ -9,8 +9,8 @@
 OPL2	KEYWORD1
 OPL3	KEYWORD1
 OPL3Duo	KEYWORD1
-Operator KEYWORD1
-Instrument KEYWORD1
+Operator	KEYWORD1
+Instrument	KEYWORD1
 Instrument4OP	KEYWORD1
 
 #######################################

@@ -20,8 +20,8 @@ echo "\033[1;34m        \\/       \\/           \\/       \\/     \033[0m"
 echo "For the \033[1;36mOPL2 Audio Board\033[0m and \033[1;36mOPL3 Duo!\033[0m synthesizers"
 echo ""
 echo "Installation script for Raspberry Pi and compatibles"
-echo "Library version 2.0.5, 9th of December 2020"
-echo "Copyright (c) 2016-2020 Maarten Janssen, Cheerful"
+echo "Library version 2.1.0, 23rd of January 2020"
+echo "Copyright (c) 2016-2021 Maarten Janssen, Cheerful"
 echo ""
 
 MYDIR=$(pwd)

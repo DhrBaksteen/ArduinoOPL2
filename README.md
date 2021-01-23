@@ -9,7 +9,7 @@ This repository contains the OPL2 / OPL3 audio library for the OPL2 Audio Board 
 * Emulation with DosBox; you can use the board to output MIDI music (Teensy++ 2.0 and later)
 * Use the board directly as a synthesizer by using the [OPL3BankEditor](https://github.com/Wohlstand/OPL3BankEditor) software by Wohlstand
 
-Current library version is 2.0.5, 9th December 2020
+Current library version is 2.1.0, 23rd January 2021
 
 ### OPL2 Audio Board
 The OPL2 Audio Board is fun and easy board to get started with an OPL2 synthesizer. It is built around the YM3812 OPL2 chip that gives you 9 channels with 2-operators each to produce the classic OPL2 sound that you may remember from early 90s computer games.
