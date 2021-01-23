@@ -37,11 +37,11 @@ int main(int argc, char **argv) {
 	Instrument hihat = opl2.loadInstrument(INSTRUMENT_HIHAT2);
 
 	opl2.setPercussion(true);
-	opl2.setDrumInstrument(bass);
-	opl2.setDrumInstrument(snare);
-	opl2.setDrumInstrument(tom);
-	opl2.setDrumInstrument(cymbal);
-	opl2.setDrumInstrument(hihat);
+	opl2.setDrumInstrument(bass, DRUM_BASS);
+	opl2.setDrumInstrument(snare, DRUM_SNARE);
+	opl2.setDrumInstrument(tom, DRUM_TOM);
+	opl2.setDrumInstrument(cymbal, DRUM_CYMBAL);
+	opl2.setDrumInstrument(hihat, DRUM_HI_HAT);
 
 	// Set octave and frequency for bass drum.
 	opl2.setBlock(6, 4);
