@@ -1,7 +1,14 @@
 /**
- * This example can be used together with a Teensy 2.0 or later to use the OPL2 Audio Board as a MIDI device. To
- * configure the Teensy as a MIDI device set USB Type to MIDI in the IDE using Tools > USB Type > MIDI. Once connected
- * the board should appear in the device list as 'OPL2 AUdio Board MIDI'. You can now use test the board with, for
+ * This example can be used together with an Atmega328-based Arduino (Nano/Uno/etc), or Atmega32u4 (leonardo/pro micro) 
+ * to use the OPL2 Audio Board as a MIDI device. Libraries required include ArduinoOPL2, plus (from the library manager):
+ * 'MIDI Library' by lathoub
+ * 
+ * And if you want to use USB-MIDI (on the leonardo, for example):
+ * 'MIDIUSB' by Arduino 
+ * 'USBMIDI' by blokas
+ * 'USB-MIDI' by lathoub
+ * 
+ * You can now use test the board with, for
  * example, MIDI-OX, your favorite music creation software or DosBox!
  *
  * OPL2 board is connected as follows:
@@ -13,7 +20,9 @@
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2018-07-02
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
- */
+ * 
+ * Adapted to work with Arduino Nano/Uno/Leonardo by Brad Roy, 2021/07/09
+*/
 
 //for USB MIDI, #include <USB-MIDI.h> - needs a Leonardo or Pro Micro
 #include <MIDI.h>
@@ -63,7 +72,7 @@ void setup() {
 	MIDI.setHandleProgramChange(onProgramChange);
 	MIDI.setHandleControlChange(onControlChange);
 	MIDI.setHandleSystemReset(onSystemReset);
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.begin(MIDI_CHANNEL_OMNI); //listen on all channels
 	onSystemReset();
 
 	opl2.setDeepVibrato(true);
