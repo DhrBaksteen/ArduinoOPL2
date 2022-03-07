@@ -162,8 +162,8 @@ void onNoteOn(byte midiChannel, byte note, byte velocity) {
 		opl2Note   = note % 12;
 	} else {
 		note = midiChannelMap[midiChannel].instrument.transpose;
-		octave = note / 12;
-		note = note % 12;
+		opl2Octave = note / 12;
+		opl2Note = note % 12;
 	}
 
 	// Set instrument registers and play note.
