@@ -163,7 +163,6 @@
 	const unsigned char INSTRUMENT_APPLAUSE[11] PROGMEM = { 0x00, 0x2E, 0x00, 0xFF, 0x02, 0x00, 0x2A, 0x05, 0x32, 0x55, 0x3F };
 	const unsigned char INSTRUMENT_GUNSHOT[11]  PROGMEM = { 0x00, 0x20, 0x00, 0xA1, 0xEF, 0x00, 0x10, 0x00, 0xF3, 0xDF, 0x0F };
 
-
 	// Instrument pointer array to access instruments by MIDI program.
 	const unsigned char *midiInstruments[] = {
 		INSTRUMENT_PIANO1,   INSTRUMENT_PIANO2,   INSTRUMENT_PIANO3,   INSTRUMENT_HONKTONK, INSTRUMENT_EP1,      INSTRUMENT_EP2,
