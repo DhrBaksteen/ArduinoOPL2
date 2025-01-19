@@ -93,7 +93,7 @@ void OPL3::reset() {
 	digitalWrite(pinReset, HIGH);
 
 	// Initialize chip registers and enable OPL3 mode temporarily.
-	setChipRegister(0x00, 0x00);
+	setChipRegister(0x01, 0x00);
 	setChipRegister(0x08, 0x40);
 	setChipRegister(0xBD, 0x00);
 	setChipRegister(0x104, 0x00);

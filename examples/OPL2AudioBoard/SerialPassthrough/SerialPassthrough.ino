@@ -22,6 +22,10 @@
  *
  * The 'protocol' implemented in this sketch is very simple. It expects a [register, data] byte pair that is written to
  * the OPL2. There is no synchronization!
+ * 
+ * The OPL2 can be given a hard reset by writing 165 (0xA5) to register 255 (0xFF). After resetting there must be a
+ * delay of at least 2ms before attempting to send more data to the OPL2 as to not flood the Arduino's serial buffer and
+ * loosing data!
  *
  * Code by Maarten Janssen (maarten@cheerful.nl) 2018-07-21
  * Most recent version of the library can be found at my GitHub: https://github.com/DhrBaksteen/ArduinoOPL2
@@ -41,6 +45,11 @@ void loop() {
   while (Serial.available() > 1) {
     byte reg = Serial.read();
     byte val = Serial.read();
-    opl2.write(reg, val);
+
+    if (reg == 0xFF && val == 0xA5) {
+      opl2.reset();
+    } else {
+      opl2.write(reg, val);
+    }
   }
 }
